@@ -8,6 +8,24 @@
     <p class="subtitle">Siga os passos para marcar seu atendimento</p>
   </div>
 
+  <div class="stepper">
+    <ng-container *ngFor="let step of steps; let i = index; let last = last">
+      <div 
+        class="step-item" 
+        [class.active]="step.id === currentStep"
+        [class.completed]="i < getStepIndex(currentStep)"
+        [class.disabled]="i > getStepIndex(currentStep)"
+        (click)="goToStep(step.id)">
+        <div class="step-circle">
+          <app-icon *ngIf="i < getStepIndex(currentStep)" name="check" [size]="14"></app-icon>
+          <span *ngIf="i >= getStepIndex(currentStep)">{{ i + 1 }}</span>
+        </div>
+        <span class="step-label">{{ step.label }}</span>
+      </div>
+      <div *ngIf="!last" class="step-line" [class.completed]="i < getStepIndex(currentStep)"></div>
+    </ng-container>
+  </div>
+
   <!-- Step 1: Specialty Selection -->
   <div class="step-content" *ngIf="currentStep === 'specialty'">
     <div class="search-bar">

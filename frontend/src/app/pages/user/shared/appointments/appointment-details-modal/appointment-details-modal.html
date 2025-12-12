@@ -1,0 +1,74 @@
+@if (isOpen && appointment) {
+  <div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__header-content">
+          <app-icon name="file" [size]="24" />
+          <h2 class="modal__title">Detalhes da Consulta</h2>
+        </div>
+        <button
+          type="button"
+          class="modal__close"
+          (click)="onCancel()"
+          aria-label="Fechar"
+        >
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="status-banner" [ngClass]="appointment.status">
+            {{ appointment.status === 'scheduled' ? 'Agendada' : 
+               appointment.status === 'confirmed' ? 'Confirmada' : 
+               appointment.status === 'completed' ? 'Realizada' : 
+               appointment.status === 'cancelled' ? 'Cancelada' : appointment.status }}
+        </div>
+
+        <div class="info-group">
+            <label>Paciente</label>
+            <p>{{ appointment.patientName }}</p>
+        </div>
+
+        <div class="info-group">
+            <label>Profissional</label>
+            <p>{{ appointment.professionalName }}</p>
+        </div>
+
+        <div class="info-group">
+            <label>Especialidade</label>
+            <p>{{ appointment.specialtyName }}</p>
+        </div>
+
+        <div class="info-row">
+            <div class="info-group">
+                <label>Data</label>
+                <p>{{ appointment.date | date:'fullDate' }}</p>
+            </div>
+            <div class="info-group">
+                <label>Horário</label>
+                <p>{{ appointment.time }}</p>
+            </div>
+        </div>
+
+        <div class="info-group" *ngIf="appointment.meetLink">
+            <label>Link da Consulta</label>
+            <a [href]="appointment.meetLink" target="_blank">{{ appointment.meetLink }}</a>
+        </div>
+
+        <div class="info-group" *ngIf="appointment.observation">
+            <label>Observações</label>
+            <p class="observation">{{ appointment.observation }}</p>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <app-button
+          variant="outline"
+          (click)="onCancel()"
+        >
+          Fechar
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

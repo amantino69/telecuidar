@@ -1,0 +1,117 @@
+<div class="appointments-container">
+  <div class="header">
+    <div class="title-section">
+      <h1>Minhas Consultas</h1>
+      <p class="subtitle">Gerencie seus agendamentos e histórico de consultas</p>
+    </div>
+    <div class="actions-section" *ngIf="userRole === 'patient'">
+      <app-button (click)="scheduleNew()">
+        <app-icon name="plus" [size]="20"></app-icon>
+        Nova Consulta
+      </app-button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="onTabChange('all')">Todas</button>
+      <button class="tab-btn" [class.active]="activeTab === 'upcoming'" (click)="onTabChange('upcoming')">Próximas</button>
+      <button class="tab-btn" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">Realizadas</button>
+      <button class="tab-btn" [class.active]="activeTab === 'cancelled'" (click)="onTabChange('cancelled')">Canceladas</button>
+    </div>
+
+    <div class="search-sort">
+      <div class="search-wrapper">
+        <app-search-input 
+            placeholder="Buscar por nome ou especialidade..." 
+            [(ngModel)]="searchQuery"
+            (search)="onSearch($event)">
+        </app-search-input>
+      </div>
+      <button class="sort-btn" (click)="toggleSort()" title="Ordenar por data">
+        <app-icon [name]="sortOrder === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="20"></app-icon>
+        <span class="desktop-only">{{ sortOrder === 'asc' ? 'Mais Antigas' : 'Mais Recentes' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="appointments-list">
+    <div class="loading-state" *ngIf="loading">
+      <p>Carregando consultas...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && appointments.length === 0">
+      <app-icon name="calendar" [size]="48"></app-icon>
+      <h3>Nenhuma consulta encontrada</h3>
+      <p *ngIf="activeTab === 'upcoming'">Você não tem consultas agendadas.</p>
+      <p *ngIf="activeTab !== 'upcoming'">Tente ajustar os filtros de busca.</p>
+      <app-button *ngIf="userRole === 'patient'" variant="outline" (click)="scheduleNew()">Agendar Agora</app-button>
+    </div>
+
+    <div class="appointment-card" *ngFor="let appointment of appointments">
+      <div class="card-header">
+        <div class="date-badge">
+          <span class="day">{{ appointment.date | date:'dd' }}</span>
+          <span class="month">{{ appointment.date | date:'MMM' }}</span>
+        </div>
+        <div class="status-badge" [ngClass]="appointment.status">
+          {{ appointment.status === 'scheduled' ? 'Agendada' : 
+             appointment.status === 'confirmed' ? 'Confirmada' : 
+             appointment.status === 'completed' ? 'Realizada' : 
+             appointment.status === 'cancelled' ? 'Cancelada' : appointment.status }}
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="professional-info">
+          <div class="avatar-placeholder">
+             <img *ngIf="appointment.avatar" [src]="appointment.avatar" alt="Avatar">
+             <app-icon *ngIf="!appointment.avatar" name="user" [size]="24"></app-icon>
+          </div>
+          <div class="info-text">
+            <h3>{{ userRole === 'patient' ? appointment.professionalName : appointment.patientName }}</h3>
+            <p class="specialty">{{ appointment.specialtyName }}</p>
+          </div>
+        </div>
+        
+        <div class="meta-info">
+            <div class="meta-item">
+                <app-icon name="clock" [size]="16"></app-icon>
+                <span>{{ appointment.time }}</span>
+            </div>
+            <div class="meta-item" *ngIf="appointment.meetLink && (appointment.status === 'confirmed' || appointment.status === 'in_progress')">
+                <app-icon name="video" [size]="16"></app-icon>
+                <span>Online</span>
+            </div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <app-button variant="ghost" size="sm" (click)="openDetails(appointment)">Detalhes</app-button>
+        
+        <app-button 
+            *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'completed'" 
+            variant="ghost" 
+            size="sm" 
+            class="danger-text"
+            (click)="cancelAppointment(appointment)">
+            Cancelar
+        </app-button>
+
+        <app-button 
+            *ngIf="(appointment.status === 'confirmed' || appointment.status === 'in_progress') && appointment.meetLink" 
+            variant="primary" 
+            size="sm" 
+            (click)="accessConsultation(appointment)">
+            Acessar Sala
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-appointment-details-modal
+  [isOpen]="isDetailsModalOpen"
+  [appointment]="selectedAppointment"
+  (close)="closeDetails()">
+</app-appointment-details-modal>

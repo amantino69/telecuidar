@@ -11,6 +11,7 @@ import { UserLayoutComponent } from '@pages/user/shared/user-layout/user-layout'
 import { DashboardComponent } from '@pages/user/shared/dashboard/dashboard';
 import { NotificationsComponent } from '@pages/user/shared/notifications/notifications';
 import { ProfileComponent } from '@pages/user/shared/profile/profile';
+import { AppointmentsComponent } from '@pages/user/shared/appointments/appointments';
 
 // Admin-specific components
 import { UsersComponent } from '@pages/user/admin/users/users';
@@ -65,6 +66,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'notifications', component: NotificationsComponent },
       { path: 'profile', component: ProfileComponent },
+      { path: 'appointments', component: AppointmentsComponent },
       { path: 'scheduling', component: SchedulingComponent },
       { path: 'scheduling/success', component: SchedulingSuccessComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
@@ -77,6 +79,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'notifications', component: NotificationsComponent },
       { path: 'profile', component: ProfileComponent },
+      { path: 'appointments', component: AppointmentsComponent },
       // Future professional-specific routes will go here
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

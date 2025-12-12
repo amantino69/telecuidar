@@ -41,6 +41,14 @@ interface TimeSlot {
 export class SchedulingComponent implements OnInit {
   currentStep: Step = 'specialty';
   
+  steps: { id: Step, label: string }[] = [
+    { id: 'specialty', label: 'Especialidade' },
+    { id: 'date', label: 'Data' },
+    { id: 'time', label: 'Horário' },
+    { id: 'professional-selection', label: 'Profissional' },
+    { id: 'confirmation', label: 'Confirmação' }
+  ];
+
   // Step 1: Specialties
   specialties: Specialty[] = [];
   filteredSpecialties: Specialty[] = [];
@@ -70,6 +78,10 @@ export class SchedulingComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSpecialties();
+  }
+
+  getStepIndex(stepId: Step): number {
+    return this.steps.findIndex(s => s.id === stepId);
   }
 
   // --- Step 1: Specialties ---
@@ -196,6 +208,36 @@ export class SchedulingComponent implements OnInit {
         }
       });
     }, 1500);
+  }
+
+  goToStep(step: Step) {
+    const stepOrder: Step[] = ['specialty', 'date', 'time', 'professional-selection', 'confirmation'];
+    const currentIndex = stepOrder.indexOf(this.currentStep);
+    const targetIndex = stepOrder.indexOf(step);
+
+    // Can only navigate backwards or to the immediate next step if data is selected
+    if (targetIndex !== -1 && targetIndex < currentIndex) {
+      this.currentStep = step;
+      this.resetSelectionsFrom(step);
+    }
+  }
+
+  resetSelectionsFrom(step: Step) {
+    if (step === 'specialty') {
+      this.selectedSpecialty = null;
+      this.selectedDate = null;
+      this.selectedSlot = null;
+      this.selectedProfessional = null;
+    } else if (step === 'date') {
+      this.selectedDate = null;
+      this.selectedSlot = null;
+      this.selectedProfessional = null;
+    } else if (step === 'time') {
+      this.selectedSlot = null;
+      this.selectedProfessional = null;
+    } else if (step === 'professional-selection') {
+      this.selectedProfessional = null;
+    }
   }
 
   goBack() {
