@@ -7,9 +7,11 @@ import { PaginationComponent } from '@app/shared/components/atoms/pagination/pag
 import { SearchInputComponent } from '@app/shared/components/atoms/search-input/search-input';
 import { FilterSelectComponent, FilterOption } from '@app/shared/components/atoms/filter-select/filter-select';
 import { TableHeaderComponent } from '@app/shared/components/atoms/table-header/table-header';
+import { ButtonComponent } from '@app/shared/components/atoms/button/button';
 import { InvitesService, Invite, InvitesFilter, InvitesSortOptions, InviteStatus, UserRole } from '@app/core/services/invites.service';
 import { ModalService } from '@app/core/services/modal.service';
 import { BadgeVariant } from '@app/shared/components/atoms/badge/badge';
+import { InviteCreateModalComponent } from './invite-create-modal/invite-create-modal';
 
 @Component({
   selector: 'app-invites',
@@ -21,7 +23,9 @@ import { BadgeVariant } from '@app/shared/components/atoms/badge/badge';
     PaginationComponent,
     SearchInputComponent,
     FilterSelectComponent,
-    TableHeaderComponent
+    TableHeaderComponent,
+    ButtonComponent,
+    InviteCreateModalComponent
   ],
   templateUrl: './invites.html',
   styleUrl: './invites.scss'
@@ -29,6 +33,7 @@ import { BadgeVariant } from '@app/shared/components/atoms/badge/badge';
 export class InvitesComponent implements OnInit {
   invites: Invite[] = [];
   isLoading = false;
+  isCreateModalOpen = false;
 
   // Filtros
   searchTerm = '';
@@ -270,6 +275,37 @@ export class InvitesComponent implements OnInit {
               variant: 'danger'
             });
           }
+        });
+      }
+    });
+  }
+
+  openCreateModal(): void {
+    this.isCreateModalOpen = true;
+  }
+
+  closeCreateModal(): void {
+    this.isCreateModalOpen = false;
+  }
+
+  handleCreateInvite(data: { email: string; role: UserRole }): void {
+    this.isLoading = true;
+    this.invitesService.createInvite(data.email, data.role).subscribe({
+      next: (newInvite) => {
+        this.modalService.alert({
+          title: 'Sucesso',
+          message: 'Convite criado com sucesso!',
+          variant: 'success'
+        });
+        this.loadInvites();
+        this.closeCreateModal();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.modalService.alert({
+          title: 'Erro',
+          message: 'Erro ao criar convite. Tente novamente.',
+          variant: 'danger'
         });
       }
     });

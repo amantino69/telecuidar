@@ -4,6 +4,10 @@
       <h1 class="invites__title">Convites</h1>
       <p class="invites__subtitle">Gerencie os convites de cadastro enviados</p>
     </div>
+    <app-button (click)="openCreateModal()">
+      <app-icon name="plus" [size]="20" />
+      Novo Convite
+    </app-button>
   </div>
 
   <div class="invites__filters">
@@ -197,3 +201,9 @@
     />
   }
 </div>
+
+<app-invite-create-modal
+  [isOpen]="isCreateModalOpen"
+  (close)="closeCreateModal()"
+  (create)="handleCreateInvite($event)"
+/>

@@ -157,6 +157,21 @@ export class InvitesService {
     }).pipe(delay(300));
   }
 
+  createInvite(email: string, role: UserRole): Observable<Invite> {
+    const newInvite: Invite = {
+      id: this.mockInvites.length > 0 ? Math.max(...this.mockInvites.map(i => i.id)) + 1 : 1,
+      email,
+      role,
+      status: 'pending',
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      createdBy: 'Admin Sistema',
+      token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    };
+    this.mockInvites.unshift(newInvite);
+    return of(newInvite).pipe(delay(500));
+  }
+
   resendInvite(inviteId: number): Observable<void> {
     return of(void 0).pipe(delay(500));
   }

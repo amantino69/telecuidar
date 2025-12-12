@@ -1,0 +1,66 @@
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__header-content">
+          <app-icon name="mail" [size]="24" />
+          <h2 class="modal__title">Novo Convite</h2>
+        </div>
+        <button
+          type="button"
+          class="modal__close"
+          (click)="onCancel()"
+          aria-label="Fechar"
+        >
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <form class="invite-form">
+          <div class="invite-form__field">
+            <label for="invite-email" class="invite-form__label">E-mail</label>
+            <input
+              id="invite-email"
+              type="email"
+              class="invite-form__input"
+              [(ngModel)]="inviteData.email"
+              name="email"
+              placeholder="Ex: joao.silva@email.com"
+            />
+          </div>
+
+          <div class="invite-form__field">
+            <label for="invite-role" class="invite-form__label">Perfil de Acesso</label>
+            <select
+              id="invite-role"
+              class="invite-form__select"
+              [(ngModel)]="inviteData.role"
+              name="role"
+            >
+              <option *ngFor="let option of roleOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal__footer">
+        <app-button
+          [variant]="'outline'"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </app-button>
+
+        <app-button
+          [variant]="'primary'"
+          (click)="onCreate()"
+          [disabled]="!isFormValid()"
+        >
+          <app-icon name="check" [size]="18" />
+          Enviar Convite
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

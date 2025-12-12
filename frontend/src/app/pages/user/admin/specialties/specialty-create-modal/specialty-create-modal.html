@@ -42,6 +42,123 @@
             ></textarea>
           </div>
 
+          <!-- Custom Fields Section -->
+          <div class="custom-fields-section">
+            <div class="custom-fields-header">
+              <h3 class="custom-fields-title">Campos Personalizados</h3>
+              <app-button variant="outline" size="sm" (click)="addCustomField()">
+                <app-icon name="plus" [size]="16" />
+                Adicionar Campo
+              </app-button>
+            </div>
+
+            <div class="fields-list">
+              <div class="field-card" *ngFor="let field of specialtyData.customFields; let i = index">
+                <div class="field-card__header">
+                  <div class="field-card__main-inputs">
+                    <div class="specialty-form__field">
+                      <label class="specialty-form__label">Nome do Campo</label>
+                      <input
+                        type="text"
+                        class="specialty-form__input"
+                        [(ngModel)]="field.name"
+                        [name]="'fieldName' + i"
+                        placeholder="Ex: Histórico Familiar"
+                      />
+                    </div>
+                    <div class="specialty-form__field">
+                      <label class="specialty-form__label">Tipo</label>
+                      <select
+                        class="specialty-form__select"
+                        [(ngModel)]="field.type"
+                        [name]="'fieldType' + i"
+                      >
+                        <option *ngFor="let type of fieldTypes" [value]="type.value">{{ type.label }}</option>
+                      </select>
+                    </div>
+                    <div class="specialty-form__field" style="max-width: 100px;">
+                      <label class="specialty-form__label">Ordem</label>
+                      <input
+                        type="number"
+                        class="specialty-form__input"
+                        [(ngModel)]="field.order"
+                        [name]="'fieldOrder' + i"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div class="field-card__actions">
+                    <button type="button" class="remove-btn" (click)="removeCustomField(i)" title="Remover campo">
+                      <app-icon name="trash" [size]="16" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="field-card__details">
+                  <div class="specialty-form__field">
+                    <label class="specialty-form__label">Descrição (Opcional)</label>
+                    <input
+                      type="text"
+                      class="specialty-form__input"
+                      [(ngModel)]="field.description"
+                      [name]="'fieldDescription' + i"
+                      placeholder="Instruções para o preenchimento deste campo"
+                    />
+                  </div>
+
+                  <div class="specialty-form__field" *ngIf="field.type !== 'checkbox' && field.type !== 'radio' && field.type !== 'select'">
+                     <label class="specialty-form__label">Valor Padrão (Opcional)</label>
+                     <input
+                       [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
+                       class="specialty-form__input"
+                       [(ngModel)]="field.defaultValue"
+                       [name]="'fieldDefaultValue' + i"
+                     />
+                  </div>
+                </div>
+
+                <div class="field-card__settings">
+                   <label class="specialty-form__checkbox-label">
+                      <input
+                        type="checkbox"
+                        class="specialty-form__checkbox"
+                        [(ngModel)]="field.required"
+                        [name]="'fieldRequired' + i"
+                      />
+                      <span>Obrigatório</span>
+                    </label>
+                </div>
+
+                <!-- Options for Select/Radio -->
+                <div class="field-options" *ngIf="field.type === 'select' || field.type === 'radio'">
+                  <label class="field-options__label">Opções:</label>
+                  <div class="field-options__input-wrapper">
+                    <input 
+                      #optionInput 
+                      type="text" 
+                      class="specialty-form__input specialty-form__input--sm" 
+                      placeholder="Adicionar opção e pressione Enter"
+                      (keyup.enter)="addOption(i, optionInput)"
+                    >
+                    <button type="button" class="add-option-btn" (click)="addOption(i, optionInput)">
+                      <app-icon name="plus" [size]="16" />
+                    </button>
+                  </div>
+                  <div class="field-options__list">
+                    <div class="option-tag" *ngFor="let option of field.options; let optIndex = index">
+                      <span>{{ option }}</span>
+                      <button type="button" class="option-tag__remove" (click)="removeOption(i, optIndex)">×</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="specialtyData.customFields.length === 0" class="empty-fields-state">
+              <p>Nenhum campo personalizado adicionado.</p>
+            </div>
+          </div>
+
           <div class="specialty-form__field">
             <label class="specialty-form__checkbox-label">
               <input

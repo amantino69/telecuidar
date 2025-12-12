@@ -4,12 +4,23 @@ import { delay, map } from 'rxjs/operators';
 
 export type SpecialtyStatus = 'active' | 'inactive';
 
+export interface CustomField {
+  name: string;
+  type: 'text' | 'number' | 'checkbox' | 'radio' | 'date' | 'select' | 'textarea';
+  options?: string[]; // For radio and select
+  required?: boolean;
+  description?: string;
+  defaultValue?: any;
+  order?: number;
+}
+
 export interface Specialty {
   id: string;
   name: string;
   description: string;
   status: SpecialtyStatus;
   createdAt: string;
+  customFields?: CustomField[];
 }
 
 export interface SpecialtiesFilter {
@@ -120,6 +131,8 @@ export class SpecialtiesService {
         const sorted = filtered.sort((a, b) => {
           const aValue = a[sort.field];
           const bValue = b[sort.field];
+
+          if (aValue === undefined || bValue === undefined) return 0;
           
           if (aValue < bValue) return sort.direction === 'asc' ? -1 : 1;
           if (aValue > bValue) return sort.direction === 'asc' ? 1 : -1;
