@@ -21,6 +21,10 @@ import { ScheduleBlocksComponent } from '@pages/user/admin/schedule-blocks';
 import { ReportsComponent } from '@pages/user/admin/reports/reports';
 import { AuditLogsComponent } from '@pages/user/admin/audit-logs/audit-logs';
 
+// Patient-specific components
+import { SchedulingComponent } from '@pages/user/patient/scheduling/scheduling';
+import { SchedulingSuccessComponent } from '@pages/user/patient/scheduling-success/scheduling-success';
+
 export const routes: Routes = [
   {
     path: '',
@@ -61,7 +65,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'notifications', component: NotificationsComponent },
       { path: 'profile', component: ProfileComponent },
-      // Future patient-specific routes will go here
+      { path: 'scheduling', component: SchedulingComponent },
+      { path: 'scheduling/success', component: SchedulingSuccessComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

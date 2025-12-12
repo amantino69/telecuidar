@@ -42,6 +42,8 @@ export type IconName =
   | 'eye'
   | 'eye-off';
 
+export type IconSize = 'sm' | 'md' | 'lg' | 'xl' | number;
+
 @Component({
   selector: 'app-icon',
   imports: [CommonModule],
@@ -50,6 +52,20 @@ export type IconName =
 })
 export class IconComponent {
   @Input() name!: IconName;
-  @Input() size: number = 24;
+  @Input() size: IconSize = 24;
   @Input() color?: string;
+
+  get pixelSize(): number {
+    if (typeof this.size === 'number') {
+      return this.size;
+    }
+    
+    switch (this.size) {
+      case 'sm': return 16;
+      case 'md': return 24;
+      case 'lg': return 32;
+      case 'xl': return 48;
+      default: return 24;
+    }
+  }
 }

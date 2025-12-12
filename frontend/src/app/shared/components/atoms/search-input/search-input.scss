@@ -55,18 +55,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--primary);
+    width: 32px;
+    height: 32px;
+    background: transparent;
     border: none;
     border-radius: 6px;
-    color: white;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      background: var(--primary-hover);
-      transform: scale(1.05);
+      background: var(--bg-tertiary);
+      color: var(--primary);
     }
 
     &:active:not(:disabled) {

@@ -45,6 +45,12 @@
           <span>Logs de Auditoria</span>
         </a>
       }
+      @if (user?.role === 'patient') {
+        <a [routerLink]="['/' + basePath, 'scheduling']" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="calendar" [size]="20" />
+          <span>Agendar Consulta</span>
+        </a>
+      }
       <a [routerLink]="['/' + basePath, 'profile']" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
         <app-icon name="user" [size]="20" />
         <span>Meu Perfil</span>
