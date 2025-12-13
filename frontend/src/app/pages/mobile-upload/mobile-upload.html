@@ -1,0 +1,100 @@
+<div class="mobile-upload-container">
+  <header class="header">
+    <div class="logo">
+      <app-icon name="smartphone" [size]="24" />
+      <span>TeleCuidar Upload</span>
+    </div>
+    <app-theme-toggle />
+  </header>
+
+  <main class="content">
+    <div class="upload-card">
+      <div class="status-message success" *ngIf="uploadSuccess">
+        <app-icon name="check-circle" [size]="48" />
+        <h3>Arquivo enviado com sucesso!</h3>
+        <p>Você pode enviar outro arquivo ou fechar esta janela.</p>
+        <app-button (click)="cancelUpload()" variant="outline">Enviar outro arquivo</app-button>
+      </div>
+
+      <div class="upload-form" *ngIf="!uploadSuccess">
+        <!-- Action Buttons (When no file selected) -->
+        <div class="action-buttons" *ngIf="!selectedFile">
+          <div class="instruction-header">
+            <h2>Enviar Anexo</h2>
+            <p>Tire uma foto ou escolha um arquivo</p>
+          </div>
+
+          <button class="action-btn" (click)="triggerCamera()">
+            <div class="icon-circle camera">
+              <app-icon name="camera" [size]="32" />
+            </div>
+            <span>Tirar Foto/Vídeo</span>
+          </button>
+
+          <button class="action-btn" (click)="triggerGallery()">
+            <div class="icon-circle gallery">
+              <app-icon name="image" [size]="32" />
+            </div>
+            <span>Galeria</span>
+          </button>
+
+          <button class="action-btn" (click)="triggerFiles()">
+            <div class="icon-circle files">
+              <app-icon name="file" [size]="32" />
+            </div>
+            <span>Arquivos</span>
+          </button>
+        </div>
+
+        <!-- Selected File Preview -->
+        <div class="selected-file" *ngIf="selectedFile">
+          <div class="file-info">
+            <app-icon name="file" [size]="32" />
+            <div class="details">
+              <span class="name">{{ selectedFile.name }}</span>
+              <span class="size">{{ formatBytes(selectedFile.size) }}</span>
+            </div>
+            <button class="remove-btn" (click)="cancelUpload()">
+              <app-icon name="close" [size]="20" />
+            </button>
+          </div>
+
+          <div class="input-group">
+            <label>Título do Arquivo</label>
+            <input type="text" [(ngModel)]="attachmentTitle" placeholder="Ex: Exame de Sangue">
+          </div>
+
+          <app-button [fullWidth]="true" size="lg" (click)="sendAttachment()" [disabled]="isUploading">
+            {{ isUploading ? 'Enviando...' : 'Enviar Arquivo' }}
+            <app-icon name="arrow-right" [size]="20" />
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Inputs -->
+    <input 
+      type="file" 
+      #cameraInput
+      accept="image/*,video/*"
+      capture="environment"
+      (change)="onFileSelected($event)" 
+      hidden 
+      multiple="false">
+
+    <input 
+      type="file" 
+      #galleryInput
+      accept="image/*,video/*"
+      (change)="onFileSelected($event)" 
+      hidden 
+      multiple="false">
+
+    <input 
+      type="file" 
+      #fileInput 
+      (change)="onFileSelected($event)" 
+      hidden 
+      multiple="false">
+  </main>
+</div>

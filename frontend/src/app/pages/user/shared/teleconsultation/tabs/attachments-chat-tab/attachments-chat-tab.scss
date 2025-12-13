@@ -1,0 +1,380 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background: var(--surface);
+
+  .messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+      opacity: 0.7;
+
+      p {
+        font-weight: $font-weight-semibold;
+        margin-top: $spacing-md;
+        margin-bottom: $spacing-xs;
+      }
+
+      span {
+        font-size: $font-size-sm;
+      }
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      
+      &.sent {
+        align-self: flex-end;
+        
+        .message-content {
+          background: var(--primary-50);
+          border-bottom-right-radius: $radius-sm;
+        }
+      }
+
+      &.received {
+        align-self: flex-start;
+
+        .message-content {
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-bottom-left-radius: $radius-sm;
+        }
+      }
+
+      .message-content {
+        padding: $spacing-md;
+        border-radius: $radius-lg;
+        
+        .message-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: $spacing-sm;
+          font-size: $font-size-xs;
+          color: var(--text-secondary);
+        }
+
+        .attachment-card {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+          padding: $spacing-sm;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: $radius-lg;
+          margin-top: $spacing-xs;
+          max-width: 100%;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+          }
+
+          .attachment-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: $radius-md;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--neutral-100);
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .attachment-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--neutral-100);
+            border-radius: $radius-md;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+          }
+
+          .attachment-info {
+            h4 {
+              margin: 0;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-semibold;
+            }
+
+            span {
+              font-size: $font-size-xs;
+              color: var(--text-secondary);
+            }
+          }
+
+          .download-btn {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: var(--primary-600);
+            cursor: pointer;
+            padding: $spacing-xs;
+            border-radius: $radius-sm;
+            
+            &:hover {
+              background: var(--primary-50);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .upload-area {
+    padding: $spacing-md;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    transition: all $transition-fast;
+
+    &.drag-over {
+      background: var(--primary-50);
+      border-top-color: var(--primary-500);
+    }
+
+    .upload-form {
+      .selected-file-preview {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-sm;
+        background: var(--background);
+        border-radius: $radius-md;
+        margin-bottom: $spacing-sm;
+
+        .file-details {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          font-size: $font-size-xs;
+          overflow: hidden;
+
+          .filename {
+            font-weight: $font-weight-medium;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .filesize {
+            color: var(--text-secondary);
+          }
+        }
+
+        .remove-btn {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          
+          &:hover {
+            color: var(--red-500);
+          }
+        }
+      }
+
+      .input-group {
+        display: flex;
+        gap: $spacing-sm;
+
+        input {
+          flex: 1;
+          padding: $spacing-sm $spacing-md;
+          border: 1px solid var(--border);
+          border-radius: $radius-md;
+          font-size: $font-size-sm;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-500);
+          }
+        }
+      }
+    }
+
+    .upload-actions {
+      .mobile-actions {
+        display: flex;
+        justify-content: space-around;
+        gap: $spacing-sm;
+
+        .action-btn {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: $spacing-xs;
+          padding: $spacing-sm;
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: $radius-lg;
+          cursor: pointer;
+          color: var(--text-secondary);
+
+          &:hover {
+            background: var(--neutral-100);
+            color: var(--primary-600);
+          }
+
+          span {
+            font-size: $font-size-xs;
+          }
+        }
+      }
+
+      .desktop-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $spacing-sm;
+
+        .drag-hint {
+          font-size: $font-size-sm;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+
+        .desktop-buttons {
+          display: flex;
+          gap: $spacing-sm;
+          width: 100%;
+
+          app-button {
+            flex: 1;
+          }
+
+          .qr-btn {
+            padding: $spacing-md $spacing-lg;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: $spacing-xs;
+            background: var(--background);
+            border: 2px solid var(--border);
+            border-radius: $radius-md;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-size: $font-size-base;
+            font-weight: $font-weight-medium;
+            font-family: $font-primary;
+
+            .tooltip {
+              display: none;
+            }
+
+            @include mobile {
+               padding: $spacing-sm;
+               border-width: 1px;
+               .tooltip { display: none; }
+            }
+
+            // On Desktop, show text to match size
+            @media (min-width: 769px) {
+               width: auto;
+               .tooltip { display: block; }
+            }
+
+            &:hover {
+              background: var(--neutral-100);
+              color: var(--primary-600);
+              border-color: var(--primary-200);
+            }
+          }
+        }
+      }
+    }
+
+    .qr-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: $spacing-lg;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      z-index: 10;
+
+      .qr-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $spacing-md;
+        text-align: center;
+
+        .qr-header {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          h3 {
+            margin: 0;
+            font-size: $font-size-lg;
+          }
+
+          button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+          }
+        }
+
+        p {
+          font-size: $font-size-sm;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+
+        .regenerate-btn {
+          display: flex;
+          align-items: center;
+          gap: $spacing-xs;
+          background: none;
+          border: none;
+          color: var(--primary-600);
+          font-size: $font-size-xs;
+          font-weight: $font-weight-medium;
+          cursor: pointer;
+          padding: $spacing-xs $spacing-sm;
+          border-radius: $radius-md;
+          transition: background $transition-fast;
+
+          &:hover {
+            background: var(--primary-50);
+          }
+        }
+      }
+    }
+  }
+}

@@ -59,40 +59,75 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 80px; // Fixed height for calculation
+    height: 80px; // Fixed height for desktop
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 $spacing-2xl; // Adjusted padding
-    display: flex; // Added flex to center vertically
+    padding: 0 $spacing-2xl;
+    display: flex;
     align-items: center;
     transition: transform $transition-base;
-    z-index: 40; // Increased Z-Index to be above sidebar
+    z-index: 40;
     color: var(--text-primary);
+
+    @include mobile {
+      height: auto; // Auto height for mobile to fit content
+      min-height: 80px;
+      padding: $spacing-md; // Reduced padding
+      flex-direction: column; // Stack content vertically
+      justify-content: center;
+    }
 
     &.hidden {
       transform: translateY(-100%);
     }
 
     .header-content {
-      width: 100%; // Ensure full width
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
       max-width: $breakpoint-desktop-hd;
       margin: 0 auto;
 
+      @include mobile {
+        flex-direction: column;
+        gap: $spacing-md;
+        width: 100%;
+      }
+
       .info-section {
+        @include mobile {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-xs;
+        }
+
         .main-info {
           display: flex;
           align-items: center;
           gap: $spacing-md;
           margin-bottom: $spacing-xs;
 
+          @include mobile {
+            margin-bottom: 0;
+            justify-content: space-between;
+            width: 100%;
+          }
+
           h2 {
             margin: 0;
             font-size: $font-size-xl;
             font-weight: $font-weight-semibold;
             font-family: $font-heading;
+
+            @include mobile {
+              font-size: $font-size-lg;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 200px;
+            }
           }
 
           .specialty-badge {
@@ -103,6 +138,7 @@
             font-size: $font-size-xs;
             font-weight: $font-weight-semibold;
             text-transform: uppercase;
+            white-space: nowrap;
           }
         }
 
@@ -111,6 +147,12 @@
           gap: $spacing-lg;
           color: var(--text-secondary);
           font-size: $font-size-sm;
+
+          @include mobile {
+            gap: $spacing-md;
+            font-size: $font-size-xs;
+            justify-content: flex-start;
+          }
 
           span {
             display: flex;
@@ -124,6 +166,13 @@
         display: flex;
         align-items: center;
         gap: $spacing-md;
+
+        @include mobile {
+          width: 100%;
+          justify-content: space-between; // Spread controls on mobile
+          padding-top: $spacing-sm;
+          border-top: 1px solid var(--border); // Separator for clarity
+        }
       }
     }
   }
@@ -146,6 +195,13 @@
     box-shadow: $shadow-lg;
     transition: all $transition-fast;
     z-index: 10;
+
+    @include mobile {
+      bottom: $spacing-lg;
+      right: $spacing-lg;
+      width: 48px;
+      height: 48px;
+    }
 
     &:hover {
       transform: scale(1.05);

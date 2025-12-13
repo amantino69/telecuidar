@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+  import { Component, OnInit, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IconComponent } from '@shared/components/atoms/icon/icon';
 import { ButtonComponent } from '@shared/components/atoms/button/button';
@@ -24,25 +24,42 @@ export class TeleconsultationComponent implements OnInit {
   isSidebarOpen = false;
   isSidebarFull = false;
   activeTab: string = '';
+  isMobile = false;
 
   // Tabs configuration
-  professionalTabs = ['A', 'B', 'C'];
-  patientTabs = ['D', 'E', 'F'];
+  professionalTabs = ['Biométricos', 'Chat Anexos', 'Prontuário', 'Exames'];
+  patientTabs = ['Biométricos', 'Chat Anexos'];
   currentTabs: string[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private appointmentsService: AppointmentsService
+    private appointmentsService: AppointmentsService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
+    this.checkScreenSize();
     this.appointmentId = this.route.snapshot.paramMap.get('id');
     this.determineUserRole();
     this.setupTabs();
     
     if (this.appointmentId) {
       this.loadAppointment(this.appointmentId);
+    }
+  }
+
+  @HostListener('window:resize', [])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = window.innerWidth < 768;
+      if (this.isMobile && this.isSidebarOpen) {
+        this.isSidebarFull = true;
+      }
     }
   }
 
@@ -78,13 +95,20 @@ export class TeleconsultationComponent implements OnInit {
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
-    if (!this.isSidebarOpen) {
-        this.isSidebarFull = false; // Reset full mode when closing
+    if (this.isSidebarOpen) {
+      // Force full screen on mobile when opening
+      if (this.isMobile) {
+        this.isSidebarFull = true;
+      }
+    } else {
+      this.isSidebarFull = false; // Reset full mode when closing
     }
   }
 
   toggleSidebarMode() {
-    this.isSidebarFull = !this.isSidebarFull;
+    if (!this.isMobile) {
+      this.isSidebarFull = !this.isSidebarFull;
+    }
   }
 
   setActiveTab(tab: string) {

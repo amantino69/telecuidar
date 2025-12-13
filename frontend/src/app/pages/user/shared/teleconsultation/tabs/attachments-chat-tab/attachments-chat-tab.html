@@ -1,0 +1,141 @@
+<div class="chat-container">
+  <!-- Messages Area -->
+  <div class="messages-area" #chatContainer>
+    <div class="empty-state" *ngIf="messages.length === 0">
+      <app-icon name="upload-cloud" [size]="48" />
+      <p>Nenhum anexo compartilhado ainda.</p>
+      <span>Envie exames, laudos ou imagens.</span>
+    </div>
+
+    <div 
+      class="message" 
+      *ngFor="let msg of messages"
+      [class.sent]="(userRole === 'professional' && msg.senderRole === 'professional') || (userRole === 'patient' && msg.senderRole === 'patient')"
+      [class.received]="(userRole === 'professional' && msg.senderRole === 'patient') || (userRole === 'patient' && msg.senderRole === 'professional')">
+      
+      <div class="message-content">
+        <div class="message-header">
+          <span class="sender">{{ msg.senderRole === 'professional' ? 'Profissional' : 'Paciente' }}</span>
+          <span class="time">{{ msg.timestamp | date:'HH:mm' }}</span>
+        </div>
+        
+        <div class="attachment-card" (click)="openPreview(msg)">
+          <div class="attachment-preview" *ngIf="isImage(msg.fileType)">
+            <img [src]="msg.fileUrl" [alt]="msg.title">
+          </div>
+          <div class="attachment-icon" *ngIf="!isImage(msg.fileType)">
+            <app-icon name="file" [size]="32" />
+          </div>
+          
+          <div class="attachment-info">
+            <h4>{{ msg.title }}</h4>
+            <span>{{ msg.fileName }} ({{ formatBytes(msg.fileSize) }})</span>
+          </div>
+          
+          <button class="download-btn" (click)="$event.stopPropagation(); downloadFile(msg)" title="Baixar">
+            <app-icon name="download" [size]="20" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-media-preview-modal
+    [isOpen]="previewModalOpen"
+    [url]="previewUrl"
+    [title]="previewTitle"
+    [type]="previewType"
+    (close)="closePreview()"
+    (download)="downloadPreview()">
+  </app-media-preview-modal>
+
+  <!-- Upload Area -->
+  <div class="upload-area" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+    
+    <!-- Upload Form (When file selected) -->
+    <div class="upload-form" *ngIf="selectedFile">
+      <div class="selected-file-preview">
+        <app-icon name="file" [size]="24" />
+        <div class="file-details">
+          <span class="filename">{{ selectedFile.name }}</span>
+          <span class="filesize">{{ formatBytes(selectedFile.size) }}</span>
+        </div>
+        <button class="remove-btn" (click)="cancelUpload()">
+          <app-icon name="close" [size]="16" />
+        </button>
+      </div>
+      
+      <div class="input-group">
+        <input type="text" [(ngModel)]="attachmentTitle" placeholder="Título do anexo (Opcional)">
+        <app-button (click)="sendAttachment()" [disabled]="isUploading">
+          {{ isUploading ? 'Enviando...' : 'Enviar Anexo' }}
+          <app-icon name="arrow-right" [size]="16" />
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Initial Actions (No file selected) -->
+    <div class="upload-actions" *ngIf="!selectedFile">
+      <input 
+        type="file" 
+        #fileInput 
+        (change)="onFileSelected($event)" 
+        hidden 
+        multiple="false">
+      
+      <!-- Mobile View -->
+      <div class="mobile-actions" *ngIf="isMobile">
+        <button class="action-btn" (click)="triggerFileInput()">
+          <app-icon name="image" [size]="24" />
+          <span>Galeria</span>
+        </button>
+        <button class="action-btn" (click)="fileInput.click()">
+          <app-icon name="camera" [size]="24" />
+          <span>Câmera</span>
+        </button>
+        <button class="action-btn" (click)="fileInput.click()">
+          <app-icon name="file" [size]="24" />
+          <span>Arquivo</span>
+        </button>
+      </div>
+
+      <!-- Desktop View -->
+      <div class="desktop-actions" *ngIf="!isMobile">
+        <p class="drag-hint">Arraste arquivos aqui ou</p>
+        <div class="desktop-buttons">
+          <app-button variant="outline" (click)="triggerFileInput()">
+            <app-icon name="upload-cloud" [size]="20" />
+            Selecionar Arquivo
+          </app-button>
+          
+          <button class="qr-btn" (click)="toggleQrCode()" title="Enviar pelo celular">
+            <app-icon name="smartphone" [size]="20" />
+            <span class="tooltip">Usar Celular</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Overlay -->
+    <div class="qr-overlay" *ngIf="showQrCode && !isMobile">
+      <div class="qr-content">
+        <div class="qr-header">
+          <h3>Upload via Celular</h3>
+          <button (click)="toggleQrCode()"><app-icon name="close" [size]="20" /></button>
+        </div>
+        <div class="qr-code-placeholder">
+          <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="QR Code para upload mobile">
+          <div *ngIf="!qrCodeDataUrl" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+            <app-icon name="refresh-cw" [size]="40" class="spin" />
+          </div>
+        </div>
+        <p>Escaneie para enviar arquivos do seu celular diretamente para esta consulta.</p>
+        <button class="regenerate-btn" (click)="regenerateQrCode()">
+          <app-icon name="refresh-cw" [size]="16" />
+          <span>Gerar novo código</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

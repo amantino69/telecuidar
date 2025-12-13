@@ -6,7 +6,7 @@
   top: 0;
   right: 0;
   height: 100%;
-  width: 350px;
+  width: 450px;
   background: var(--surface);
   border-left: 1px solid var(--border);
   transform: translateX(100%);
@@ -28,6 +28,12 @@
 
   &.full-screen {
     width: 100%;
+    
+    @include mobile {
+      top: 0 !important; // Override header offset on mobile
+      height: 100% !important;
+      z-index: 50; // Ensure it covers everything
+    }
   }
 
   .sidebar-header {
@@ -40,6 +46,13 @@
   .sidebar-actions {
     display: flex;
     gap: $spacing-sm;
+
+    // Hide resize button on mobile since it's always full screen
+    .resize-btn {
+      @include mobile {
+        display: none;
+      }
+    }
   }
 
   .sidebar-tabs {

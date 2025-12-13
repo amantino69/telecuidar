@@ -28,7 +28,7 @@ import { AuditLogsComponent } from '@pages/user/admin/audit-logs/audit-logs';
 import { SchedulingComponent } from '@pages/user/patient/scheduling/scheduling';
 import { SchedulingSuccessComponent } from '@pages/user/patient/scheduling-success/scheduling-success';
 import { PreConsultationComponent } from '@pages/user/patient/pre-consultation/pre-consultation';
-import { MobileUploadComponent } from '@pages/user/patient/mobile-upload/mobile-upload';
+import { MobileUploadComponent } from '@pages/mobile-upload/mobile-upload';
 
 import { TeleconsultationComponent } from '@pages/user/shared/teleconsultation/teleconsultation';
 
@@ -49,7 +49,7 @@ export const routes: Routes = [
     ]
   },
   {
-    path: 'mobile-upload/:token',
+    path: 'mobile-upload',
     component: MobileUploadComponent
   },
   {

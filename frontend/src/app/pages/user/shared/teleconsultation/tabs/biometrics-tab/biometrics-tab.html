@@ -1,0 +1,137 @@
+<div class="biometrics-container">
+  <div class="header">
+    <h3>Dados Biométricos</h3>
+    <div class="status" *ngIf="lastUpdated">
+      <span class="updated-at">Atualizado às {{ lastUpdated | date:'HH:mm:ss' }}</span>
+      <span class="saving-indicator" *ngIf="isSaving">Salvando...</span>
+    </div>
+  </div>
+
+  <p class="description" *ngIf="!isProfessional">
+    Insira os dados coletados pelos dispositivos. Eles serão atualizados automaticamente para o médico.
+  </p>
+
+  <p class="description" *ngIf="isProfessional">
+    Monitoramento em tempo real dos dados inseridos pelo paciente.
+  </p>
+
+  <form [formGroup]="biometricsForm" class="biometrics-grid">
+    <!-- Heart Rate -->
+    <div class="metric-card">
+      <div class="metric-icon heart">
+        <app-icon name="heart" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Frequência Cardíaca</label>
+        <div class="input-group">
+          <input type="number" formControlName="heartRate" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">bpm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blood Pressure -->
+    <div class="metric-card double">
+      <div class="metric-icon pressure">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Pressão Arterial</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="bloodPressureSystolic" placeholder="Sist." [readonly]="isProfessional">
+            <span class="unit">mmHg</span>
+          </div>
+          <span class="separator">/</span>
+          <div class="input-group">
+            <input type="number" formControlName="bloodPressureDiastolic" placeholder="Diast." [readonly]="isProfessional">
+            <span class="unit">mmHg</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Oxygen Saturation -->
+    <div class="metric-card">
+      <div class="metric-icon oxygen">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Saturação O₂</label>
+        <div class="input-group">
+          <input type="number" formControlName="oxygenSaturation" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Temperature -->
+    <div class="metric-card">
+      <div class="metric-icon temp">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Temperatura</label>
+        <div class="input-group">
+          <input type="number" formControlName="temperature" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">°C</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Respiratory Rate -->
+    <div class="metric-card">
+      <div class="metric-icon lungs">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Freq. Respiratória</label>
+        <div class="input-group">
+          <input type="number" formControlName="respiratoryRate" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">rpm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Glucose -->
+    <div class="metric-card">
+      <div class="metric-icon glucose">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Glicemia</label>
+        <div class="input-group">
+          <input type="number" formControlName="glucose" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">mg/dL</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weight & Height -->
+    <div class="metric-card">
+      <div class="metric-icon body">
+        <app-icon name="user" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Peso</label>
+        <div class="input-group">
+          <input type="number" formControlName="weight" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon body">
+        <app-icon name="user" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Altura</label>
+        <div class="input-group">
+          <input type="number" formControlName="height" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

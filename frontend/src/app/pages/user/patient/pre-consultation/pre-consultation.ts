@@ -204,7 +204,7 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
   // Mobile Upload Methods
   openMobileUpload() {
     this.mobileUploadToken = Math.random().toString(36).substring(7); // Generate new token
-    this.mobileUploadUrl = `${window.location.origin}/mobile-upload/${this.mobileUploadToken}`;
+    this.mobileUploadUrl = `${window.location.origin}/mobile-upload?token=${this.mobileUploadToken}`;
     this.isQrCodeModalOpen = true;
     this.startPolling();
   }
@@ -212,7 +212,7 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
   regenerateQrCode() {
     this.stopPolling(); // Stop previous poll
     this.mobileUploadToken = Math.random().toString(36).substring(7);
-    this.mobileUploadUrl = `${window.location.origin}/mobile-upload/${this.mobileUploadToken}`;
+    this.mobileUploadUrl = `${window.location.origin}/mobile-upload?token=${this.mobileUploadToken}`;
     this.startPolling(); // Start new poll
   }
 
