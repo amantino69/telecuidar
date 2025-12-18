@@ -5,7 +5,7 @@ import { AuditActionType } from '@app/core/services/audit-logs.service';
   name: 'auditAction'
 })
 export class AuditActionPipe implements PipeTransform {
-  private actionMap: Record<AuditActionType, string> = {
+  private actionMap: Record<string, string> = {
     'create': 'Criar',
     'update': 'Atualizar',
     'delete': 'Excluir',
@@ -15,7 +15,7 @@ export class AuditActionPipe implements PipeTransform {
     'export': 'Exportar'
   };
 
-  transform(value: AuditActionType): string {
+  transform(value: string): string {
     return this.actionMap[value] || value;
   }
 }

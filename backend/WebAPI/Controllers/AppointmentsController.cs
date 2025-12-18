@@ -2,6 +2,8 @@ using Application.DTOs.Appointments;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using WebAPI.Extensions;
 
 namespace WebAPI.Controllers;
 
@@ -11,10 +13,18 @@ namespace WebAPI.Controllers;
 public class AppointmentsController : ControllerBase
 {
     private readonly IAppointmentService _appointmentService;
+    private readonly IAuditLogService _auditLogService;
 
-    public AppointmentsController(IAppointmentService appointmentService)
+    public AppointmentsController(IAppointmentService appointmentService, IAuditLogService auditLogService)
     {
         _appointmentService = appointmentService;
+        _auditLogService = auditLogService;
+    }
+    
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
     }
 
     [HttpGet]
@@ -46,6 +56,19 @@ public class AppointmentsController : ControllerBase
         try
         {
             var appointment = await _appointmentService.CreateAppointmentAsync(dto);
+            
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "create",
+                "Appointment",
+                appointment.Id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(new { appointment.PatientId, appointment.ProfessionalId, appointment.Date, appointment.Time, appointment.Status }),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+            
             return CreatedAtAction(nameof(GetAppointment), new { id = appointment.Id }, appointment);
         }
         catch (InvalidOperationException ex)
@@ -57,9 +80,26 @@ public class AppointmentsController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<ActionResult<AppointmentDto>> UpdateAppointment(Guid id, [FromBody] UpdateAppointmentDto dto)
     {
-        var appointment = await _appointmentService.UpdateAppointmentAsync(id, dto);
-        if (appointment == null)
+        var oldAppointment = await _appointmentService.GetAppointmentByIdAsync(id);
+        if (oldAppointment == null)
             return NotFound();
+        
+        var appointment = await _appointmentService.UpdateAppointmentAsync(id, dto);
+        
+        // Audit log with differences
+        var oldValues = HttpContextExtensions.SerializeToJson(new { oldAppointment.Date, oldAppointment.Time, oldAppointment.Status, oldAppointment.Observation });
+        var newValues = HttpContextExtensions.SerializeToJson(new { appointment.Date, appointment.Time, appointment.Status, appointment.Observation });
+        
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "update",
+            "Appointment",
+            id.ToString(),
+            oldValues,
+            newValues,
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
 
         return Ok(appointment);
     }
@@ -67,9 +107,23 @@ public class AppointmentsController : ControllerBase
     [HttpPost("{id}/cancel")]
     public async Task<ActionResult> CancelAppointment(Guid id)
     {
-        var result = await _appointmentService.CancelAppointmentAsync(id);
-        if (!result)
+        var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
+        if (appointment == null)
             return NotFound();
+        
+        var result = await _appointmentService.CancelAppointmentAsync(id);
+        
+        // Audit log
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "update",
+            "Appointment",
+            id.ToString(),
+            HttpContextExtensions.SerializeToJson(new { Status = appointment.Status }),
+            HttpContextExtensions.SerializeToJson(new { Status = "CANCELLED" }),
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
 
         return Ok(new { message = "Appointment cancelled successfully" });
     }
@@ -77,9 +131,23 @@ public class AppointmentsController : ControllerBase
     [HttpPost("{id}/finish")]
     public async Task<ActionResult> FinishAppointment(Guid id)
     {
-        var result = await _appointmentService.FinishAppointmentAsync(id);
-        if (!result)
+        var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
+        if (appointment == null)
             return NotFound();
+        
+        var result = await _appointmentService.FinishAppointmentAsync(id);
+        
+        // Audit log
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "update",
+            "Appointment",
+            id.ToString(),
+            HttpContextExtensions.SerializeToJson(new { Status = appointment.Status }),
+            HttpContextExtensions.SerializeToJson(new { Status = "FINISHED" }),
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
 
         return Ok(new { message = "Appointment finished successfully" });
     }

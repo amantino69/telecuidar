@@ -19,6 +19,7 @@ import { AuditActionPipe } from '@app/core/pipes/audit-action.pipe';
 export class AuditLogsComponent {
   logs: AuditLog[] = [];
   isLoading = false;
+  selectedLog: AuditLog | null = null;
 
   // Filtros
   searchTerm = '';
@@ -34,7 +35,7 @@ export class AuditLogsComponent {
   totalItems = 0;
 
   // Ordenação
-  sortField: keyof AuditLog = 'timestamp';
+  sortField: keyof AuditLog = 'createdAt';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Dropdowns
@@ -55,12 +56,13 @@ export class AuditLogsComponent {
 
   entityTypeOptions: FilterOption[] = [
     { value: 'all', label: 'Todos os Tipos' },
-    { value: 'user', label: 'Usuário' },
-    { value: 'specialty', label: 'Especialidade' },
-    { value: 'appointment', label: 'Consulta' },
-    { value: 'PATIENT', label: 'Paciente' },
-    { value: 'report', label: 'Relatório' },
-    { value: 'auth', label: 'Autenticação' }
+    { value: 'User', label: 'Usuário' },
+    { value: 'Specialty', label: 'Especialidade' },
+    { value: 'Appointment', label: 'Consulta' },
+    { value: 'Schedule', label: 'Agenda' },
+    { value: 'Notification', label: 'Notificação' },
+    { value: 'Attachment', label: 'Anexo' },
+    { value: 'Invite', label: 'Convite' }
   ];
 
   private auditLogsService = inject(AuditLogsService);
@@ -179,8 +181,8 @@ export class AuditLogsComponent {
     return this.sortDirection === 'asc' ? 'chevron-up' : 'chevron-down';
   }
 
-  getActionClass(action: AuditActionType): string {
-    const classes: Record<AuditActionType, string> = {
+  getActionClass(action: string): string {
+    const classes: Record<string, string> = {
       'create': 'action-badge--create',
       'update': 'action-badge--update',
       'delete': 'action-badge--delete',
@@ -190,5 +192,22 @@ export class AuditLogsComponent {
       'export': 'action-badge--export'
     };
     return classes[action] || '';
+  }
+
+  viewDetails(log: AuditLog): void {
+    this.selectedLog = log;
+  }
+
+  closeDetails(): void {
+    this.selectedLog = null;
+  }
+
+  formatJson(jsonString: string): string {
+    try {
+      const parsed = JSON.parse(jsonString);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      return jsonString;
+    }
   }
 }

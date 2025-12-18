@@ -2,6 +2,8 @@ using Application.DTOs.Specialties;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using WebAPI.Extensions;
 
 namespace WebAPI.Controllers;
 
@@ -11,10 +13,18 @@ namespace WebAPI.Controllers;
 public class SpecialtiesController : ControllerBase
 {
     private readonly ISpecialtyService _specialtyService;
+    private readonly IAuditLogService _auditLogService;
 
-    public SpecialtiesController(ISpecialtyService specialtyService)
+    public SpecialtiesController(ISpecialtyService specialtyService, IAuditLogService auditLogService)
     {
         _specialtyService = specialtyService;
+        _auditLogService = auditLogService;
+    }
+    
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
     }
 
     [HttpGet]
@@ -60,6 +70,19 @@ public class SpecialtiesController : ControllerBase
         try
         {
             var specialty = await _specialtyService.CreateSpecialtyAsync(dto);
+            
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "create",
+                "Specialty",
+                specialty.Id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(new { specialty.Name, specialty.Description, specialty.Status }),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+            
             return CreatedAtAction(nameof(GetSpecialty), new { id = specialty.Id }, specialty);
         }
         catch (Exception ex)
@@ -74,11 +97,29 @@ public class SpecialtiesController : ControllerBase
     {
         try
         {
-            var specialty = await _specialtyService.UpdateSpecialtyAsync(id, dto);
-            if (specialty == null)
+            var oldSpecialty = await _specialtyService.GetSpecialtyByIdAsync(id);
+            if (oldSpecialty == null)
             {
                 return NotFound(new { message = "Specialty not found" });
             }
+            
+            var specialty = await _specialtyService.UpdateSpecialtyAsync(id, dto);
+            
+            // Audit log with differences
+            var oldValues = HttpContextExtensions.SerializeToJson(new { oldSpecialty.Name, oldSpecialty.Description, oldSpecialty.Status });
+            var newValues = HttpContextExtensions.SerializeToJson(new { specialty.Name, specialty.Description, specialty.Status });
+            
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "update",
+                "Specialty",
+                id.ToString(),
+                oldValues,
+                newValues,
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+            
             return Ok(specialty);
         }
         catch (Exception ex)
@@ -93,11 +134,26 @@ public class SpecialtiesController : ControllerBase
     {
         try
         {
-            var result = await _specialtyService.DeleteSpecialtyAsync(id);
-            if (!result)
+            var specialty = await _specialtyService.GetSpecialtyByIdAsync(id);
+            if (specialty == null)
             {
                 return NotFound(new { message = "Specialty not found" });
             }
+            
+            var result = await _specialtyService.DeleteSpecialtyAsync(id);
+            
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "delete",
+                "Specialty",
+                id.ToString(),
+                HttpContextExtensions.SerializeToJson(new { specialty.Name, specialty.Description }),
+                null,
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+            
             return NoContent();
         }
         catch (Exception ex)

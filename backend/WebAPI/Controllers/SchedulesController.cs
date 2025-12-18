@@ -2,6 +2,8 @@ using Application.DTOs.Schedules;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using WebAPI.Extensions;
 
 namespace WebAPI.Controllers;
 
@@ -11,10 +13,18 @@ namespace WebAPI.Controllers;
 public class SchedulesController : ControllerBase
 {
     private readonly IScheduleService _scheduleService;
+    private readonly IAuditLogService _auditLogService;
 
-    public SchedulesController(IScheduleService scheduleService)
+    public SchedulesController(IScheduleService scheduleService, IAuditLogService auditLogService)
     {
         _scheduleService = scheduleService;
+        _auditLogService = auditLogService;
+    }
+    
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
     }
 
     [HttpGet]
@@ -74,6 +84,19 @@ public class SchedulesController : ControllerBase
     public async Task<ActionResult<ScheduleDto>> CreateSchedule([FromBody] CreateScheduleDto dto)
     {
         var schedule = await _scheduleService.CreateScheduleAsync(dto);
+        
+        // Audit log
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "create",
+            "Schedule",
+            schedule.Id.ToString(),
+            null,
+            HttpContextExtensions.SerializeToJson(new { schedule.ProfessionalId, schedule.ValidityStartDate, schedule.ValidityEndDate, schedule.Status }),
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
+        
         return CreatedAtAction(nameof(GetSchedule), new { id = schedule.Id }, schedule);
     }
 
@@ -82,9 +105,26 @@ public class SchedulesController : ControllerBase
     [Authorize(Roles = "ADMIN,PROFESSIONAL")]
     public async Task<ActionResult<ScheduleDto>> UpdateSchedule(Guid id, [FromBody] UpdateScheduleDto dto)
     {
-        var schedule = await _scheduleService.UpdateScheduleAsync(id, dto);
-        if (schedule == null)
+        var oldSchedule = await _scheduleService.GetScheduleByIdAsync(id);
+        if (oldSchedule == null)
             return NotFound();
+        
+        var schedule = await _scheduleService.UpdateScheduleAsync(id, dto);
+        
+        // Audit log with differences
+        var oldValues = HttpContextExtensions.SerializeToJson(new { oldSchedule.ValidityStartDate, oldSchedule.ValidityEndDate, oldSchedule.Status });
+        var newValues = HttpContextExtensions.SerializeToJson(new { schedule.ValidityStartDate, schedule.ValidityEndDate, schedule.Status });
+        
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "update",
+            "Schedule",
+            id.ToString(),
+            oldValues,
+            newValues,
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
 
         return Ok(schedule);
     }
@@ -93,9 +133,23 @@ public class SchedulesController : ControllerBase
     [Authorize(Roles = "ADMIN,PROFESSIONAL")]
     public async Task<ActionResult> DeleteSchedule(Guid id)
     {
-        var result = await _scheduleService.DeleteScheduleAsync(id);
-        if (!result)
+        var schedule = await _scheduleService.GetScheduleByIdAsync(id);
+        if (schedule == null)
             return NotFound();
+        
+        var result = await _scheduleService.DeleteScheduleAsync(id);
+        
+        // Audit log
+        await _auditLogService.CreateAuditLogAsync(
+            GetCurrentUserId(),
+            "delete",
+            "Schedule",
+            id.ToString(),
+            HttpContextExtensions.SerializeToJson(new { schedule.ProfessionalId, schedule.ValidityStartDate, schedule.ValidityEndDate, schedule.Status }),
+            null,
+            HttpContext.GetIpAddress(),
+            HttpContext.GetUserAgent()
+        );
 
         return Ok(new { message = "Schedule deleted successfully" });
     }

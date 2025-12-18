@@ -1,6 +1,7 @@
 using Application.DTOs.Auth;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Extensions;
 
 namespace WebAPI.Controllers;
 
@@ -9,10 +10,12 @@ namespace WebAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IAuditLogService _auditLogService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IAuditLogService auditLogService)
     {
         _authService = authService;
+        _auditLogService = auditLogService;
     }
 
     [HttpPost("register")]
@@ -57,6 +60,18 @@ public class AuthController : ControllerBase
                 },
                 Message = "User registered successfully. Please verify your email."
             };
+
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                user.Id,
+                "create",
+                "User",
+                user.Id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(new { user.Email, user.Name, user.LastName, user.Role }),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
 
             return Ok(response);
         }
@@ -105,6 +120,18 @@ public class AuthController : ControllerBase
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
+
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                user.Id,
+                "login",
+                "User",
+                user.Id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(new { user.Email, LoginTime = DateTime.UtcNow }),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
 
             return Ok(response);
         }

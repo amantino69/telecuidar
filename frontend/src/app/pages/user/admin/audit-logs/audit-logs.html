@@ -93,7 +93,7 @@
             <th>
               <app-table-header
                 label="Data/Hora"
-                field="timestamp"
+                field="createdAt"
                 [sortable]="true"
                 [currentSortField]="sortField"
                 [currentSortDirection]="sortDirection"
@@ -122,7 +122,7 @@
             </th>
             <th>
               <app-table-header
-                label="Tipo"
+                label="Entidade"
                 field="entityType"
                 [sortable]="true"
                 [currentSortField]="sortField"
@@ -130,17 +130,7 @@
                 (sort)="onSort($event)"
               />
             </th>
-            <th>Descrição</th>
-            <th>
-              <app-table-header
-                label="IP"
-                field="ipAddress"
-                [sortable]="true"
-                [currentSortField]="sortField"
-                [currentSortDirection]="sortDirection"
-                (sort)="onSort($event)"
-              />
-            </th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -148,14 +138,13 @@
             <tr>
               <td>
                 <div class="audit-logs__timestamp">
-                  {{ log.timestamp | date:'dd/MM/yyyy' }}<br>
-                  <span class="audit-logs__time">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                  {{ log.createdAt | date:'dd/MM/yyyy' }}<br>
+                  <span class="audit-logs__time">{{ log.createdAt | date:'HH:mm:ss' }}</span>
                 </div>
               </td>
               <td>
                 <div class="audit-logs__user">
-                  <strong>{{ log.userName }}</strong>
-                  <span class="audit-logs__role">{{ log.userrole }}</span>
+                  <strong>{{ log.userName || 'Sistema' }}</strong>
                 </div>
               </td>
               <td>
@@ -166,9 +155,15 @@
               <td>
                 <span class="audit-logs__entity-type">{{ log.entityType }}</span>
               </td>
-              <td>{{ log.description }}</td>
               <td>
-                <code class="audit-logs__ip">{{ log.ipAddress }}</code>
+                <app-button
+                  variant="secondary"
+                  size="sm"
+                  (click)="viewDetails(log)"
+                >
+                  <app-icon name="eye" [size]="16" />
+                  Visualizar
+                </app-button>
               </td>
             </tr>
           }
@@ -186,5 +181,113 @@
       (pageChange)="onPageChange($event)"
       (pageSizeChange)="onPageSizeChange($event)"
     />
+  }
+
+  <!-- Modal de Detalhes -->
+  @if (selectedLog) {
+    <div class="audit-logs__modal-overlay" (click)="closeDetails()">
+      <div class="audit-logs__modal" (click)="$event.stopPropagation()">
+        <div class="audit-logs__modal-header">
+          <h2>Detalhes do Log de Auditoria</h2>
+          <button class="audit-logs__modal-close" (click)="closeDetails()">
+            <app-icon name="close" [size]="24" />
+          </button>
+        </div>
+
+        <div class="audit-logs__modal-content">
+          <div class="audit-logs__detail-section">
+            <h3>Informações Gerais</h3>
+            <div class="audit-logs__detail-grid">
+              <div class="audit-logs__detail-item">
+                <label>ID do Log:</label>
+                <span>{{ selectedLog.id }}</span>
+              </div>
+              <div class="audit-logs__detail-item">
+                <label>Data/Hora:</label>
+                <span>{{ selectedLog.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+              </div>
+              <div class="audit-logs__detail-item">
+                <label>Usuário:</label>
+                <span>{{ selectedLog.userName || 'Sistema' }}</span>
+              </div>
+              <div class="audit-logs__detail-item">
+                <label>ID do Usuário:</label>
+                <span>{{ selectedLog.userId || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="audit-logs__detail-section">
+            <h3>Ação Realizada</h3>
+            <div class="audit-logs__detail-grid">
+              <div class="audit-logs__detail-item">
+                <label>Ação:</label>
+                <span class="action-badge" [ngClass]="getActionClass(selectedLog.action)">
+                  {{ selectedLog.action | auditAction }}
+                </span>
+              </div>
+              <div class="audit-logs__detail-item">
+                <label>Tipo de Entidade:</label>
+                <span>{{ selectedLog.entityType }}</span>
+              </div>
+              <div class="audit-logs__detail-item">
+                <label>ID da Entidade:</label>
+                <span>{{ selectedLog.entityId }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="audit-logs__detail-section">
+            <h3>Informações Técnicas</h3>
+            <div class="audit-logs__detail-grid">
+              <div class="audit-logs__detail-item">
+                <label>Endereço IP:</label>
+                <code>{{ selectedLog.ipAddress || 'N/A' }}</code>
+              </div>
+              <div class="audit-logs__detail-item audit-logs__detail-item--full">
+                <label>User-Agent:</label>
+                <code class="audit-logs__user-agent">{{ selectedLog.userAgent || 'N/A' }}</code>
+              </div>
+            </div>
+          </div>
+
+          @if (selectedLog.oldValues) {
+            <div class="audit-logs__detail-section">
+              <h3>Valores Anteriores</h3>
+              <pre class="audit-logs__json-preview">{{ formatJson(selectedLog.oldValues) }}</pre>
+            </div>
+          }
+
+          @if (selectedLog.newValues) {
+            <div class="audit-logs__detail-section">
+              <h3>Valores Novos</h3>
+              <pre class="audit-logs__json-preview">{{ formatJson(selectedLog.newValues) }}</pre>
+            </div>
+          }
+
+          @if (selectedLog.oldValues && selectedLog.newValues) {
+            <div class="audit-logs__detail-section">
+              <h3>Comparação de Mudanças</h3>
+              <div class="audit-logs__comparison">
+                <div class="audit-logs__comparison-column">
+                  <h4>Antes</h4>
+                  <pre class="audit-logs__json-preview audit-logs__json-preview--old">{{ formatJson(selectedLog.oldValues) }}</pre>
+                </div>
+                <div class="audit-logs__comparison-column">
+                  <h4>Depois</h4>
+                  <pre class="audit-logs__json-preview audit-logs__json-preview--new">{{ formatJson(selectedLog.newValues) }}</pre>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="audit-logs__modal-footer">
+          <app-button variant="secondary" (click)="closeDetails()">
+            Fechar
+          </app-button>
+        </div>
+      </div>
+    </div>
   }
 </div>
