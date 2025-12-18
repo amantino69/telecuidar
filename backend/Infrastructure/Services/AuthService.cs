@@ -43,8 +43,13 @@ public class AuthService : IAuthService
         var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email, user.Role.ToString());
         var refreshToken = _jwtService.GenerateRefreshToken();
 
+        var refreshTokenDaysStr = Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION_DAYS") 
+            ?? _configuration["JwtSettings:RefreshTokenExpirationDays"] 
+            ?? "7";
+        var refreshTokenDays = int.Parse(refreshTokenDaysStr);
+        
         var refreshTokenExpiry = rememberMe 
-            ? DateTime.UtcNow.AddDays(int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"] ?? "7"))
+            ? DateTime.UtcNow.AddDays(refreshTokenDays)
             : DateTime.UtcNow.AddDays(1);
 
         user.RefreshToken = refreshToken;

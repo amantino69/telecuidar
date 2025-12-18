@@ -19,10 +19,19 @@ public class JwtService : IJwtService
     public JwtService(IConfiguration configuration)
     {
         _configuration = configuration;
-        _secretKey = _configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key not configured");
-        _issuer = _configuration["JwtSettings:Issuer"] ?? "TelecuidarAPI";
-        _audience = _configuration["JwtSettings:Audience"] ?? "TelecuidarClient";
-        _expirationMinutes = int.Parse(_configuration["JwtSettings:ExpirationMinutes"] ?? "60");
+        _secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+            ?? _configuration["JwtSettings:SecretKey"] 
+            ?? throw new InvalidOperationException("JWT Secret Key not configured");
+        _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") 
+            ?? _configuration["JwtSettings:Issuer"] 
+            ?? "TelecuidarAPI";
+        _audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") 
+            ?? _configuration["JwtSettings:Audience"] 
+            ?? "TelecuidarClient";
+        var expirationStr = Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES") 
+            ?? _configuration["JwtSettings:ExpirationMinutes"] 
+            ?? "60";
+        _expirationMinutes = int.Parse(expirationStr);
     }
 
     public string GenerateAccessToken(Guid userId, string email, string role)

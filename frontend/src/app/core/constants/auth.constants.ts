@@ -24,7 +24,9 @@ export const VALIDATION_MESSAGES = {
 } as const;
 
 // API endpoints
-const API_BASE_URL = 'http://localhost:5239/api';
+const API_BASE_URL = (typeof process !== 'undefined' && process.env?.['API_URL']) 
+  ? process.env['API_URL']
+  : 'http://localhost:5239/api';
 
 export const AUTH_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
