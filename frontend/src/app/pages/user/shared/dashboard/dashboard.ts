@@ -298,69 +298,84 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.monthlyChart = null;
         }
 
-        this.statsService.getAppointmentsByStatus().subscribe(data => {
-          // Destroy again before creating, in case multiple subscriptions fire
-          if (this.appointmentsChart) {
-            this.appointmentsChart.destroy();
-          }
-          if (this.appointmentsChartRef) {
-            this.appointmentsChart = new Chart(this.appointmentsChartRef.nativeElement, {
-              type: 'doughnut',
-              data: data,
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'bottom' }
+        this.statsService.getAppointmentsByStatus().subscribe({
+          next: (data) => {
+            // Destroy again before creating, in case multiple subscriptions fire
+            if (this.appointmentsChart) {
+              this.appointmentsChart.destroy();
+            }
+            if (this.appointmentsChartRef) {
+              this.appointmentsChart = new Chart(this.appointmentsChartRef.nativeElement, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { position: 'bottom' }
+                  }
                 }
-              }
-            });
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Erro ao carregar dados do gráfico:', error);
           }
         });
 
-        this.statsService.getUsersByRole().subscribe(data => {
-          // Destroy again before creating, in case multiple subscriptions fire
-          if (this.usersChart) {
-            this.usersChart.destroy();
-          }
-          if (this.usersChartRef) {
-            this.usersChart = new Chart(this.usersChartRef.nativeElement, {
-              type: 'bar',
-              data: data,
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true }
-                },
-                plugins: {
-                  legend: { display: false }
+        this.statsService.getUsersByRole().subscribe({
+          next: (data) => {
+            // Destroy again before creating, in case multiple subscriptions fire
+            if (this.usersChart) {
+              this.usersChart.destroy();
+            }
+            if (this.usersChartRef) {
+              this.usersChart = new Chart(this.usersChartRef.nativeElement, {
+                type: 'bar',
+                data: data,
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: { beginAtZero: true }
+                  },
+                  plugins: {
+                    legend: { display: false }
+                  }
                 }
-              }
-            });
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Erro ao carregar dados do gráfico:', error);
           }
         });
 
-        this.statsService.getMonthlyAppointments().subscribe(data => {
-          // Destroy again before creating, in case multiple subscriptions fire
-          if (this.monthlyChart) {
-            this.monthlyChart.destroy();
-          }
-          if (this.monthlyChartRef) {
-            this.monthlyChart = new Chart(this.monthlyChartRef.nativeElement, {
-              type: 'line',
-              data: data,
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true }
-                },
-                plugins: {
-                  legend: { position: 'top' }
+        this.statsService.getMonthlyAppointments().subscribe({
+          next: (data) => {
+            // Destroy again before creating, in case multiple subscriptions fire
+            if (this.monthlyChart) {
+              this.monthlyChart.destroy();
+            }
+            if (this.monthlyChartRef) {
+              this.monthlyChart = new Chart(this.monthlyChartRef.nativeElement, {
+                type: 'line',
+                data: data,
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: { beginAtZero: true }
+                  },
+                  plugins: {
+                    legend: { position: 'top' }
+                  }
                 }
-              }
-            });
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Erro ao carregar dados do gráfico:', error);
           }
         });
     }, 0);

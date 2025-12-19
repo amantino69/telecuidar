@@ -65,7 +65,7 @@ export interface Appointment {
   meetLink?: string;
   createdAt: string;
   updatedAt?: string;
-  preConsultation?: PreConsultationForm;
+  preConsultationJson?: string;
 }
 
 export interface CreateAppointmentDto {
@@ -83,7 +83,7 @@ export interface CreateAppointmentDto {
 export interface UpdateAppointmentDto {
   status?: AppointmentStatus;
   observation?: string;
-  preConsultation?: PreConsultationForm;
+  preConsultationJson?: string;
 }
 
 export interface AppointmentsFilter {
@@ -155,11 +155,11 @@ export class AppointmentsService {
   }
 
   updateAppointment(id: string, updates: UpdateAppointmentDto): Observable<Appointment> {
-    return this.http.put<Appointment>(`${this.apiUrl}/${id}`, updates);
+    return this.http.patch<Appointment>(`${this.apiUrl}/${id}`, updates);
   }
 
   cancelAppointment(id: string, reason?: string): Observable<Appointment> {
-    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/cancel`, { reason });
+    return this.http.post<Appointment>(`${this.apiUrl}/${id}/cancel`, { reason });
   }
 
   confirmAppointment(id: string): Observable<Appointment> {
@@ -171,7 +171,7 @@ export class AppointmentsService {
   }
 
   completeAppointment(id: string, observation?: string): Observable<Appointment> {
-    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/complete`, { observation });
+    return this.http.post<Appointment>(`${this.apiUrl}/${id}/finish`, { observation });
   }
 
   deleteAppointment(id: string): Observable<void> {

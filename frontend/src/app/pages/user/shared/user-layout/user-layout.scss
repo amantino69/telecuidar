@@ -254,7 +254,7 @@
 
   @include mobile {
     padding: $spacing-md;
-    padding-top: calc($spacing-md + 74px); // Slightly smaller header on mobile
+    padding-top: calc($spacing-xl + 74px); // Header height + extra breathing room
   }
 }
 

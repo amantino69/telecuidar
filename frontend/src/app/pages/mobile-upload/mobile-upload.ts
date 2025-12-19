@@ -6,6 +6,7 @@ import { IconComponent } from '@shared/components/atoms/icon/icon';
 import { ButtonComponent } from '@shared/components/atoms/button/button';
 import { ThemeToggleComponent } from '@shared/components/atoms/theme-toggle/theme-toggle';
 import { AttachmentsChatService, AttachmentMessage } from '@core/services/attachments-chat.service';
+import { ModalService } from '@core/services/modal.service';
 
 @Component({
   selector: 'app-mobile-upload',
@@ -29,7 +30,8 @@ export class MobileUploadComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private chatService: AttachmentsChatService
+    private chatService: AttachmentsChatService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
@@ -73,7 +75,11 @@ export class MobileUploadComponent implements OnInit {
     
     // Check if we have required params for either mode
     if (!this.appointmentId && !this.token) {
-        alert('Erro: Sessão inválida.');
+        this.modalService.alert({
+          title: 'Erro',
+          message: 'Sessão inválida.',
+          variant: 'danger'
+        }).subscribe();
         return;
     }
     
@@ -132,7 +138,11 @@ export class MobileUploadComponent implements OnInit {
 
     } catch (error: any) {
       console.error('Error processing file', error);
-      alert(error.message || 'Erro ao processar arquivo.');
+      this.modalService.alert({
+        title: 'Erro',
+        message: error.message || 'Erro ao processar arquivo.',
+        variant: 'danger'
+      }).subscribe();
     } finally {
       this.isUploading = false;
     }

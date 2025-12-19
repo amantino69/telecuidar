@@ -18,6 +18,8 @@
           <app-icon name="camera" [size]="20" />
         }
       </button>
+      
+      <!-- Input padrão para arquivos (desktop e fallback) -->
       <input
         id="avatar-file-input"
         type="file"
@@ -27,12 +29,73 @@
         aria-label="Selecionar foto"
         [disabled]="isUploading"
       />
+      
+      <!-- Input para câmera (mobile) -->
+      <input
+        id="avatar-camera-input"
+        type="file"
+        accept="image/*"
+        capture="user"
+        (change)="onFileSelect($event)"
+        class="avatar-upload__input"
+        aria-label="Tirar foto"
+        [disabled]="isUploading"
+      />
+      
+      <!-- Input para galeria (mobile) -->
+      <input
+        id="avatar-gallery-input"
+        type="file"
+        accept="image/*"
+        (change)="onFileSelect($event)"
+        class="avatar-upload__input"
+        aria-label="Selecionar da galeria"
+        [disabled]="isUploading"
+      />
     </div>
     <p class="avatar-upload__hint">
       {{ isUploading ? 'Enviando foto...' : ('Clique no ícone para ' + (currentAvatar ? 'alterar' : 'adicionar') + ' sua foto') }}
     </p>
   }
 </div>
+
+<!-- Menu de opções mobile -->
+@if (showMobileOptions) {
+  <div class="mobile-options-backdrop" (click)="closeMobileOptions()">
+    <div class="mobile-options" (click)="$event.stopPropagation()">
+      <div class="mobile-options__header">
+        <h3 class="mobile-options__title">Selecionar foto</h3>
+        <button
+          type="button"
+          class="mobile-options__close"
+          (click)="closeMobileOptions()"
+          aria-label="Fechar"
+        >
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+      <div class="mobile-options__list">
+        <button type="button" class="mobile-options__item" (click)="openCamera()">
+          <app-icon name="camera" [size]="24" />
+          <span>Tirar foto</span>
+        </button>
+        <button type="button" class="mobile-options__item" (click)="openGallery()">
+          <app-icon name="image" [size]="24" />
+          <span>Escolher da galeria</span>
+        </button>
+        <button type="button" class="mobile-options__item" (click)="openFiles()">
+          <app-icon name="file" [size]="24" />
+          <span>Escolher arquivo</span>
+        </button>
+      </div>
+      <div class="mobile-options__footer">
+        <app-button variant="outline" [fullWidth]="true" (click)="closeMobileOptions()">
+          Cancelar
+        </app-button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (showCropper) {
   <div class="crop-modal-backdrop" (click)="onCropCancel()">

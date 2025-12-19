@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class DictationService {
   public isDictationActive$ = new BehaviorSubject<boolean>(false);
   public isListening$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private zone: NgZone) {
+  constructor(private zone: NgZone, private modalService: ModalService) {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
@@ -67,7 +68,11 @@ export class DictationService {
 
   startDictation() {
     if (!this.recognition) {
-      alert('Seu navegador não suporta reconhecimento de voz.');
+      this.modalService.alert({
+        title: 'Recurso Indisponível',
+        message: 'Seu navegador não suporta reconhecimento de voz.',
+        variant: 'warning'
+      }).subscribe();
       return;
     }
     this.isDictationActive$.next(true);

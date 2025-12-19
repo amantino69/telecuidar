@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectorRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AvatarComponent } from '@app/shared/components/atoms/avatar/avatar';
 import { IconComponent } from '@app/shared/components/atoms/icon/icon';
+import { ButtonComponent } from '@app/shared/components/atoms/button/button';
 import { ImageCropperComponent, CropperResult } from '@app/shared/components/molecules/image-cropper/image-cropper';
 import { ModalService } from '@app/core/services/modal.service';
 import { AvatarService } from '@app/core/services/avatar.service';
@@ -8,23 +10,42 @@ import { AuthService } from '@app/core/services/auth.service';
 
 @Component({
   selector: 'app-avatar-upload',
-  imports: [AvatarComponent, IconComponent, ImageCropperComponent],
+  imports: [CommonModule, AvatarComponent, IconComponent, ButtonComponent, ImageCropperComponent],
   templateUrl: './avatar-upload.html',
   styleUrl: './avatar-upload.scss'
 })
-export class AvatarUploadComponent {
+export class AvatarUploadComponent implements OnInit {
   @Input() name: string = '';
   @Input() currentAvatar?: string;
   @Input() userId?: string;
   @Output() avatarChange = new EventEmitter<string>();
 
   showCropper = false;
+  showMobileOptions = false;
   selectedImageUrl = '';
   isUploading = false;
+  isMobile = false;
   
   private modalService = inject(ModalService);
   private avatarService = inject(AvatarService);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  ngOnInit(): void {
+    this.checkIfMobile();
+  }
+
+  private checkIfMobile(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      // Detectar dispositivo móvel por user agent e touch
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      this.isMobile = isMobileUA && hasTouchScreen;
+    }
+  }
 
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -56,6 +77,7 @@ export class AvatarUploadComponent {
       reader.onload = (e) => {
         this.selectedImageUrl = e.target?.result as string;
         this.showCropper = true;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -131,6 +153,33 @@ export class AvatarUploadComponent {
   }
 
   triggerFileInput(): void {
+    if (this.isMobile) {
+      this.showMobileOptions = true;
+      this.cdr.detectChanges();
+    } else {
+      const input = document.getElementById('avatar-file-input') as HTMLInputElement;
+      input?.click();
+    }
+  }
+
+  closeMobileOptions(): void {
+    this.showMobileOptions = false;
+  }
+
+  openCamera(): void {
+    this.showMobileOptions = false;
+    const input = document.getElementById('avatar-camera-input') as HTMLInputElement;
+    input?.click();
+  }
+
+  openGallery(): void {
+    this.showMobileOptions = false;
+    const input = document.getElementById('avatar-gallery-input') as HTMLInputElement;
+    input?.click();
+  }
+
+  openFiles(): void {
+    this.showMobileOptions = false;
     const input = document.getElementById('avatar-file-input') as HTMLInputElement;
     input?.click();
   }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/components/atoms/button/button';
 import { IconComponent } from '@shared/components/atoms/icon/icon';
@@ -11,10 +11,23 @@ import { PreConsultationForm } from '@core/services/appointments.service';
   templateUrl: './pre-consultation-details-modal.html',
   styleUrls: ['./pre-consultation-details-modal.scss']
 })
-export class PreConsultationDetailsModalComponent {
+export class PreConsultationDetailsModalComponent implements OnChanges {
   @Input() isOpen = false;
-  @Input() preConsultation: PreConsultationForm | undefined;
+  @Input() preConsultation: string | undefined;
   @Output() close = new EventEmitter<void>();
+
+  parsedPreConsultation: PreConsultationForm | null = null;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['preConsultation'] && this.preConsultation) {
+      try {
+        this.parsedPreConsultation = JSON.parse(this.preConsultation);
+      } catch (error) {
+        console.error('Erro ao fazer parse da pré-consulta:', error);
+        this.parsedPreConsultation = null;
+      }
+    }
+  }
 
   onClose() {
     this.close.emit();

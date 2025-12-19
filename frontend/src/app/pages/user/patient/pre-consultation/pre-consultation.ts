@@ -69,10 +69,10 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
     this.checkIfMobile();
     this.form = this.fb.group({
       personalInfo: this.fb.group({
-        fullName: ['', Validators.required],
-        birthDate: ['', Validators.required],
-        weight: ['', Validators.required],
-        height: ['', Validators.required]
+        fullName: [''],
+        birthDate: [''],
+        weight: [''],
+        height: ['']
       }),
       medicalHistory: this.fb.group({
         chronicConditions: [''],
@@ -82,9 +82,9 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
         generalObservations: ['']
       }),
       lifestyleHabits: this.fb.group({
-        smoker: ['', Validators.required],
-        alcoholConsumption: ['', Validators.required],
-        physicalActivity: ['', Validators.required],
+        smoker: [''],
+        alcoholConsumption: [''],
+        physicalActivity: [''],
         generalObservations: ['']
       }),
       vitalSigns: this.fb.group({
@@ -95,8 +95,8 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
         generalObservations: ['']
       }),
       currentSymptoms: this.fb.group({
-        mainSymptoms: ['', Validators.required],
-        symptomOnset: ['', Validators.required],
+        mainSymptoms: [''],
+        symptomOnset: [''],
         painIntensity: [''],
         generalObservations: ['']
       }),
@@ -128,16 +128,28 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
       next: (appt) => {
         if (appt) {
           this.appointment = appt;
+          
           // Pre-fill if data exists
-          if (appt.preConsultation) {
-            this.form.patchValue(appt.preConsultation);
-            // Load existing attachments if any (mock logic would need to handle this differently in real app)
-            if (appt.preConsultation.attachments) {
-                // In a real scenario, we would map these back. For now, we skip or mock.
+          if (appt.preConsultationJson) {
+            try {
+              const preConsultationData = JSON.parse(appt.preConsultationJson);
+              this.form.patchValue(preConsultationData);
+              
+              // Load existing attachments if any
+              if (preConsultationData.attachments && Array.isArray(preConsultationData.attachments)) {
+                this.attachments = preConsultationData.attachments.map((att: any) => ({
+                  title: att.title,
+                  file: new File([], att.title),
+                  previewUrl: att.fileUrl,
+                  type: att.type
+                }));
+              }
+            } catch (error) {
+              console.error('Erro ao carregar dados da pré-consulta:', error);
             }
           } else {
-             // Auto-fill patient name if available (mock logic)
-             this.form.get('personalInfo.fullName')?.setValue(appt.patientName);
+            // Auto-fill patient name if available
+            this.form.get('personalInfo.fullName')?.setValue(appt.patientName);
           }
         } else {
           this.router.navigate(['/consultas']);
@@ -345,7 +357,7 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    if (this.form.valid && this.appointmentId) {
+    if (this.appointmentId) {
       this.isSubmitting = true;
       
       const formData = this.form.value;
@@ -353,36 +365,36 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
       // Add attachments to form data
       formData.attachments = this.attachments.map(att => ({
         title: att.title,
-        fileUrl: att.previewUrl, // Sending base64 for mock purposes
+        fileUrl: att.previewUrl,
         type: att.type
       }));
 
-      this.appointmentsService.updateAppointment(this.appointmentId, formData).subscribe({
-        next: (success) => {
-          this.isSubmitting = false;
-          if (success) {
-            this.modalService.alert({
-              title: 'Sucesso',
-              message: 'Pré-consulta enviada com sucesso!',
-              variant: 'success'
-            }).subscribe(() => {
-              this.router.navigate(['/consultas']);
-            });
-          }
-        },
-        error: () => {
+      // Criar o DTO correto para update
+      const updateDto = {
+        preConsultationJson: JSON.stringify(formData)
+      };
+
+      this.appointmentsService.updateAppointment(this.appointmentId, updateDto).subscribe({
+        next: (appointment) => {
           this.isSubmitting = false;
           this.modalService.alert({
-            title: 'Erro',
-            message: 'Erro ao enviar pré-consulta. Tente novamente.',
-            variant: 'danger'
+            title: 'Sucesso',
+            message: 'Pré-consulta salva com sucesso!',
+            variant: 'success'
+          }).subscribe(() => {
+            this.router.navigate(['/consultas']);
           });
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          console.error('Erro ao salvar pré-consulta:', error);
+          this.modalService.alert({
+            title: 'Erro',
+            message: 'Erro ao salvar pré-consulta. Tente novamente.',
+            variant: 'danger'
+          }).subscribe();
         }
       });
-    } else {
-      this.form.markAllAsTouched();
-      // Scroll to top or first error
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 

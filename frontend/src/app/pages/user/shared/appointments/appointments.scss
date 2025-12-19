@@ -300,11 +300,12 @@
         justify-content: flex-end;
         flex-wrap: wrap;
 
-        .danger-text {
+        .danger-text ::ng-deep button {
             color: var(--red-600);
             
-            &:hover {
+            &:hover:not(:disabled) {
                 background: var(--red-50);
+                color: var(--red-700);
             }
         }
     }

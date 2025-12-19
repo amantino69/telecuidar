@@ -8,25 +8,25 @@
         </button>
       </div>
 
-      <div class="modal-content" *ngIf="preConsultation">
+      <div class="modal-content" *ngIf="parsedPreConsultation">
         <div class="section">
           <h3>Informações Pessoais</h3>
           <div class="grid">
             <div class="item">
               <span class="label">Nome Completo:</span>
-              <span class="value">{{ preConsultation.personalInfo.fullName }}</span>
+              <span class="value">{{ parsedPreConsultation.personalInfo.fullName }}</span>
             </div>
             <div class="item">
               <span class="label">Data de Nascimento:</span>
-              <span class="value">{{ preConsultation.personalInfo.birthDate | date:'dd/MM/yyyy' }}</span>
+              <span class="value">{{ parsedPreConsultation.personalInfo.birthDate | date:'dd/MM/yyyy' }}</span>
             </div>
             <div class="item">
               <span class="label">Peso:</span>
-              <span class="value">{{ preConsultation.personalInfo.weight }} kg</span>
+              <span class="value">{{ parsedPreConsultation.personalInfo.weight }} kg</span>
             </div>
             <div class="item">
               <span class="label">Altura:</span>
-              <span class="value">{{ preConsultation.personalInfo.height }} cm</span>
+              <span class="value">{{ parsedPreConsultation.personalInfo.height }} cm</span>
             </div>
           </div>
         </div>
@@ -34,25 +34,25 @@
         <div class="section">
           <h3>Histórico Médico</h3>
           <div class="grid">
-            <div class="item full-width" *ngIf="preConsultation.medicalHistory.chronicConditions">
+            <div class="item full-width" *ngIf="parsedPreConsultation.medicalHistory.chronicConditions">
               <span class="label">Doenças Crônicas:</span>
-              <span class="value">{{ preConsultation.medicalHistory.chronicConditions }}</span>
+              <span class="value">{{ parsedPreConsultation.medicalHistory.chronicConditions }}</span>
             </div>
-            <div class="item full-width" *ngIf="preConsultation.medicalHistory.medications">
+            <div class="item full-width" *ngIf="parsedPreConsultation.medicalHistory.medications">
               <span class="label">Medicamentos:</span>
-              <span class="value">{{ preConsultation.medicalHistory.medications }}</span>
+              <span class="value">{{ parsedPreConsultation.medicalHistory.medications }}</span>
             </div>
-            <div class="item" *ngIf="preConsultation.medicalHistory.allergies">
+            <div class="item" *ngIf="parsedPreConsultation.medicalHistory.allergies">
               <span class="label">Alergias:</span>
-              <span class="value">{{ preConsultation.medicalHistory.allergies }}</span>
+              <span class="value">{{ parsedPreConsultation.medicalHistory.allergies }}</span>
             </div>
-            <div class="item" *ngIf="preConsultation.medicalHistory.surgeries">
+            <div class="item" *ngIf="parsedPreConsultation.medicalHistory.surgeries">
               <span class="label">Cirurgias:</span>
-              <span class="value">{{ preConsultation.medicalHistory.surgeries }}</span>
+              <span class="value">{{ parsedPreConsultation.medicalHistory.surgeries }}</span>
             </div>
-            <div class="item full-width" *ngIf="preConsultation.medicalHistory.generalObservations">
+            <div class="item full-width" *ngIf="parsedPreConsultation.medicalHistory.generalObservations">
               <span class="label">Observações:</span>
-              <span class="value">{{ preConsultation.medicalHistory.generalObservations }}</span>
+              <span class="value">{{ parsedPreConsultation.medicalHistory.generalObservations }}</span>
             </div>
           </div>
         </div>
@@ -62,19 +62,19 @@
           <div class="grid">
             <div class="item">
               <span class="label">Fumante:</span>
-              <span class="value">{{ preConsultation.lifestyleHabits.smoker | titlecase }}</span>
+              <span class="value">{{ parsedPreConsultation.lifestyleHabits.smoker | titlecase }}</span>
             </div>
             <div class="item">
               <span class="label">Álcool:</span>
-              <span class="value">{{ preConsultation.lifestyleHabits.alcoholConsumption | titlecase }}</span>
+              <span class="value">{{ parsedPreConsultation.lifestyleHabits.alcoholConsumption | titlecase }}</span>
             </div>
             <div class="item">
               <span class="label">Atividade Física:</span>
-              <span class="value">{{ preConsultation.lifestyleHabits.physicalActivity | titlecase }}</span>
+              <span class="value">{{ parsedPreConsultation.lifestyleHabits.physicalActivity | titlecase }}</span>
             </div>
-            <div class="item full-width" *ngIf="preConsultation.lifestyleHabits.generalObservations">
+            <div class="item full-width" *ngIf="parsedPreConsultation.lifestyleHabits.generalObservations">
               <span class="label">Observações:</span>
-              <span class="value">{{ preConsultation.lifestyleHabits.generalObservations }}</span>
+              <span class="value">{{ parsedPreConsultation.lifestyleHabits.generalObservations }}</span>
             </div>
           </div>
         </div>
@@ -82,25 +82,25 @@
         <div class="section">
           <h3>Sinais Vitais</h3>
           <div class="grid">
-            <div class="item" *ngIf="preConsultation.vitalSigns.bloodPressure">
+            <div class="item" *ngIf="parsedPreConsultation.vitalSigns.bloodPressure">
               <span class="label">Pressão Arterial:</span>
-              <span class="value">{{ preConsultation.vitalSigns.bloodPressure }} mmHg</span>
+              <span class="value">{{ parsedPreConsultation.vitalSigns.bloodPressure }} mmHg</span>
             </div>
-            <div class="item" *ngIf="preConsultation.vitalSigns.heartRate">
+            <div class="item" *ngIf="parsedPreConsultation.vitalSigns.heartRate">
               <span class="label">Batimentos:</span>
-              <span class="value">{{ preConsultation.vitalSigns.heartRate }} bpm</span>
+              <span class="value">{{ parsedPreConsultation.vitalSigns.heartRate }} bpm</span>
             </div>
-            <div class="item" *ngIf="preConsultation.vitalSigns.temperature">
+            <div class="item" *ngIf="parsedPreConsultation.vitalSigns.temperature">
               <span class="label">Temperatura:</span>
-              <span class="value">{{ preConsultation.vitalSigns.temperature }} °C</span>
+              <span class="value">{{ parsedPreConsultation.vitalSigns.temperature }} °C</span>
             </div>
-            <div class="item" *ngIf="preConsultation.vitalSigns.oxygenSaturation">
+            <div class="item" *ngIf="parsedPreConsultation.vitalSigns.oxygenSaturation">
               <span class="label">Saturação O2:</span>
-              <span class="value">{{ preConsultation.vitalSigns.oxygenSaturation }}%</span>
+              <span class="value">{{ parsedPreConsultation.vitalSigns.oxygenSaturation }}%</span>
             </div>
-            <div class="item full-width" *ngIf="preConsultation.vitalSigns.generalObservations">
+            <div class="item full-width" *ngIf="parsedPreConsultation.vitalSigns.generalObservations">
               <span class="label">Observações:</span>
-              <span class="value">{{ preConsultation.vitalSigns.generalObservations }}</span>
+              <span class="value">{{ parsedPreConsultation.vitalSigns.generalObservations }}</span>
             </div>
           </div>
         </div>
@@ -110,26 +110,26 @@
           <div class="grid">
             <div class="item full-width">
               <span class="label">Sintomas Principais:</span>
-              <span class="value">{{ preConsultation.currentSymptoms.mainSymptoms }}</span>
+              <span class="value">{{ parsedPreConsultation.currentSymptoms.mainSymptoms }}</span>
             </div>
             <div class="item">
               <span class="label">Início:</span>
-              <span class="value">{{ preConsultation.currentSymptoms.symptomOnset }}</span>
+              <span class="value">{{ parsedPreConsultation.currentSymptoms.symptomOnset }}</span>
             </div>
-            <div class="item" *ngIf="preConsultation.currentSymptoms.painIntensity !== null">
+            <div class="item" *ngIf="parsedPreConsultation.currentSymptoms.painIntensity !== null">
               <span class="label">Intensidade da Dor:</span>
-              <span class="value">{{ preConsultation.currentSymptoms.painIntensity }}/10</span>
+              <span class="value">{{ parsedPreConsultation.currentSymptoms.painIntensity }}/10</span>
             </div>
-            <div class="item full-width" *ngIf="preConsultation.currentSymptoms.generalObservations">
+            <div class="item full-width" *ngIf="parsedPreConsultation.currentSymptoms.generalObservations">
               <span class="label">Descrição Detalhada:</span>
-              <span class="value">{{ preConsultation.currentSymptoms.generalObservations }}</span>
+              <span class="value">{{ parsedPreConsultation.currentSymptoms.generalObservations }}</span>
             </div>
           </div>
         </div>
 
-        <div class="section" *ngIf="preConsultation.additionalObservations">
+        <div class="section" *ngIf="parsedPreConsultation.additionalObservations">
           <h3>Observações Adicionais</h3>
-          <p>{{ preConsultation.additionalObservations }}</p>
+          <p>{{ parsedPreConsultation.additionalObservations }}</p>
         </div>
       </div>
 

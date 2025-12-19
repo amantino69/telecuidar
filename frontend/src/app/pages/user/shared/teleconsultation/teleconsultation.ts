@@ -6,6 +6,7 @@ import { ButtonComponent } from '@shared/components/atoms/button/button';
 import { ThemeToggleComponent } from '@shared/components/atoms/theme-toggle/theme-toggle';
 import { AppointmentsService, Appointment } from '@core/services/appointments.service';
 import { ModalService } from '@core/services/modal.service';
+import { AuthService } from '@core/services/auth.service';
 import { TeleconsultationSidebarComponent } from './sidebar/teleconsultation-sidebar';
 
 @Component({
@@ -37,6 +38,7 @@ export class TeleconsultationComponent implements OnInit {
     private router: Router,
     private appointmentsService: AppointmentsService,
     private modalService: ModalService,
+    private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -66,13 +68,12 @@ export class TeleconsultationComponent implements OnInit {
   }
 
   determineuserrole() {
-    const url = this.router.url;
-    if (url.includes('/patient')) {
-      this.userrole = 'PATIENT';
-    } else if (url.includes('/professional')) {
-      this.userrole = 'PROFESSIONAL';
+    const currentUser = this.authService.currentUser();
+    if (currentUser) {
+      this.userrole = currentUser.role;
     } else {
-      this.userrole = 'ADMIN';
+      // Fallback to PATIENT if no user is found
+      this.userrole = 'PATIENT';
     }
   }
 
@@ -84,9 +85,27 @@ export class TeleconsultationComponent implements OnInit {
   }
 
   loadAppointment(id: string) {
-    this.appointmentsService.getAppointmentById(id).subscribe(appt => {
-      if (appt) {
-        this.appointment = appt;
+    this.appointmentsService.getAppointmentById(id).subscribe({
+      next: (appt) => {
+        if (appt) {
+          this.appointment = appt;
+        }
+      },
+      error: (error) => {
+        // Se for erro 401, o interceptor já redireciona automaticamente
+        if (error.status === 401) {
+          return; // Não fazer nada, deixar o interceptor cuidar
+        }
+        
+        // Para outros erros, logar e mostrar mensagem
+        console.error('Erro ao carregar consulta:', error);
+        this.modalService.alert({
+          title: 'Erro',
+          message: 'Não foi possível carregar os dados da consulta.',
+          variant: 'danger'
+        }).subscribe(() => {
+          this.router.navigate(['/painel']);
+        });
       }
     });
   }
@@ -142,8 +161,18 @@ export class TeleconsultationComponent implements OnInit {
 
   exitCall() {
     // In a real app, we would clean up WebRTC connections here
-    if (confirm('Tem certeza que deseja sair da consulta?')) {
-      this.router.navigate(['/painel']);
-    }
+    this.modalService.confirm({
+      title: 'Sair da Consulta',
+      message: 'Tem certeza que deseja sair da teleconsulta?',
+      variant: 'warning',
+      confirmText: 'Sim, sair',
+      cancelText: 'Cancelar'
+    }).subscribe({
+      next: (result) => {
+        if (result.confirmed) {
+          this.router.navigate(['/painel']);
+        }
+      }
+    });
   }
 }

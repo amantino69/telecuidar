@@ -12,6 +12,7 @@ import { UsersService, User } from '@core/services/users.service';
 import { ScheduleBlocksService } from '@core/services/schedule-blocks.service';
 import { AppointmentsService } from '@core/services/appointments.service';
 import { AuthService } from '@core/services/auth.service';
+import { ModalService } from '@core/services/modal.service';
 import { forkJoin, Observable, Observer } from 'rxjs';
 import localePt from '@angular/common/locales/pt';
 
@@ -89,6 +90,7 @@ export class SchedulingComponent {
   private scheduleBlocksService = inject(ScheduleBlocksService);
   private appointmentsService = inject(AppointmentsService);
   private authService = inject(AuthService);
+  private modalService = inject(ModalService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -104,10 +106,16 @@ export class SchedulingComponent {
 
   // --- Step 1: Specialties ---
   loadSpecialties() {
-    this.specialtiesService.getSpecialties({ status: 'Active' }).subscribe(response => {
-      this.specialties = response.data;
-      this.filteredSpecialties = response.data;
-      this.cdr.detectChanges();
+    this.specialtiesService.getSpecialties({ status: 'Active' }).subscribe({
+      next: (response) => {
+        this.specialties = response.data;
+        this.filteredSpecialties = response.data;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro ao carregar especialidades:', error);
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -385,7 +393,11 @@ export class SchedulingComponent {
       error: (err) => {
         console.error('Erro ao criar agendamento:', err);
         this.loading = false;
-        alert('Erro ao criar agendamento. Por favor, tente novamente.');
+        this.modalService.alert({
+          title: 'Erro',
+          message: 'Erro ao criar agendamento. Por favor, tente novamente.',
+          variant: 'danger'
+        }).subscribe();
       }
     });
   }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy, NgZone } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { ModalService, ModalConfig } from '@app/core/services/modal.service';
@@ -12,12 +12,14 @@ import { ButtonComponent } from '@app/shared/components/atoms/button/button';
   standalone: true,
   imports: [CommonModule, IconComponent, ButtonComponent, FormsModule],
   templateUrl: './modal.html',
-  styleUrl: './modal.scss'
+  styleUrl: './modal.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalComponent implements OnInit, OnDestroy {
   private modalService = inject(ModalService);
   private sanitizer = inject(DomSanitizer);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
   
   isOpen = false;
   config: ModalConfig | null = null;
@@ -28,21 +30,29 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.modalService.modal$.subscribe((config: ModalConfig) => {
-      this.config = config;
-      this.isOpen = true;
-      this.promptValue = '';
-      this.modalZIndex = this.modalService.getNextZIndex();
+      // Calcular o z-index antes de atualizar as propriedades do template
+      const nextZIndex = this.modalService.getNextZIndex();
       
-      // Sanitizar HTML se fornecido
-      // Usando bypassSecurityTrustHtml pois o HTML vem de fontes controladas pela aplicação
-      if (config.htmlMessage) {
-        this.safeHtmlMessage = this.sanitizer.bypassSecurityTrustHtml(config.htmlMessage);
-      } else {
-        this.safeHtmlMessage = null;
-      }
-      
-      // Detectar mudanças após atualizar estado do modal
-      setTimeout(() => this.cdr.detectChanges(), 0);
+      // Executar dentro do NgZone para garantir detecção de mudanças correta
+      this.ngZone.run(() => {
+        this.config = config;
+        this.modalZIndex = nextZIndex;
+        this.promptValue = '';
+        
+        // Sanitizar HTML se fornecido
+        // Usando bypassSecurityTrustHtml pois o HTML vem de fontes controladas pela aplicação
+        if (config.htmlMessage) {
+          this.safeHtmlMessage = this.sanitizer.bypassSecurityTrustHtml(config.htmlMessage);
+        } else {
+          this.safeHtmlMessage = null;
+        }
+        
+        // Atualizar isOpen por último para evitar renderização com valores incompletos
+        this.isOpen = true;
+        
+        // Usar markForCheck para agendar verificação no próximo ciclo
+        this.cdr.markForCheck();
+      });
     });
   }
 
@@ -51,13 +61,15 @@ export class ModalComponent implements OnInit, OnDestroy {
   }
 
   onConfirm(): void {
-    this.modalService.close({ confirmed: true, promptValue: this.promptValue });
     this.isOpen = false;
+    this.cdr.markForCheck();
+    this.modalService.close({ confirmed: true, promptValue: this.promptValue });
   }
 
   onCancel(): void {
-    this.modalService.close({ confirmed: false });
     this.isOpen = false;
+    this.cdr.markForCheck();
+    this.modalService.close({ confirmed: false });
   }
 
   onBackdropClick(): void {

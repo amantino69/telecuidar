@@ -1,17 +1,5 @@
 <div class="logo" [class]="'logo-' + size">
-  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-icon">
-    <rect width="40" height="40" rx="8" fill="url(#gradient)" />
-    <path
-      d="M20 10c-2.76 0-5 2.24-5 5 0 1.54.7 2.91 1.79 3.83C14.48 19.89 13 22.27 13 25c0 3.87 3.13 7 7 7s7-3.13 7-7c0-2.73-1.48-5.11-3.79-6.17C24.3 17.91 25 16.54 25 15c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 18c-2.76 0-5-2.24-5-5 0-2.05 1.23-3.81 3-4.58v1.08c-1.14.68-2 1.88-2 3.5 0 2.21 1.79 4 4 4s4-1.79 4-4c0-1.62-.86-2.82-2-3.5v-1.08c1.77.77 3 2.53 3 4.58 0 2.76-2.24 5-5 5z"
-      fill="white"
-    />
-    <defs>
-      <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-        <stop stop-color="var(--primary-500)" />
-        <stop offset="1" stop-color="var(--blue-500)" />
-      </linearGradient>
-    </defs>
-  </svg>
+  <img src="favicon.ico" alt="TeleCuidar" class="logo-icon" />
   @if (showText) {
     <span class="logo-text">TeleCuidar</span>
   }

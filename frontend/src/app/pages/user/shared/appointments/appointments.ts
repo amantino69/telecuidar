@@ -103,7 +103,8 @@ export class AppointmentsComponent implements OnInit {
     this.loading = true;
     
     // Load all to calculate counts
-    this.appointmentsService.getAppointments({}, 1, 1000).subscribe(response => {
+    this.appointmentsService.getAppointments({}, 1, 1000).subscribe({
+      next: (response) => {
         this.allAppointments = response.data;
         this.calculateCounts();
         this.filterAndSortAppointments();
@@ -111,6 +112,12 @@ export class AppointmentsComponent implements OnInit {
           this.loading = false;
           this.cdr.detectChanges();
         });
+      },
+      error: (error) => {
+        console.error('Erro ao carregar consultas:', error);
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -224,7 +231,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   viewPreConsultation(appointment: Appointment) {
-    if (appointment.preConsultation) {
+    if (appointment.preConsultationJson) {
       this.selectedAppointment = appointment;
       this.isPreConsultationModalOpen = true;
     } else {
