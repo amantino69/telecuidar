@@ -179,37 +179,17 @@
               <div class="user-form__field">
                 <label for="create-user-password" class="user-form__label">
                   Senha
-                  @if (password && !isPasswordValid()) {
-                    <span class="user-form__label-error">Senha fraca</span>
-                  }
-                  @if (password && isPasswordValid()) {
-                    <span class="user-form__label-success">Senha forte ✓</span>
-                  }
                 </label>
                 <input
                   id="create-user-password"
                   type="password"
                   class="user-form__input"
-                  [class.user-form__input--error]="password && !isPasswordValid()"
-                  [class.user-form__input--success]="password && isPasswordValid()"
                   [(ngModel)]="password"
                   name="password"
                   placeholder="Digite a senha"
                 />
-                @if (password && password.length > 0) {
-                  <small class="user-form__hint">
-                    @if (!isPasswordValid()) {
-                      <span class="text-danger">{{ getPasswordMissingRequirements() }}</span>
-                    }
-                    @if (isPasswordValid()) {
-                      <span class="text-success">Senha válida! ✓</span>
-                    }
-                  </small>
-                }
-                @if (!password) {
-                  <small class="user-form__hint">
-                    Mínimo {{ fieldConstraints.PASSWORD.min }} caracteres: maiúsculas, minúsculas, números e caracteres especiais (@$!%*?&)
-                  </small>
+                @if (password) {
+                  <app-password-strength [password]="password" />
                 }
               </div>
 

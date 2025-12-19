@@ -19,35 +19,24 @@
   </div>
 
   <div class="notifications__filters">
-    <div class="filter-group">
-      <label class="filter-label" for="status-filter">Status</label>
-      <select 
-        id="status-filter"
-        class="filter-select"
-        [(ngModel)]="statusFilter"
-        (change)="onFilterChange()"
-      >
-        <option value="all">Todas</option>
-        <option value="unread">Não lidas @if (unreadCount > 0) { ({{ unreadCount }}) }</option>
-        <option value="read">Lidas</option>
-      </select>
-    </div>
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (search)="onSearch($event)"
+      placeholder="Buscar notificações..."
+      icon="search"
+    />
 
-    <div class="filter-group">
-      <label class="filter-label" for="type-filter">Tipo</label>
-      <select 
-        id="type-filter"
-        class="filter-select"
-        [(ngModel)]="typeFilter"
-        (change)="onFilterChange()"
-      >
-        <option value="all">Todas</option>
-        <option value="info">Informação</option>
-        <option value="warning">Avisos</option>
-        <option value="error">Erros</option>
-        <option value="success">Sucesso</option>
-      </select>
-    </div>
+    <app-filter-select
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
+      [options]="statusOptions"
+    />
+
+    <app-filter-select
+      [(ngModel)]="typeFilter"
+      (change)="onFilterChange()"
+      [options]="typeOptions"
+    />
   </div>
 
   <div class="notifications__list">

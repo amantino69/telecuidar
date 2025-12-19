@@ -33,16 +33,26 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       // Se erro 401 (não autorizado), redirecionar para login
+      // Mas não redirecionar se já estiver em páginas de autenticação
       if (error.status === 401) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('access_token');
-        sessionStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('user');
-        router.navigate(['/entrar'], { 
-          queryParams: { returnUrl: router.url } 
-        });
+        const currentUrl = router.url;
+        const isAuthPage = currentUrl.includes('/entrar') || 
+                          currentUrl.includes('/registrar') || 
+                          currentUrl.includes('/esqueci-senha') ||
+                          currentUrl.includes('/redefinir-senha');
+        
+        // Só limpar storage e redirecionar se não estiver em página de autenticação
+        if (!isAuthPage) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          sessionStorage.removeItem('access_token');
+          sessionStorage.removeItem('refresh_token');
+          sessionStorage.removeItem('user');
+          router.navigate(['/entrar'], { 
+            queryParams: { returnUrl: router.url } 
+          });
+        }
       }
       
       // Se erro 403 (sem permissão), redirecionar para página apropriada

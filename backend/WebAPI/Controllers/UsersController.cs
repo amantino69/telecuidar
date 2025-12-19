@@ -110,7 +110,7 @@ public class UsersController : ControllerBase
             var user = await _userService.UpdateUserAsync(id, dto);
             
             // Audit log with differences
-            var oldValues = HttpContextExtensions.SerializeToJson(new { oldUser.Name, oldUser.LastName, oldUser.Email, oldUser.Phone, oldUser.Role, oldUser.Status });
+            var oldValues = oldUser != null ? HttpContextExtensions.SerializeToJson(new { oldUser.Name, oldUser.LastName, oldUser.Email, oldUser.Phone, oldUser.Role, oldUser.Status }) : null;
             var newValues = HttpContextExtensions.SerializeToJson(new { user.Name, user.LastName, user.Email, user.Phone, user.Role, user.Status });
             
             await _auditLogService.CreateAuditLogAsync(

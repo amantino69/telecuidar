@@ -103,6 +103,20 @@
   --error: var(--red-600);
   --info: var(--blue-600);
 
+  // Background colors for semantic elements
+  --success-bg: #{$light-green-50};
+  --warning-bg: #{$light-amber-50};
+  --error-bg: #{$light-red-50};
+  --info-bg: #{$light-blue-50};
+  --primary-bg: #{$light-primary-50};
+
+  // Shadows
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+  --shadow-2xl: #{$shadow-2xl};
+
   color-scheme: light;
 }
 
@@ -208,6 +222,20 @@
   --warning: var(--amber-400);
   --error: var(--red-500);
   --info: var(--blue-500);
+
+  // Background colors for semantic elements
+  --success-bg: #{$dark-green-50};
+  --warning-bg: #{$dark-amber-50};
+  --error-bg: #{$dark-red-50};
+  --info-bg: #{$dark-blue-50};
+  --primary-bg: #{$dark-primary-50};
+
+  // Shadows (darker for dark mode)
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 
   color-scheme: dark;
 }

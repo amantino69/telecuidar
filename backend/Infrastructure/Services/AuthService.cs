@@ -63,6 +63,13 @@ public class AuthService : IAuthService
 
     public async Task<User> RegisterAsync(string name, string lastName, string email, string cpf, string? phone, string password)
     {
+        // Validar senha forte
+        if (!Application.Validators.CustomValidators.IsValidPassword(password))
+        {
+            var requirements = Application.Validators.CustomValidators.GetPasswordMissingRequirements(password);
+            throw new InvalidOperationException($"Password does not meet security requirements. Missing: {string.Join(", ", requirements)}");
+        }
+
         // Verificar se email já existe
         if (await _context.Users.AnyAsync(u => u.Email == email))
         {
@@ -145,6 +152,13 @@ public class AuthService : IAuthService
 
     public async Task<bool> ResetPasswordAsync(string token, string newPassword)
     {
+        // Validar senha forte
+        if (!Application.Validators.CustomValidators.IsValidPassword(newPassword))
+        {
+            var requirements = Application.Validators.CustomValidators.GetPasswordMissingRequirements(newPassword);
+            throw new InvalidOperationException($"Password does not meet security requirements. Missing: {string.Join(", ", requirements)}");
+        }
+
         var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
 
         if (user == null || user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
@@ -174,6 +188,37 @@ public class AuthService : IAuthService
         user.EmailVerified = true;
         user.EmailVerificationToken = null;
         user.EmailVerificationTokenExpiry = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+    {
+        var user = await _context.Users.FindAsync(userId);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Verificar senha atual
+        if (!_passwordHasher.VerifyPassword(currentPassword, user.PasswordHash))
+        {
+            throw new InvalidOperationException("Senha atual está incorreta");
+        }
+
+        // Validar nova senha
+        if (!Application.Validators.CustomValidators.IsValidPassword(newPassword))
+        {
+            var requirements = Application.Validators.CustomValidators.GetPasswordMissingRequirements(newPassword);
+            throw new InvalidOperationException($"A nova senha não atende aos requisitos de segurança. Faltam: {string.Join(", ", requirements)}");
+        }
+
+        // Atualizar senha
+        user.PasswordHash = _passwordHasher.HashPassword(newPassword);
         user.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();

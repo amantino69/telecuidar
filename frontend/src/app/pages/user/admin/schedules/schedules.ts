@@ -95,6 +95,16 @@ export class SchedulesComponent implements OnInit {
     this.loadSchedules();
   }
 
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.loadSchedules();
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
+    this.loadSchedules();
+  }
+
   onStatusFilterChange(status: string): void {
     const option = this.statusOptions.find(o => o.value === status);
     if (option) {
@@ -121,6 +131,12 @@ export class SchedulesComponent implements OnInit {
       this.currentPage = page;
       this.loadSchedules();
     }
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize = pageSize;
+    this.currentPage = 1;
+    this.loadSchedules();
   }
 
   openCreateModal(): void {

@@ -305,4 +305,26 @@ export class AuthService {
       }
     }
   }
+
+  // Change Password
+  changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
+    this.setLoading(true);
+    
+    const request = {
+      currentPassword,
+      newPassword,
+      confirmPassword
+    };
+
+    return this.http.post(AUTH_ENDPOINTS.CHANGE_PASSWORD, request).pipe(
+      tap(() => {
+        this.setLoading(false);
+      }),
+      catchError(error => {
+        this.setError(error.error?.message || 'Erro ao trocar senha');
+        this.setLoading(false);
+        throw error;
+      })
+    );
+  }
 }

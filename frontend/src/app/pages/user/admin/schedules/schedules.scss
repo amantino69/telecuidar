@@ -1,227 +1,77 @@
 @use 'variables' as *;
 @use 'mixins' as *;
+@use 'table-standard' as *;
 
 .schedules {
-  width: 100%;
-  margin: 0;
+  @include page-container;
 
   &__header {
-    @include flex-between;
-    align-items: flex-start;
-    margin-bottom: $spacing-2xl;
-    gap: $spacing-xl;
-
-    @include mobile {
-      flex-direction: column;
-      align-items: stretch;
-    }
+    @include page-header;
   }
 
   &__header-content {
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
-
-    app-icon {
-      color: var(--primary-500);
-      flex-shrink: 0;
-    }
+    @include page-header-content;
   }
 
   &__title {
-    @include heading-1;
-    margin: 0 0 $spacing-xs 0;
+    @include page-title;
   }
 
   &__subtitle {
-    color: var(--text-secondary);
-    font-size: $font-size-lg;
-    margin: 0;
+    @include page-subtitle;
   }
 
   &__create-btn {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-md $spacing-lg;
-    background: var(--primary-600);
-    color: $light-neutral-50;
-    border: none;
-    border-radius: $radius-lg;
-    font-weight: $font-weight-medium;
-    cursor: pointer;
-    white-space: nowrap;
-    @include transition(all);
-
-    &:hover:not(:disabled) {
-      background: var(--primary-700);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    @include page-action-btn;
   }
 
   &__filters {
-    display: flex;
-    gap: $spacing-lg;
-    margin-bottom: $spacing-2xl;
-    align-items: flex-end;
-
-    @include mobile {
-      flex-direction: column;
-      gap: $spacing-md;
-    }
-
-    > * {
-      flex: 1;
-      min-width: 200px;
-
-      @include mobile {
-        flex: auto;
-        min-width: auto;
-      }
-    }
+    @include page-filters;
   }
 
   &__loading,
   &__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: $spacing-3xl $spacing-xl;
-    text-align: center;
-    color: var(--text-secondary);
-    background: var(--surface);
-    border: 1px dashed var(--border);
-    border-radius: $radius-xl;
-    gap: $spacing-lg;
-
-    > p {
-      font-size: $font-size-lg;
-      margin: 0;
-    }
+    @include page-loading-empty;
   }
 
   &__empty-btn {
+    @include page-action-btn;
     display: inline-flex;
-    align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-md $spacing-lg;
-    background: var(--primary-600);
-    color: $light-neutral-50;
-    border: none;
-    border-radius: $radius-lg;
-    font-weight: $font-weight-medium;
-    cursor: pointer;
-    @include transition(all);
-
-    &:hover {
-      background: var(--primary-700);
-    }
   }
 
   &__table-wrapper {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: $radius-xl;
-    overflow-x: auto;
-
-    @include mobile {
-      border-radius: $radius-lg;
-    }
+    @include page-table-wrapper;
   }
 
   &__table {
-    width: 100%;
-    border-collapse: collapse;
+    @include standard-table;
 
     thead {
-      background: var(--background-hover);
+      @include table-head;
+    }
+
+    &-header {
+      @include table-header;
+
+      &--actions {
+        text-align: center;
+        width: 180px;
+        min-width: 180px;
+      }
+    }
+
+    &-row {
+      @include table-row;
+
+      &--inactive {
+        opacity: 0.6;
+        background-color: var(--neutral-50);
+      }
+    }
+
+    &-cell {
+      @include table-cell;
       border-bottom: 1px solid var(--border);
-    }
-
-    tbody tr:hover {
-      background: var(--background-hover);
-
-      &.schedules__table-row--inactive {
-        background: rgba(0, 0, 0, 0.02);
-      }
-    }
-  }
-
-  &__table-header {
-    padding: $spacing-md $spacing-lg;
-    text-align: left;
-    font-weight: $font-weight-semibold;
-    color: var(--text-primary);
-    white-space: nowrap;
-
-    &--actions {
-      text-align: center;
-      width: 200px;
-
-      @include mobile {
-        width: 150px;
-      }
-    }
-  }
-
-  &__table-row {
-    border-bottom: 1px solid var(--border);
-    @include transition(background-color);
-
-    &--inactive {
-      opacity: 0.7;
-    }
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  &__table-cell {
-    padding: $spacing-md $spacing-lg;
-    color: var(--text-primary);
-    font-size: $font-size-base;
-
-    &--professional {
-      font-weight: $font-weight-medium;
-    }
-
-    &--actions {
-      text-align: center;
-    }
-  }
-
-  &__cell-content {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-  }
-
-  &__warning-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    background: var(--amber-400-rgba-10);
-    border: 1px solid var(--amber-400-rgba-30);
-    border-radius: $radius-md;
-    color: var(--amber-400);
-    flex-shrink: 0;
-    @include transition(all);
-
-    &:hover {
-      background: var(--amber-400-rgba-20);
-      border-color: var(--amber-400-rgba-50);
-    }
-
-    app-icon {
-      color: var(--amber-400);
     }
   }
 
@@ -233,7 +83,7 @@
 
   &__professional-name {
     margin: 0;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-medium;
     color: var(--text-primary);
   }
 
@@ -244,60 +94,31 @@
   }
 
   &__actions {
-    display: flex;
-    gap: $spacing-sm;
-    justify-content: center;
+    @include table-actions;
     flex-wrap: wrap;
   }
 
   &__action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: $radius-md;
-    cursor: pointer;
-    color: var(--text-secondary);
-    @include transition(all);
+    @include table-action-btn;
 
-    &:hover:not(:disabled) {
-      background: var(--background-hover);
-      color: var(--text-primary);
+    &--view:hover {
+      border-color: var(--blue-600);
+      color: var(--blue-600);
     }
 
-    &--view:hover:not(:disabled) {
-      border-color: var(--info-600);
-      color: var(--info-600);
+    &--toggle:hover {
+      border-color: var(--amber-600);
+      color: var(--amber-600);
     }
 
-    &--toggle:hover:not(:disabled) {
-      border-color: var(--warning-600);
-      color: var(--warning-600);
-    }
-
-    &--edit:hover:not(:disabled) {
+    &--edit:hover {
       border-color: var(--primary-600);
       color: var(--primary-600);
     }
-
-    &--delete:hover:not(:disabled) {
-      border-color: var(--danger-600);
-      color: var(--danger-600);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
   }
 
-  &__pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: $spacing-2xl;
-    padding: $spacing-xl;
+  &__empty-cell {
+    text-align: center;
+    padding: $spacing-3xl !important;
   }
 }

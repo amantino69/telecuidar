@@ -10,6 +10,7 @@ export interface AuditLog {
   id: string;
   userId: string | null;
   userName: string | null;
+  userRole?: string | null;
   action: string;
   entityType: string;
   entityId: string;

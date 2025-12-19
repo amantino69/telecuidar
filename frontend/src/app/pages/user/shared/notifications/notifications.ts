@@ -1,6 +1,8 @@
 import { Component, afterNextRender, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '@app/shared/components/atoms/icon/icon';
+import { SearchInputComponent } from '@app/shared/components/atoms/search-input/search-input';
+import { FilterSelectComponent, FilterOption } from '@app/shared/components/atoms/filter-select/filter-select';
 import { 
   NotificationsService, 
   Notification, 
@@ -9,7 +11,7 @@ import {
 
 @Component({
   selector: 'app-notifications',
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, SearchInputComponent, FilterSelectComponent],
   templateUrl: './notifications.html',
   styleUrl: './notifications.scss'
 })
@@ -17,8 +19,23 @@ export class NotificationsComponent {
   notifications: Notification[] = [];
   statusFilter: 'all' | boolean = 'all';
   typeFilter: 'all' | NotificationType = 'all';
+  searchTerm = '';
   loading = false;
   unreadCount = 0;
+
+  statusOptions: FilterOption[] = [
+    { value: 'all', label: 'Todos os status' },
+    { value: 'unread', label: 'Não lidas' },
+    { value: 'read', label: 'Lidas' }
+  ];
+
+  typeOptions: FilterOption[] = [
+    { value: 'all', label: 'Todos os tipos' },
+    { value: 'info', label: 'Informação' },
+    { value: 'warning', label: 'Avisos' },
+    { value: 'error', label: 'Erros' },
+    { value: 'success', label: 'Sucesso' }
+  ];
 
   private notificationsService = inject(NotificationsService);
   private cdr = inject(ChangeDetectorRef);
@@ -40,6 +57,11 @@ export class NotificationsComponent {
 
   setTypeFilter(type: 'all' | NotificationType): void {
     this.typeFilter = type;
+    this.loadNotifications();
+  }
+
+  onSearch(term: string): void {
+    this.searchTerm = term;
     this.loadNotifications();
   }
 

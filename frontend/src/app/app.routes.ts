@@ -16,6 +16,7 @@ import { ScheduleBlocksComponent } from '@pages/user/shared/schedule-blocks/sche
 import { MyScheduleComponent } from '@pages/user/professional/my-schedule/my-schedule';
 
 // Admin-specific components
+import { ScheduleBlocksComponent as AdminScheduleBlocksComponent } from '@pages/user/admin/schedule-blocks/schedule-blocks';
 import { UsersComponent } from '@pages/user/admin/users/users';
 import { InvitesComponent } from '@pages/user/admin/invites/invites';
 import { SpecialtiesComponent } from '@pages/user/admin/specialties/specialties';
@@ -71,11 +72,12 @@ export const routes: Routes = [
       { path: 'convites', component: InvitesComponent, canActivate: [roleGuard(['ADMIN'])] },
       { path: 'especialidades', component: SpecialtiesComponent, canActivate: [roleGuard(['ADMIN'])] },
       { path: 'agendas', component: SchedulesComponent, canActivate: [roleGuard(['ADMIN'])] },
+      { path: 'solicitacoes-bloqueio', component: AdminScheduleBlocksComponent, canActivate: [roleGuard(['ADMIN'])] },
       { path: 'relatorios', component: ReportsComponent, canActivate: [roleGuard(['ADMIN'])] },
       { path: 'logs-auditoria', component: AuditLogsComponent, canActivate: [roleGuard(['ADMIN'])] },
       
       // Professional only
-      { path: 'bloqueios-agenda', component: ScheduleBlocksComponent, canActivate: [roleGuard(['PROFESSIONAL', 'ADMIN'])] },
+      { path: 'bloqueios-agenda', component: ScheduleBlocksComponent, canActivate: [roleGuard(['PROFESSIONAL'])] },
       { path: 'minha-agenda', component: MyScheduleComponent, canActivate: [roleGuard(['PROFESSIONAL'])] },
       
       // Patient only

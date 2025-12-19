@@ -1,18 +1,19 @@
 import { Component, afterNextRender, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { IconComponent } from '@app/shared/components/atoms/icon/icon';
-import { ButtonComponent } from '@app/shared/components/atoms/button/button';
+import { BadgeComponent } from '@app/shared/components/atoms/badge/badge';
 import { PaginationComponent } from '@app/shared/components/atoms/pagination/pagination';
 import { SearchInputComponent } from '@app/shared/components/atoms/search-input/search-input';
 import { FilterSelectComponent, FilterOption } from '@app/shared/components/atoms/filter-select/filter-select';
 import { TableHeaderComponent } from '@app/shared/components/atoms/table-header/table-header';
 import { AuditLogsService, AuditLog, AuditLogsFilter, AuditLogsSortOptions, AuditActionType } from '@app/core/services/audit-logs.service';
-import { AuditActionPipe } from '@app/core/pipes/audit-action.pipe';
+import { UserRolePipe } from '@app/core/pipes/user-role.pipe';
+import { AuditLogDetailModalComponent } from './audit-log-detail-modal/audit-log-detail-modal';
 
 @Component({
   selector: 'app-audit-logs',
-  imports: [FormsModule, IconComponent, ButtonComponent, DatePipe, AuditActionPipe, NgClass, PaginationComponent, SearchInputComponent, FilterSelectComponent, TableHeaderComponent],
+  imports: [FormsModule, IconComponent, BadgeComponent, DatePipe, UserRolePipe, PaginationComponent, SearchInputComponent, FilterSelectComponent, TableHeaderComponent, AuditLogDetailModalComponent],
   templateUrl: './audit-logs.html',
   styleUrl: './audit-logs.scss'
 })
@@ -181,33 +182,42 @@ export class AuditLogsComponent {
     return this.sortDirection === 'asc' ? 'chevron-up' : 'chevron-down';
   }
 
-  getActionClass(action: string): string {
-    const classes: Record<string, string> = {
-      'create': 'action-badge--create',
-      'update': 'action-badge--update',
-      'delete': 'action-badge--delete',
-      'login': 'action-badge--login',
-      'logout': 'action-badge--logout',
-      'view': 'action-badge--view',
-      'export': 'action-badge--export'
+  getActionBadgeVariant(action: string): 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral' {
+    const variants: Record<string, 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+      'create': 'success',
+      'update': 'info',
+      'delete': 'error',
+      'login': 'primary',
+      'logout': 'neutral',
+      'view': 'info',
+      'export': 'warning'
     };
-    return classes[action] || '';
+    return variants[action] || 'neutral';
+  }
+
+  getActionLabel(action: string): string {
+    const labels: Record<string, string> = {
+      'create': 'Criar',
+      'update': 'Atualizar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar',
+      'export': 'Exportar'
+    };
+    return labels[action] || action;
+  }
+
+  getLogDescription(log: AuditLog): string {
+    const actionLabel = this.getActionLabel(log.action);
+    return `${actionLabel} ${log.entityType}`;
   }
 
   viewDetails(log: AuditLog): void {
     this.selectedLog = log;
   }
 
-  closeDetails(): void {
+  closeModal(): void {
     this.selectedLog = null;
-  }
-
-  formatJson(jsonString: string): string {
-    try {
-      const parsed = JSON.parse(jsonString);
-      return JSON.stringify(parsed, null, 2);
-    } catch {
-      return jsonString;
-    }
   }
 }

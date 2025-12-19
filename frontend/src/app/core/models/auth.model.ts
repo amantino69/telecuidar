@@ -72,6 +72,16 @@ export interface VerifyEmailResponse {
   user: User;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
 export interface AuthState {
   user: User | null;
   accessToken: string | null;

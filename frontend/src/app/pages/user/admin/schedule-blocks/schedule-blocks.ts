@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableHeaderComponent } from '@shared/components/atoms/table-header/table-header';
 import { BadgeComponent } from '@shared/components/atoms/badge/badge';
@@ -17,30 +17,8 @@ import { WaitTimePipe } from '@core/pipes/wait-time.pipe';
   templateUrl: './schedule-blocks.html',
   styleUrl: './schedule-blocks.scss'
 })
-export class ScheduleBlocksComponent {
-  blocks = [
-    {
-      id: 1,
-      professional: { name: 'João Silva', email: 'joao@exemplo.com' },
-      blockDate: { type: 'single', weekday: 'Segunda-feira', date: '10/12/2025' },
-      reason: 'Consulta médica',
-      status: 'pendente',
-      requestDate: '09/12/2025 14:30',
-      waitTime: 1, // em dias
-      details: 'Solicitação para bloqueio devido a consulta médica.'
-    },
-    {
-      id: 2,
-      professional: { name: 'Maria Souza', email: 'maria@exemplo.com' },
-      blockDate: { type: 'range', start: '15/12/2025', end: '18/12/2025' },
-      reason: 'Férias',
-      status: 'aprovada',
-      requestDate: '08/12/2025 09:00',
-      waitTime: 2,
-      details: 'Solicitação para bloqueio por férias.',
-      denialReason: 'Profissional já possui outro bloqueio aprovado para o período.'
-    }
-  ];
+export class ScheduleBlocksComponent implements OnInit {
+  blocks: any[] = [];
 
   searchTerm = '';
   statusFilter = 'all';
@@ -58,6 +36,11 @@ export class ScheduleBlocksComponent {
   totalPages = 1;
   totalItems = 0;
   isLoading = false;
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private modal: ModalService
+  ) {}
 
   ngOnInit(): void {
     this.loadBlocks();
@@ -91,18 +74,24 @@ export class ScheduleBlocksComponent {
     this.loadBlocks();
   }
 
-  loadBlocks(): void {
-    this.isLoading = true;
-    // Aqui você pode integrar com o backend futuramente
-    setTimeout(() => {
-      // Simula carregamento
-      this.isLoading = false;
-      this.totalItems = this.blocks.length;
-      this.totalPages = 1;
-    }, 500);
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize = pageSize;
+    this.currentPage = 1;
+    this.loadBlocks();
   }
 
-  constructor(private modal: ModalService) {}
+  loadBlocks(): void {
+    this.isLoading = true;
+    // TODO: Integrar com backend quando o sistema de bloqueios estiver implementado
+    // Por enquanto, retorna lista vazia
+    setTimeout(() => {
+      this.blocks = [];
+      this.isLoading = false;
+      this.totalItems = 0;
+      this.totalPages = 0;
+      this.cdr.markForCheck();
+    }, 300);
+  }
 
   getStatusBadge(status: string): { variant: 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral', label: string } {
     switch (status) {

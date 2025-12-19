@@ -1,82 +1,32 @@
 @use 'variables' as *;
 @use 'mixins' as *;
+@use 'table-standard' as *;
 
 .notifications {
-  width: 100%;
-  margin: 0;
+  @include page-container;
 
   &__header {
-    @include flex-between;
-    align-items: flex-start;
-    margin-bottom: $spacing-2xl;
-    gap: $spacing-xl;
-
-    @include mobile {
-      flex-direction: column;
-      align-items: stretch;
-    }
+    @include page-header;
   }
 
   &__header-content {
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
-
-    app-icon {
-      color: var(--primary-500);
-      flex-shrink: 0;
-    }
+    @include page-header-content;
   }
 
   &__title {
-    @include heading-1;
-    margin: 0 0 $spacing-xs 0;
+    @include page-title;
   }
 
   &__subtitle {
-    color: var(--text-secondary);
-    font-size: $font-size-lg;
-    margin: 0;
+    @include page-subtitle;
   }
 
   &__mark-all-btn {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-md $spacing-lg;
-    background: var(--primary-600);
-    color: $light-neutral-50;
-    border: none;
-    border-radius: $radius-lg;
-    font-weight: $font-weight-medium;
-    cursor: pointer;
-    @include transition(all);
-
-    &:hover:not(:disabled) {
-      background: var(--primary-700);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    @include page-action-btn;
   }
 
   &__filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: $spacing-xl;
-    margin-bottom: $spacing-2xl;
-    padding: $spacing-xl;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: $radius-xl;
-
-    @include mobile {
-      grid-template-columns: 1fr;
-      padding: $spacing-md;
-      gap: $spacing-lg;
-    }
+    @include page-filters;
   }
 
   &__list {
@@ -86,17 +36,8 @@
 
   &__loading,
   &__empty {
-    @include flex-center;
-    @include flex-column;
-    gap: $spacing-lg;
-    padding: $spacing-4xl;
-    color: var(--text-secondary);
+    @include page-loading-empty;
   }
-}
-
-.filter-group {
-  @include flex-column;
-  gap: $spacing-md;
 }
 
 .filter-label {

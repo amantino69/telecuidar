@@ -19,15 +19,9 @@
     />
   </div>
 
-  @if (isLoading && blocks.length === 0) {
+  @if (isLoading) {
     <div class="schedule-blocks__loading">
-      <app-icon name="clock" [size]="40" />
       <p>Carregando bloqueios...</p>
-    </div>
-  } @else if (blocks.length === 0) {
-    <div class="schedule-blocks__empty">
-      <app-icon name="clock" [size]="48" />
-      <p>Nenhuma solicitação de bloqueio encontrada</p>
     </div>
   } @else {
     <div class="schedule-blocks__table-wrapper">
@@ -58,7 +52,17 @@
           </tr>
         </thead>
         <tbody>
-          @for (block of blocks; track block.id) {
+          @if (blocks.length === 0) {
+            <tr>
+              <td colspan="7" class="schedule-blocks__table-cell schedule-blocks__empty-cell">
+                <div class="schedule-blocks__empty">
+                  <app-icon name="alert-circle" [size]="48" />
+                  <p>Nenhuma solicitação encontrada</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (block of blocks; track block.id) {
             <tr class="schedule-blocks__table-row">
               <td class="schedule-blocks__table-cell schedule-blocks__table-cell--professional">
                 <div class="schedule-blocks__professional-info">
@@ -103,21 +107,19 @@
                 </div>
               </td>
             </tr>
+            }
           }
         </tbody>
       </table>
     </div>
 
-    @if (totalPages > 1) {
-      <div class="schedule-blocks__pagination">
-        <app-pagination
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          [total]="totalItems"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-        />
-      </div>
-    }
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>

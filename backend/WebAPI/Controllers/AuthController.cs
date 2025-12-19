@@ -98,7 +98,7 @@ public class AuthController : ControllerBase
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Invalid email or password" });
+                return Unauthorized(new { message = "Email ou senha incorretos" });
             }
 
             var response = new LoginResponseDto
@@ -221,6 +221,61 @@ public class AuthController : ControllerBase
             }
 
             return Ok(new { message = "Email verified successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    [HttpPost("change-password")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+    {
+        try
+        {
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                return BadRequest(new { message = "As senhas não coincidem" });
+            }
+
+            // Extrair userId do token JWT - tentar várias formas de claim
+            var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                ?? User.FindFirst("sub") 
+                ?? User.FindFirst("userId")
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                // Log dos claims disponíveis para debug
+                var availableClaims = string.Join(", ", User.Claims.Select(c => $"{c.Type}={c.Value}"));
+                return Unauthorized(new { message = "Token de usuário inválido ou ausente", debug = availableClaims });
+            }
+
+            var result = await _authService.ChangePasswordAsync(userId, request.CurrentPassword, request.NewPassword);
+
+            if (!result)
+            {
+                return BadRequest(new { message = "Falha ao trocar senha" });
+            }
+
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                userId,
+                "update",
+                "User",
+                userId.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(new { Action = "Password Changed" }),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+
+            return Ok(new { message = "Senha alterada com sucesso" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {

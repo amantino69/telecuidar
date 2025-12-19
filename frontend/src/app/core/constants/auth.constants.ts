@@ -37,6 +37,7 @@ export const AUTH_ENDPOINTS = {
   RESET_PASSWORD: `${API_BASE_URL}/auth/reset-password`,
   VERIFY_EMAIL: `${API_BASE_URL}/auth/verify-email`,
   RESEND_VERIFICATION: `${API_BASE_URL}/auth/resend-verification`,
+  CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password`,
   GOOGLE_LOGIN: `${API_BASE_URL}/auth/google`,
 } as const;
 

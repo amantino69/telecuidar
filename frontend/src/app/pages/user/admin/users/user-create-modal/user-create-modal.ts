@@ -5,6 +5,7 @@ import { ButtonComponent } from '@app/shared/components/atoms/button/button';
 import { CpfMaskDirective } from '@app/core/directives/cpf-mask.directive';
 import { PhoneMaskDirective } from '@app/core/directives/phone-mask.directive';
 import { EmailValidatorDirective } from '@app/core/directives/email-validator.directive';
+import { PasswordStrengthComponent } from '@app/shared/components/atoms/password-strength/password-strength';
 import { UserRole } from '@app/core/services/users.service';
 import {
   VALIDATION_MESSAGES,
@@ -31,7 +32,7 @@ export type CreateUserAction = 'create' | 'generate-link' | 'send-email';
 
 @Component({
   selector: 'app-user-create-modal',
-  imports: [FormsModule, IconComponent, ButtonComponent, CpfMaskDirective, PhoneMaskDirective, EmailValidatorDirective],
+  imports: [FormsModule, IconComponent, ButtonComponent, CpfMaskDirective, PhoneMaskDirective, EmailValidatorDirective, PasswordStrengthComponent],
   templateUrl: './user-create-modal.html',
   styleUrl: './user-create-modal.scss'
 })

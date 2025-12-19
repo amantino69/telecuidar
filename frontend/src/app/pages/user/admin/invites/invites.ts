@@ -24,7 +24,6 @@ import { InviteCreateModalComponent } from './invite-create-modal/invite-create-
     SearchInputComponent,
     FilterSelectComponent,
     TableHeaderComponent,
-    ButtonComponent,
     InviteCreateModalComponent
   ],
   templateUrl: './invites.html',

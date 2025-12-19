@@ -20,32 +20,23 @@
 
   <div class="schedules__filters">
     <app-search-input
-      placeholder="Buscar por profissional ou email..."
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
       (search)="onSearch($event)"
+      placeholder="Buscar por profissional ou email..."
+      icon="search"
     />
+
     <app-filter-select
-      label="Status"
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
       [options]="statusOptions"
-      (change)="onStatusFilterChange($event)"
     />
   </div>
 
-  @if (isLoading && schedules.length === 0) {
+  @if (isLoading) {
     <div class="schedules__loading">
-      <app-icon name="calendar" [size]="40" />
       <p>Carregando agendas...</p>
-    </div>
-  } @else if (schedules.length === 0) {
-    <div class="schedules__empty">
-      <app-icon name="calendar" [size]="48" />
-      <p>Nenhuma agenda encontrada</p>
-      <button
-        type="button"
-        class="schedules__empty-btn"
-        (click)="openCreateModal()"
-      >
-        Criar Primeira Agenda
-      </button>
     </div>
   } @else {
     <div class="schedules__table-wrapper">
@@ -121,7 +112,17 @@
           </tr>
         </thead>
         <tbody>
-          @for (schedule of schedules; track schedule.id) {
+          @if (schedules.length === 0) {
+            <tr>
+              <td colspan="8" class="schedules__table-cell schedules__empty-cell">
+                <div class="schedules__empty">
+                  <app-icon name="calendar" [size]="48" />
+                  <p>Nenhuma agenda encontrada</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (schedule of schedules; track schedule.id) {
             <tr class="schedules__table-row" [class.schedules__table-row--inactive]="schedule.status === 'Inactive'">
               <td class="schedules__table-cell schedules__table-cell--professional">
                 <div class="schedules__professional-info">
@@ -216,22 +217,20 @@
                 </div>
               </td>
             </tr>
+            }
           }
         </tbody>
       </table>
     </div>
 
-    @if (totalPages > 1) {
-      <div class="schedules__pagination">
-        <app-pagination
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          [total]="totalItems"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)"
-        />
-      </div>
-    }
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '@app/core/services/auth.service';
 import { ButtonComponent } from '@app/shared/components/atoms/button/button';
 import { LogoComponent } from '@app/shared/components/atoms/logo/logo';
@@ -37,7 +38,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -69,16 +72,24 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        const dashboardUrl = this.authService.getDashboardUrl();
-        this.router.navigate([dashboardUrl]);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Email ou senha incorretos';
-        this.isLoading = false;
-      }
-    });
+    this.authService.login(this.loginForm.value)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: () => {
+          const dashboardUrl = this.authService.getDashboardUrl();
+          this.router.navigate([dashboardUrl]);
+        },
+        error: (error) => {
+          console.error('Erro no login:', error);
+          this.errorMessage = error.error?.message || 'Email ou senha incorretos';
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   loginWithGoogle(): void {

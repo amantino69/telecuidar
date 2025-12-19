@@ -7,10 +7,14 @@
         <p class="invites__subtitle">Gerencie os convites de cadastro enviados</p>
       </div>
     </div>
-    <app-button (click)="openCreateModal()">
+    <button
+      type="button"
+      class="invites__create-btn"
+      (click)="openCreateModal()"
+    >
       <app-icon name="plus" [size]="20" />
       Novo Convite
-    </app-button>
+    </button>
   </div>
 
   <div class="invites__filters">
@@ -38,11 +42,6 @@
   @if (isLoading) {
     <div class="invites__loading">
       <p>Carregando convites...</p>
-    </div>
-  } @else if (invites.length === 0) {
-    <div class="invites__empty">
-      <app-icon name="mail" [size]="48" />
-      <p>Nenhum convite encontrado</p>
     </div>
   } @else {
     <div class="invites__table-wrapper">
@@ -113,7 +112,17 @@
           </tr>
         </thead>
         <tbody class="invites-table__body">
-          @for (invite of invites; track invite.id) {
+          @if (invites.length === 0) {
+            <tr>
+              <td colspan="7" class="invites-table__empty-cell">
+                <div class="invites__empty">
+                  <app-icon name="mail" [size]="48" />
+                  <p>Nenhum convite encontrado</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (invite of invites; track invite.id) {
             <tr class="invites-table__row">
               <td class="invites-table__cell">
                 <span class="invites-table__id">#{{ invite.id }}</span>
@@ -189,6 +198,7 @@
                 </div>
               </td>
             </tr>
+            }
           }
         </tbody>
       </table>

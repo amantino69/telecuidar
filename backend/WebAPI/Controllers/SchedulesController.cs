@@ -112,7 +112,7 @@ public class SchedulesController : ControllerBase
         var schedule = await _scheduleService.UpdateScheduleAsync(id, dto);
         
         // Audit log with differences
-        var oldValues = HttpContextExtensions.SerializeToJson(new { oldSchedule.ValidityStartDate, oldSchedule.ValidityEndDate, oldSchedule.Status });
+        var oldValues = oldSchedule != null ? HttpContextExtensions.SerializeToJson(new { oldSchedule.ValidityStartDate, oldSchedule.ValidityEndDate, oldSchedule.Status }) : null;
         var newValues = HttpContextExtensions.SerializeToJson(new { schedule.ValidityStartDate, schedule.ValidityEndDate, schedule.Status });
         
         await _auditLogService.CreateAuditLogAsync(

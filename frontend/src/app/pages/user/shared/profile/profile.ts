@@ -161,11 +161,32 @@ export class ProfileComponent implements OnInit {
   }
 
   onPasswordChanged(data: { currentPassword: string; newPassword: string }): void {
-    // TODO: Integrar com serviço de autenticação
-    console.log('Trocar senha:', { currentPassword: '***', newPassword: '***' });
-    
-    // Simular sucesso
-    alert('Senha alterada com sucesso!');
-    this.isChangePasswordModalOpen = false;
+    if (!this.user) return;
+
+    this.authService.changePassword(data.currentPassword, data.newPassword, data.newPassword).subscribe({
+      next: (response) => {
+        // Fechar modal primeiro
+        this.isChangePasswordModalOpen = false;
+        this.cdr.detectChanges();
+        
+        // Mostrar alerta de sucesso após fechar o modal
+        setTimeout(() => {
+          this.modalService.alert({
+            title: 'Sucesso',
+            message: response.message || 'Senha alterada com sucesso!',
+            variant: 'success'
+          });
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Erro ao trocar senha:', error);
+        
+        this.modalService.alert({
+          title: 'Erro',
+          message: error.error?.message || 'Não foi possível trocar a senha. Verifique se a senha atual está correta.',
+          variant: 'danger'
+        });
+      }
+    });
   }
 }
