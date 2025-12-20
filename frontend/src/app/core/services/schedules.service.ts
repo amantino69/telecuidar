@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { environment } from '@env/environment';
 
-const API_BASE_URL = 'http://localhost:5239/api';
+const API_BASE_URL = environment.apiUrl;
 
 export type ScheduleStatus = 'Active' | 'Inactive';
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';

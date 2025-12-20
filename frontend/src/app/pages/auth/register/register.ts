@@ -17,6 +17,7 @@ import { PasswordStrengthComponent } from '@app/shared/components/atoms/password
 import { CpfMaskDirective } from '@app/core/directives/cpf-mask.directive';
 import { PhoneMaskDirective } from '@app/core/directives/phone-mask.directive';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '@env/environment';
 
 @Component({
   selector: 'app-register',
@@ -111,7 +112,7 @@ export class RegisterComponent implements OnInit {
   }
 
   private validateInviteToken(token: string): void {
-    this.http.get<any>(`http://localhost:5239/api/invites/validate/${token}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/invites/validate/${token}`).subscribe({
       next: (response) => {
         this.inviteRole = response.role;
         // Preencher email se disponível
@@ -149,7 +150,7 @@ export class RegisterComponent implements OnInit {
         password: formValue.password
       };
 
-      this.http.post<any>('http://localhost:5239/api/invites/register', registerViaInviteData).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/invites/register`, registerViaInviteData).subscribe({
         next: (response) => {
           this.isLoading = false;
           this.successMessage = 'Cadastro realizado com sucesso! Redirecionando para login...';

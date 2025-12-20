@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '@app/core/models/auth.model';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AvatarService {
-  private apiUrl = 'http://localhost:5239/api/users';
+  private apiUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
 
@@ -21,6 +22,8 @@ export class AvatarService {
   getAvatarUrl(avatarPath: string): string {
     if (!avatarPath) return '';
     if (avatarPath.startsWith('http')) return avatarPath;
-    return `http://localhost:5239${avatarPath}`;
+    // Extrair base URL sem /api
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return `${baseUrl}${avatarPath}`;
   }
 }

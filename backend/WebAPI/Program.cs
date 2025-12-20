@@ -1,5 +1,6 @@
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Application.DTOs.Email;
 using DotNetEnv;
 
 // Load .env file from project root (two levels up from WebAPI folder)
@@ -28,6 +29,21 @@ var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"
     ?? "Data Source=telecuidar.db";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
+
+// Email Configuration
+var emailSettings = new EmailSettings
+{
+    Enabled = Environment.GetEnvironmentVariable("EMAIL_ENABLED")?.ToLower() == "true",
+    SmtpHost = Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST") ?? "smtp.gmail.com",
+    SmtpPort = int.TryParse(Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT"), out var port) ? port : 587,
+    SmtpUser = Environment.GetEnvironmentVariable("EMAIL_SMTP_USER") ?? string.Empty,
+    SmtpPassword = Environment.GetEnvironmentVariable("EMAIL_SMTP_PASSWORD") ?? string.Empty,
+    FromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME") ?? "TeleCuidar",
+    FromAddress = Environment.GetEnvironmentVariable("EMAIL_FROM_ADDRESS") ?? string.Empty,
+    UseSsl = Environment.GetEnvironmentVariable("EMAIL_USE_SSL")?.ToLower() != "false"
+};
+builder.Services.AddSingleton(emailSettings);
+builder.Services.AddScoped<Application.Interfaces.IEmailService, Infrastructure.Services.EmailService>();
 
 // Services
 builder.Services.AddScoped<Application.Interfaces.IJwtService, Infrastructure.Services.JwtService>();

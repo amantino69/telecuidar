@@ -23,10 +23,11 @@ export const VALIDATION_MESSAGES = {
   MAX_LENGTH: (length: number) => `Máximo de ${length} caracteres`,
 } as const;
 
-// API endpoints
-const API_BASE_URL = (typeof process !== 'undefined' && process.env?.['API_URL']) 
-  ? process.env['API_URL']
-  : 'http://localhost:5239/api';
+// API endpoints - Importar environment dinamicamente não é possível em constantes
+// A URL base será resolvida em runtime pelo environment.ts
+import { environment } from '@env/environment';
+
+const API_BASE_URL = environment.apiUrl;
 
 export const AUTH_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,

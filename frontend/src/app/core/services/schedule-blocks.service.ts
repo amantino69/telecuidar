@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '@env/environment';
 
-const API_BASE_URL = 'http://localhost:5239/api';
+const API_BASE_URL = environment.apiUrl;
 
 export type ScheduleBlockStatus = 'Pending' | 'Approved' | 'Rejected' | 'Expired';
 export type ScheduleBlockType = 'Single' | 'Range';

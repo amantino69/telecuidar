@@ -1,15 +1,21 @@
+// Este arquivo é gerado automaticamente pelo script generate-env.js
+// NÃO EDITE MANUALMENTE - Edite o arquivo .env na raiz do projeto
+
+// Determina dinamicamente a URL da API baseado no host atual
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    // Se acessando via IP ou não-localhost, usar o mesmo host para API
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return `http://${host}:5239/api`;
+    }
+  }
+  return 'http://localhost:5239/api';
+};
+
 export const environment = {
   production: false,
-  apiUrl: (typeof process !== 'undefined' && process.env?.['API_URL']) 
-    ? process.env['API_URL']
-    : 'https://localhost:5001/api',
-  apiUrlHttp: (typeof process !== 'undefined' && process.env?.['API_URL_HTTP']) 
-    ? process.env['API_URL_HTTP']
-    : 'http://localhost:5000/api',
-  jitsiDomain: (typeof process !== 'undefined' && process.env?.['JITSI_DOMAIN']) 
-    ? process.env['JITSI_DOMAIN']
-    : 'meet.jit.si',
-  jitsiEnabled: (typeof process !== 'undefined' && process.env?.['JITSI_ENABLED']) 
-    ? process.env['JITSI_ENABLED'] === 'true'
-    : false,
+  apiUrl: getApiUrl(),
+  jitsiDomain: 'meet.jit.si',
+  jitsiEnabled: false,
 };

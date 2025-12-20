@@ -22,9 +22,9 @@ public class AIService : IAIService
         _httpClient = new HttpClient();
         _httpClient.Timeout = TimeSpan.FromSeconds(120);
         
-        _apiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? "";
-        _apiUrl = Environment.GetEnvironmentVariable("DEEPSEEK_API_URL") ?? "https://api.deepseek.com/v1/chat/completions";
-        _model = Environment.GetEnvironmentVariable("DEEPSEEK_MODEL") ?? "deepseek-chat";
+        _apiKey = Environment.GetEnvironmentVariable("AI_API_KEY") ?? "";
+        _apiUrl = Environment.GetEnvironmentVariable("AI_API_URL") ?? "https://api.deepseek.com/v1/chat/completions";
+        _model = Environment.GetEnvironmentVariable("AI_MODEL") ?? "deepseek-chat";
         
         if (!string.IsNullOrEmpty(_apiKey))
         {
@@ -126,7 +126,7 @@ public class AIService : IAIService
     {
         if (string.IsNullOrEmpty(_apiKey))
         {
-            throw new InvalidOperationException("DeepSeek API key not configured. Please set DEEPSEEK_API_KEY in the .env file.");
+            throw new InvalidOperationException("AI API key not configured. Please set AI_API_KEY in the .env file.");
         }
 
         var requestBody = new

@@ -17,6 +17,7 @@ import {
   AuthState
 } from '@app/core/models/auth.model';
 import { AUTH_ENDPOINTS, STORAGE_KEYS } from '@app/core/constants/auth.constants';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -319,7 +320,7 @@ export class AuthService {
       return throwError(() => new Error('User ID not available'));
     }
     
-    return this.http.get<User>(`http://localhost:5239/api/users/${currentUserId}`).pipe(
+    return this.http.get<User>(`${environment.apiUrl}/users/${currentUserId}`).pipe(
       tap(user => {
         this.updateCurrentUser(user);
       }),
