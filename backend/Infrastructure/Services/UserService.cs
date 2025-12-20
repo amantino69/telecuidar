@@ -18,9 +18,13 @@ public class UserService : IUserService
         _passwordHasher = passwordHasher;
     }
 
-    public async Task<PaginatedUsersDto> GetUsersAsync(int page, int pageSize, string? search, string? role, string? status)
+    public async Task<PaginatedUsersDto> GetUsersAsync(int page, int pageSize, string? search, string? role, string? status, Guid? specialtyId = null)
     {
-        var query = _context.Users.Include(u => u.Specialty).AsQueryable();
+        var query = _context.Users
+            .Include(u => u.PatientProfile)
+            .Include(u => u.ProfessionalProfile)
+                .ThenInclude(p => p!.Specialty)
+            .AsQueryable();
 
         // Apply filters
         if (!string.IsNullOrEmpty(search))
@@ -47,6 +51,13 @@ public class UserService : IUserService
                 query = query.Where(u => u.Status == userStatus);
             }
         }
+        
+        // Filtrar por especialidade (via ProfessionalProfile)
+        if (specialtyId.HasValue)
+        {
+            query = query.Where(u => 
+                u.ProfessionalProfile != null && u.ProfessionalProfile.SpecialtyId == specialtyId);
+        }
 
         var total = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(total / (double)pageSize);
@@ -55,27 +66,13 @@ public class UserService : IUserService
             .OrderByDescending(u => u.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email,
-                Name = u.Name,
-                LastName = u.LastName,
-                Cpf = u.Cpf,
-                Phone = u.Phone,
-                Avatar = u.Avatar,
-                Role = u.Role.ToString(),
-                Status = u.Status.ToString(),
-                EmailVerified = u.EmailVerified,
-                SpecialtyId = u.SpecialtyId,
-                CreatedAt = u.CreatedAt,
-                UpdatedAt = u.UpdatedAt
-            })
             .ToListAsync();
+
+        var userDtos = users.Select(u => MapToUserDto(u)).ToList();
 
         return new PaginatedUsersDto
         {
-            Data = users,
+            Data = userDtos,
             Total = total,
             Page = page,
             PageSize = pageSize,
@@ -86,27 +83,14 @@ public class UserService : IUserService
     public async Task<UserDto?> GetUserByIdAsync(Guid id)
     {
         var user = await _context.Users
-            .Include(u => u.Specialty)
+            .Include(u => u.PatientProfile)
+            .Include(u => u.ProfessionalProfile)
+                .ThenInclude(p => p!.Specialty)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user == null) return null;
 
-        return new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.Name,
-            LastName = user.LastName,
-            Cpf = user.Cpf,
-            Phone = user.Phone,
-            Avatar = user.Avatar,
-            Role = user.Role.ToString(),
-            Status = user.Status.ToString(),
-            EmailVerified = user.EmailVerified,
-            SpecialtyId = user.SpecialtyId,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
-        };
+        return MapToUserDto(user);
     }
 
     public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
@@ -169,34 +153,54 @@ public class UserService : IUserService
             PasswordHash = _passwordHasher.HashPassword(dto.Password),
             Role = userRole,
             Status = UserStatus.Active,
-            EmailVerified = false,
-            SpecialtyId = dto.SpecialtyId
+            EmailVerified = false
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return new UserDto
+        // Criar perfil específico baseado no role
+        if (userRole == UserRole.PATIENT)
         {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.Name,
-            LastName = user.LastName,
-            Cpf = user.Cpf,
-            Phone = user.Phone,
-            Avatar = user.Avatar,
-            Role = user.Role.ToString(),
-            Status = user.Status.ToString(),
-            EmailVerified = user.EmailVerified,
-            SpecialtyId = user.SpecialtyId,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
-        };
+            if (dto.PatientProfile != null)
+            {
+                await CreateOrUpdatePatientProfileAsync(user.Id, dto.PatientProfile);
+            }
+            else
+            {
+                // Criar perfil vazio para paciente
+                var patientProfile = new PatientProfile { UserId = user.Id };
+                _context.PatientProfiles.Add(patientProfile);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        if (userRole == UserRole.PROFESSIONAL)
+        {
+            if (dto.ProfessionalProfile != null)
+            {
+                await CreateOrUpdateProfessionalProfileAsync(user.Id, dto.ProfessionalProfile);
+            }
+            else
+            {
+                // Criar perfil vazio para profissional
+                var professionalProfile = new ProfessionalProfile { UserId = user.Id };
+                _context.ProfessionalProfiles.Add(professionalProfile);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Recarregar com os perfis
+        return (await GetUserByIdAsync(user.Id))!;
     }
 
     public async Task<UserDto?> UpdateUserAsync(Guid id, UpdateUserDto dto)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await _context.Users
+            .Include(u => u.PatientProfile)
+            .Include(u => u.ProfessionalProfile)
+            .FirstOrDefaultAsync(u => u.Id == id);
+            
         if (user == null) return null;
 
         if (!string.IsNullOrEmpty(dto.Name))
@@ -217,13 +221,132 @@ public class UserService : IUserService
         if (!string.IsNullOrEmpty(dto.Role) && Enum.TryParse<UserRole>(dto.Role, true, out var role))
             user.Role = role;
 
-        if (dto.SpecialtyId.HasValue)
-            user.SpecialtyId = dto.SpecialtyId;
-
         user.UpdatedAt = DateTime.UtcNow;
+
+        // Atualizar perfil de paciente se fornecido
+        if (dto.PatientProfile != null)
+        {
+            await CreateOrUpdatePatientProfileAsync(user.Id, dto.PatientProfile);
+        }
+
+        // Atualizar perfil de profissional se fornecido
+        if (dto.ProfessionalProfile != null)
+        {
+            await CreateOrUpdateProfessionalProfileAsync(user.Id, dto.ProfessionalProfile);
+        }
 
         await _context.SaveChangesAsync();
 
+        return await GetUserByIdAsync(id);
+    }
+
+    public async Task<bool> DeleteUserAsync(Guid id)
+    {
+        var user = await _context.Users
+            .Include(u => u.PatientProfile)
+            .Include(u => u.ProfessionalProfile)
+            .FirstOrDefaultAsync(u => u.Id == id);
+            
+        if (user == null) return false;
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<PatientProfileDto?> GetPatientProfileAsync(Guid userId)
+    {
+        var profile = await _context.PatientProfiles
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+            
+        if (profile == null) return null;
+
+        return MapToPatientProfileDto(profile);
+    }
+
+    public async Task<ProfessionalProfileDto?> GetProfessionalProfileAsync(Guid userId)
+    {
+        var profile = await _context.ProfessionalProfiles
+            .Include(p => p.Specialty)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+            
+        if (profile == null) return null;
+
+        return MapToProfessionalProfileDto(profile);
+    }
+
+    public async Task<PatientProfileDto> CreateOrUpdatePatientProfileAsync(Guid userId, CreateUpdatePatientProfileDto dto)
+    {
+        var profile = await _context.PatientProfiles
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (profile == null)
+        {
+            profile = new PatientProfile { UserId = userId };
+            _context.PatientProfiles.Add(profile);
+        }
+
+        // Atualizar campos
+        if (dto.Cns != null) profile.Cns = dto.Cns;
+        if (dto.SocialName != null) profile.SocialName = dto.SocialName;
+        if (dto.Gender != null) profile.Gender = dto.Gender;
+        if (dto.BirthDate.HasValue) profile.BirthDate = dto.BirthDate;
+        if (dto.MotherName != null) profile.MotherName = dto.MotherName;
+        if (dto.FatherName != null) profile.FatherName = dto.FatherName;
+        if (dto.Nationality != null) profile.Nationality = dto.Nationality;
+        if (dto.ZipCode != null) profile.ZipCode = dto.ZipCode;
+        if (dto.Address != null) profile.Address = dto.Address;
+        if (dto.City != null) profile.City = dto.City;
+        if (dto.State != null) profile.State = dto.State;
+
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return MapToPatientProfileDto(profile);
+    }
+
+    public async Task<ProfessionalProfileDto> CreateOrUpdateProfessionalProfileAsync(Guid userId, CreateUpdateProfessionalProfileDto dto)
+    {
+        var profile = await _context.ProfessionalProfiles
+            .Include(p => p.Specialty)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (profile == null)
+        {
+            profile = new ProfessionalProfile { UserId = userId };
+            _context.ProfessionalProfiles.Add(profile);
+        }
+
+        // Atualizar campos
+        if (dto.Crm != null) profile.Crm = dto.Crm;
+        if (dto.Cbo != null) profile.Cbo = dto.Cbo;
+        if (dto.SpecialtyId.HasValue) profile.SpecialtyId = dto.SpecialtyId;
+        if (dto.Gender != null) profile.Gender = dto.Gender;
+        if (dto.BirthDate.HasValue) profile.BirthDate = dto.BirthDate;
+        if (dto.Nationality != null) profile.Nationality = dto.Nationality;
+        if (dto.ZipCode != null) profile.ZipCode = dto.ZipCode;
+        if (dto.Address != null) profile.Address = dto.Address;
+        if (dto.City != null) profile.City = dto.City;
+        if (dto.State != null) profile.State = dto.State;
+
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        // Recarregar para incluir especialidade
+        await _context.Entry(profile).Reference(p => p.Specialty).LoadAsync();
+
+        return MapToProfessionalProfileDto(profile);
+    }
+
+    // ============================================
+    // Métodos de mapeamento
+    // ============================================
+
+    private static UserDto MapToUserDto(User user)
+    {
         return new UserDto
         {
             Id = user.Id,
@@ -236,20 +359,48 @@ public class UserService : IUserService
             Role = user.Role.ToString(),
             Status = user.Status.ToString(),
             EmailVerified = user.EmailVerified,
-            SpecialtyId = user.SpecialtyId,
             CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
+            UpdatedAt = user.UpdatedAt,
+            PatientProfile = user.PatientProfile != null ? MapToPatientProfileDto(user.PatientProfile) : null,
+            ProfessionalProfile = user.ProfessionalProfile != null ? MapToProfessionalProfileDto(user.ProfessionalProfile) : null
         };
     }
 
-    public async Task<bool> DeleteUserAsync(Guid id)
+    private static PatientProfileDto MapToPatientProfileDto(PatientProfile profile)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return false;
+        return new PatientProfileDto
+        {
+            Id = profile.Id,
+            Cns = profile.Cns,
+            SocialName = profile.SocialName,
+            Gender = profile.Gender,
+            BirthDate = profile.BirthDate,
+            MotherName = profile.MotherName,
+            FatherName = profile.FatherName,
+            Nationality = profile.Nationality,
+            ZipCode = profile.ZipCode,
+            Address = profile.Address,
+            City = profile.City,
+            State = profile.State
+        };
+    }
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-
-        return true;
+    private static ProfessionalProfileDto MapToProfessionalProfileDto(ProfessionalProfile profile)
+    {
+        return new ProfessionalProfileDto
+        {
+            Id = profile.Id,
+            Crm = profile.Crm,
+            Cbo = profile.Cbo,
+            SpecialtyId = profile.SpecialtyId,
+            SpecialtyName = profile.Specialty?.Name,
+            Gender = profile.Gender,
+            BirthDate = profile.BirthDate,
+            Nationality = profile.Nationality,
+            ZipCode = profile.ZipCode,
+            Address = profile.Address,
+            City = profile.City,
+            State = profile.State
+        };
     }
 }

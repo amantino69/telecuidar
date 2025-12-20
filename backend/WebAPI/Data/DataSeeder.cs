@@ -79,8 +79,7 @@ public static class DataSeeder
                 PasswordHash = passwordHasher.HashPassword(defaultPassword),
                 Role = UserRole.PROFESSIONAL,
                 Status = UserStatus.Active,
-                EmailVerified = true,
-                SpecialtyId = cardiologiaSpecialty.Id
+                EmailVerified = true
             },
             new User
             {
@@ -99,8 +98,18 @@ public static class DataSeeder
         context.Users.AddRange(users);
         await context.SaveChangesAsync();
 
-        // Criar agenda para o profissional
+        // Criar ProfessionalProfile para o médico com a especialidade
         var professional = users.First(u => u.Role == UserRole.PROFESSIONAL);
+        var professionalProfile = new ProfessionalProfile
+        {
+            UserId = professional.Id,
+            SpecialtyId = cardiologiaSpecialty.Id,
+            Crm = "123456-SP"
+        };
+        context.ProfessionalProfiles.Add(professionalProfile);
+        await context.SaveChangesAsync();
+
+        // Criar agenda para o profissional
         
         var globalConfigJson = @"{
             ""TimeRange"": {

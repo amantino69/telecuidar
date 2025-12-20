@@ -346,7 +346,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       avatar: updatedUser.avatar,
       status: updatedUser.status,
       role: updatedUser.role,
-      specialtyId: updatedUser.specialtyId
+      professionalProfile: updatedUser.professionalProfile
     };
 
     this.usersService.updateUser(updatedUser.id, updateDto).subscribe({

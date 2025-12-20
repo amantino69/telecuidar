@@ -315,19 +315,39 @@
         @if (nextAppointments.length > 0) {
           <div class="appointment-list">
             @for (appt of nextAppointments; track appt.id) {
-              <div class="appointment-item">
-                <div class="appointment-item__date">
-                  <span class="day">{{ appt.date | date:'dd' }}</span>
-                  <span class="month">{{ appt.date | date:'MMM':'':'pt-BR' }}</span>
+              <div class="appointment-item appointment-item--with-actions">
+                <div class="appointment-item__main">
+                  <div class="appointment-item__date">
+                    <span class="day">{{ appt.date | date:'dd' }}</span>
+                    <span class="month">{{ appt.date | date:'MMM':'':'pt-BR' }}</span>
+                  </div>
+                  <div class="appointment-card__time">
+                    <span class="time">{{ appt.time }}</span>
+                    <h4 class="name">
+                      {{ isPatient() ? appt.professionalName : appt.patientName }}
+                    </h4>
+                    <span class="specialty">{{ appt.specialtyName }}</span>
+                  </div>
                 </div>
-                <div class="appointment-card__time">
-                  <span class="time">{{ appt.time }}</span>
-                  <h4 class="name">
-                    {{ isPatient() ? appt.professionalName : appt.patientName }}
-                  </h4>
-                  <span class="specialty">{{ appt.specialtyName }}</span>
+                
+                <div class="appointment-item__actions">
+                  <app-button 
+                    variant="outline" 
+                    size="sm" 
+                    [fullWidth]="true"
+                    [routerLink]="['/consultas']" 
+                    [queryParams]="{id: appt.id}">
+                    Ver Detalhes
+                  </app-button>
+                  <app-button 
+                    variant="primary" 
+                    size="sm" 
+                    [fullWidth]="true"
+                    [routerLink]="['/teleconsulta', appt.id]">
+                    <app-icon name="video" [size]="16" />
+                    Entrar
+                  </app-button>
                 </div>
-                <app-badge [variant]="'primary'" [label]="'Agendada'" size="sm" />
               </div>
             }
           </div>

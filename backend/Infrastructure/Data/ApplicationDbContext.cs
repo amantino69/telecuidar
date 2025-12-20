@@ -11,6 +11,8 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<PatientProfile> PatientProfiles { get; set; }
+    public DbSet<ProfessionalProfile> ProfessionalProfiles { get; set; }
     public DbSet<Specialty> Specialties { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Notification> Notifications { get; set; }
@@ -38,11 +40,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.Avatar).HasMaxLength(500);
 
-            entity.HasOne(e => e.Specialty)
-                .WithMany(s => s.Professionals)
-                .HasForeignKey(e => e.SpecialtyId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             entity.HasMany(e => e.AppointmentsAsPatient)
                 .WithOne(a => a.Patient)
                 .HasForeignKey(a => a.PatientId)
@@ -52,6 +49,58 @@ public class ApplicationDbContext : DbContext
                 .WithOne(a => a.Professional)
                 .HasForeignKey(a => a.ProfessionalId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            // Relacionamento 1:1 com PatientProfile
+            entity.HasOne(e => e.PatientProfile)
+                .WithOne(p => p.User)
+                .HasForeignKey<PatientProfile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            // Relacionamento 1:1 com ProfessionalProfile
+            entity.HasOne(e => e.ProfessionalProfile)
+                .WithOne(p => p.User)
+                .HasForeignKey<ProfessionalProfile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PatientProfile Configuration
+        modelBuilder.Entity<PatientProfile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasIndex(e => e.Cns);
+            entity.Property(e => e.Cns).HasMaxLength(15);
+            entity.Property(e => e.SocialName).HasMaxLength(200);
+            entity.Property(e => e.Gender).HasMaxLength(20);
+            entity.Property(e => e.MotherName).HasMaxLength(200);
+            entity.Property(e => e.FatherName).HasMaxLength(200);
+            entity.Property(e => e.Nationality).HasMaxLength(100);
+            entity.Property(e => e.ZipCode).HasMaxLength(10);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.State).HasMaxLength(2);
+        });
+        
+        // ProfessionalProfile Configuration
+        modelBuilder.Entity<ProfessionalProfile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasIndex(e => e.Crm);
+            entity.Property(e => e.Crm).HasMaxLength(20);
+            entity.Property(e => e.Cbo).HasMaxLength(10);
+            entity.Property(e => e.Gender).HasMaxLength(20);
+            entity.Property(e => e.Nationality).HasMaxLength(100);
+            entity.Property(e => e.ZipCode).HasMaxLength(10);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.State).HasMaxLength(2);
+            
+            // Relacionamento com Specialty
+            entity.HasOne(e => e.Specialty)
+                .WithMany(s => s.Professionals)
+                .HasForeignKey(e => e.SpecialtyId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Specialty Configuration

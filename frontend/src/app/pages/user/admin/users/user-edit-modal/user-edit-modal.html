@@ -138,7 +138,8 @@
                 <select
                   id="user-specialty"
                   class="user-form__select"
-                  [(ngModel)]="editedUser.specialtyId"
+                  [ngModel]="editedUser.professionalProfile?.specialtyId"
+                  (ngModelChange)="onSpecialtyChange($event)"
                   name="specialtyId"
                 >
                   <option [value]="undefined">Selecione uma especialidade</option>

@@ -229,7 +229,9 @@ export class SpecialtiesComponent implements OnInit {
   }
 
   onSpecialtyAssigned(data: { userId: string; specialtyId: string }): void {
-    this.usersService.updateUser(data.userId, { specialtyId: data.specialtyId }).subscribe({
+    this.usersService.updateUser(data.userId, { 
+      professionalProfile: { specialtyId: data.specialtyId } 
+    }).subscribe({
       next: () => {
         this.modalService.alert({
           title: 'Sucesso',

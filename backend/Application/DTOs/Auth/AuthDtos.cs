@@ -1,3 +1,5 @@
+using Application.DTOs.Users;
+
 namespace Application.DTOs.Auth;
 
 public class LoginRequestDto
@@ -32,7 +34,9 @@ public class RegisterResponseDto
     public string Message { get; set; } = string.Empty;
 }
 
-public class UserDto
+// UserDto movido para Application.DTOs.Users.UserDtos.cs
+// Esta classe é mantida apenas para compatibilidade com imports existentes
+public class AuthUserDto
 {
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
@@ -45,6 +49,10 @@ public class UserDto
     public bool EmailVerified { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    
+    // Perfis específicos
+    public PatientProfileDto? PatientProfile { get; set; }
+    public ProfessionalProfileDto? ProfessionalProfile { get; set; }
 }
 
 public class RefreshTokenRequestDto

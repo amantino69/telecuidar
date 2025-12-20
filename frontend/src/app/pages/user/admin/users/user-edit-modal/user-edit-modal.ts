@@ -58,6 +58,13 @@ export class UserEditModalComponent implements OnChanges, OnInit {
     this.close.emit();
   }
 
+  onSpecialtyChange(specialtyId: string): void {
+    if (!this.editedUser.professionalProfile) {
+      this.editedUser.professionalProfile = {};
+    }
+    this.editedUser.professionalProfile.specialtyId = specialtyId || undefined;
+  }
+
   onSave(): void {
     if (this.editedUser && this.isFormValid()) {
       this.save.emit(this.editedUser as User);

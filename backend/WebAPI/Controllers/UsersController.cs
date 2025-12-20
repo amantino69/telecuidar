@@ -36,11 +36,12 @@ public class UsersController : ControllerBase
         [FromQuery] int pageSize = 10,
         [FromQuery] string? search = null,
         [FromQuery] string? role = null,
-        [FromQuery] string? status = null)
+        [FromQuery] string? status = null,
+        [FromQuery] Guid? specialtyId = null)
     {
         try
         {
-            var result = await _userService.GetUsersAsync(page, pageSize, search, role, status);
+            var result = await _userService.GetUsersAsync(page, pageSize, search, role, status, specialtyId);
             return Ok(result);
         }
         catch (Exception ex)
@@ -233,6 +234,117 @@ public class UsersController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    // ============================================
+    // Endpoints de Perfil de Paciente
+    // ============================================
+
+    [HttpGet("{id}/patient-profile")]
+    public async Task<ActionResult<PatientProfileDto>> GetPatientProfile(Guid id)
+    {
+        try
+        {
+            var profile = await _userService.GetPatientProfileAsync(id);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Patient profile not found" });
+            }
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}/patient-profile")]
+    public async Task<ActionResult<PatientProfileDto>> UpdatePatientProfile(Guid id, [FromBody] CreateUpdatePatientProfileDto dto)
+    {
+        try
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            var profile = await _userService.CreateOrUpdatePatientProfileAsync(id, dto);
+
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "update",
+                "PatientProfile",
+                id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(dto),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    // ============================================
+    // Endpoints de Perfil de Profissional
+    // ============================================
+
+    [HttpGet("{id}/professional-profile")]
+    public async Task<ActionResult<ProfessionalProfileDto>> GetProfessionalProfile(Guid id)
+    {
+        try
+        {
+            var profile = await _userService.GetProfessionalProfileAsync(id);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Professional profile not found" });
+            }
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}/professional-profile")]
+    [Authorize(Roles = "ADMIN,PROFESSIONAL")]
+    public async Task<ActionResult<ProfessionalProfileDto>> UpdateProfessionalProfile(Guid id, [FromBody] CreateUpdateProfessionalProfileDto dto)
+    {
+        try
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            var profile = await _userService.CreateOrUpdateProfessionalProfileAsync(id, dto);
+
+            // Audit log
+            await _auditLogService.CreateAuditLogAsync(
+                GetCurrentUserId(),
+                "update",
+                "ProfessionalProfile",
+                id.ToString(),
+                null,
+                HttpContextExtensions.SerializeToJson(dto),
+                HttpContext.GetIpAddress(),
+                HttpContext.GetUserAgent()
+            );
+
+            return Ok(profile);
         }
         catch (Exception ex)
         {

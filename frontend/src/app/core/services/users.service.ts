@@ -7,6 +7,71 @@ const API_BASE_URL = 'http://localhost:5239/api';
 export type UserRole = 'PATIENT' | 'PROFESSIONAL' | 'ADMIN';
 export type UserStatus = 'Active' | 'Inactive';
 
+// ============================================
+// Interfaces de Perfis Específicos
+// ============================================
+
+export interface PatientProfile {
+  id?: string;
+  cns?: string;
+  socialName?: string;
+  gender?: string;
+  birthDate?: string;
+  motherName?: string;
+  fatherName?: string;
+  nationality?: string;
+  zipCode?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+export interface ProfessionalProfile {
+  id?: string;
+  crm?: string;
+  cbo?: string;
+  specialtyId?: string;
+  specialtyName?: string;
+  gender?: string;
+  birthDate?: string;
+  nationality?: string;
+  zipCode?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+export interface CreateUpdatePatientProfile {
+  cns?: string;
+  socialName?: string;
+  gender?: string;
+  birthDate?: string;
+  motherName?: string;
+  fatherName?: string;
+  nationality?: string;
+  zipCode?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+export interface CreateUpdateProfessionalProfile {
+  crm?: string;
+  cbo?: string;
+  specialtyId?: string;
+  gender?: string;
+  birthDate?: string;
+  nationality?: string;
+  zipCode?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+// ============================================
+// Interface de Usuário com Perfis
+// ============================================
+
 export interface User {
   id: string;
   name: string;
@@ -19,8 +84,11 @@ export interface User {
   createdAt: string;
   updatedAt?: string;
   avatar?: string;
-  specialtyId?: string;
   emailVerified?: boolean;
+  
+  // Perfis específicos por tipo de usuário
+  patientProfile?: PatientProfile;
+  professionalProfile?: ProfessionalProfile;
 }
 
 export interface CreateUserDto {
@@ -32,7 +100,10 @@ export interface CreateUserDto {
   password: string;
   role: UserRole;
   status: UserStatus;
-  specialtyId?: string;
+  
+  // Perfis específicos por tipo de usuário
+  patientProfile?: CreateUpdatePatientProfile;
+  professionalProfile?: CreateUpdateProfessionalProfile;
 }
 
 export interface UpdateUserDto {
@@ -42,7 +113,10 @@ export interface UpdateUserDto {
   avatar?: string;
   status?: UserStatus;
   role?: UserRole;
-  specialtyId?: string;
+  
+  // Perfis específicos por tipo de usuário
+  patientProfile?: CreateUpdatePatientProfile;
+  professionalProfile?: CreateUpdateProfessionalProfile;
 }
 
 export interface UsersFilter {
@@ -117,5 +191,29 @@ export class UsersService {
 
   generateInviteLink(data: { email: string; role: UserRole; specialtyId?: string }): Observable<any> {
     return this.http.post(`${API_BASE_URL}/invites/generate-link`, data);
+  }
+
+  // ============================================
+  // Métodos de Perfil de Paciente
+  // ============================================
+
+  getPatientProfile(userId: string): Observable<PatientProfile> {
+    return this.http.get<PatientProfile>(`${this.apiUrl}/${userId}/patient-profile`);
+  }
+
+  updatePatientProfile(userId: string, profile: CreateUpdatePatientProfile): Observable<PatientProfile> {
+    return this.http.put<PatientProfile>(`${this.apiUrl}/${userId}/patient-profile`, profile);
+  }
+
+  // ============================================
+  // Métodos de Perfil de Profissional
+  // ============================================
+
+  getProfessionalProfile(userId: string): Observable<ProfessionalProfile> {
+    return this.http.get<ProfessionalProfile>(`${this.apiUrl}/${userId}/professional-profile`);
+  }
+
+  updateProfessionalProfile(userId: string, profile: CreateUpdateProfessionalProfile): Observable<ProfessionalProfile> {
+    return this.http.put<ProfessionalProfile>(`${this.apiUrl}/${userId}/professional-profile`, profile);
   }
 }

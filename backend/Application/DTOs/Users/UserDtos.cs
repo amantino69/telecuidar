@@ -12,9 +12,12 @@ public class UserDto
     public string Role { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public bool EmailVerified { get; set; }
-    public Guid? SpecialtyId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    
+    // Perfis específicos por tipo de usuário
+    public PatientProfileDto? PatientProfile { get; set; }
+    public ProfessionalProfileDto? ProfessionalProfile { get; set; }
 }
 
 public class CreateUserDto
@@ -26,7 +29,10 @@ public class CreateUserDto
     public string? Phone { get; set; }
     public string Password { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public Guid? SpecialtyId { get; set; }
+    
+    // Perfis específicos por tipo de usuário
+    public CreateUpdatePatientProfileDto? PatientProfile { get; set; }
+    public CreateUpdateProfessionalProfileDto? ProfessionalProfile { get; set; }
 }
 
 public class UpdateUserDto
@@ -37,7 +43,10 @@ public class UpdateUserDto
     public string? Avatar { get; set; }
     public string? Status { get; set; }
     public string? Role { get; set; }
-    public Guid? SpecialtyId { get; set; }
+    
+    // Perfis específicos por tipo de usuário
+    public CreateUpdatePatientProfileDto? PatientProfile { get; set; }
+    public CreateUpdateProfessionalProfileDto? ProfessionalProfile { get; set; }
 }
 
 public class PaginatedUsersDto

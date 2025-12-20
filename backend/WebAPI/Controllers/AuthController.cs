@@ -1,4 +1,5 @@
 using Application.DTOs.Auth;
+using Application.DTOs.Users;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Extensions;
@@ -11,11 +12,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IAuditLogService _auditLogService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService, IAuditLogService auditLogService)
+    public AuthController(IAuthService authService, IAuditLogService auditLogService, IUserService userService)
     {
         _authService = authService;
         _auditLogService = auditLogService;
+        _userService = userService;
     }
 
     [HttpPost("register")]
@@ -42,9 +45,12 @@ public class AuthController : ControllerBase
                 request.Password
             );
 
+            // Buscar usuário completo com perfis
+            var userDto = await _userService.GetUserByIdAsync(user.Id);
+
             var response = new RegisterResponseDto
             {
-                User = new UserDto
+                User = userDto ?? new UserDto
                 {
                     Id = user.Id,
                     Email = user.Email,
@@ -101,9 +107,12 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { message = "Email ou senha incorretos" });
             }
 
+            // Buscar usuário completo com perfis
+            var userDto = await _userService.GetUserByIdAsync(user.Id);
+
             var response = new LoginResponseDto
             {
-                User = new UserDto
+                User = userDto ?? new UserDto
                 {
                     Id = user.Id,
                     Email = user.Email,

@@ -274,11 +274,29 @@ public class InviteService : IInviteService
             Role = invite.Role,
             Status = UserStatus.Active,
             EmailVerified = true, // Auto-verify since they used invite
-            SpecialtyId = invite.SpecialtyId,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Criar perfil específico baseado no role
+        if (invite.Role == UserRole.PROFESSIONAL && invite.SpecialtyId.HasValue)
+        {
+            var professionalProfile = new ProfessionalProfile
+            {
+                UserId = user.Id,
+                SpecialtyId = invite.SpecialtyId
+            };
+            _context.ProfessionalProfiles.Add(professionalProfile);
+            await _context.SaveChangesAsync();
+        }
+        else if (invite.Role == UserRole.PATIENT)
+        {
+            var patientProfile = new PatientProfile { UserId = user.Id };
+            _context.PatientProfiles.Add(patientProfile);
+            await _context.SaveChangesAsync();
+        }
 
         // Mark invite as accepted
         invite.Status = InviteStatus.Accepted;
@@ -302,20 +320,56 @@ public class InviteService : IInviteService
             Console.WriteLine($"Erro ao criar notificação de convite aceito: {ex.Message}");
         }
 
+        // Recarregar usuário com perfis
+        var userWithProfiles = await _context.Users
+            .Include(u => u.PatientProfile)
+            .Include(u => u.ProfessionalProfile)
+                .ThenInclude(p => p!.Specialty)
+            .FirstAsync(u => u.Id == user.Id);
+
         return new UserDto
         {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.Name,
-            LastName = user.LastName,
-            Cpf = user.Cpf,
-            Phone = user.Phone,
-            Role = user.Role.ToString(),
-            Status = user.Status.ToString(),
-            EmailVerified = user.EmailVerified,
-            SpecialtyId = user.SpecialtyId,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
+            Id = userWithProfiles.Id,
+            Email = userWithProfiles.Email,
+            Name = userWithProfiles.Name,
+            LastName = userWithProfiles.LastName,
+            Cpf = userWithProfiles.Cpf,
+            Phone = userWithProfiles.Phone,
+            Role = userWithProfiles.Role.ToString(),
+            Status = userWithProfiles.Status.ToString(),
+            EmailVerified = userWithProfiles.EmailVerified,
+            CreatedAt = userWithProfiles.CreatedAt,
+            UpdatedAt = userWithProfiles.UpdatedAt,
+            PatientProfile = userWithProfiles.PatientProfile != null ? new PatientProfileDto
+            {
+                Id = userWithProfiles.PatientProfile.Id,
+                Cns = userWithProfiles.PatientProfile.Cns,
+                SocialName = userWithProfiles.PatientProfile.SocialName,
+                Gender = userWithProfiles.PatientProfile.Gender,
+                BirthDate = userWithProfiles.PatientProfile.BirthDate,
+                MotherName = userWithProfiles.PatientProfile.MotherName,
+                FatherName = userWithProfiles.PatientProfile.FatherName,
+                Nationality = userWithProfiles.PatientProfile.Nationality,
+                ZipCode = userWithProfiles.PatientProfile.ZipCode,
+                Address = userWithProfiles.PatientProfile.Address,
+                City = userWithProfiles.PatientProfile.City,
+                State = userWithProfiles.PatientProfile.State
+            } : null,
+            ProfessionalProfile = userWithProfiles.ProfessionalProfile != null ? new ProfessionalProfileDto
+            {
+                Id = userWithProfiles.ProfessionalProfile.Id,
+                Crm = userWithProfiles.ProfessionalProfile.Crm,
+                Cbo = userWithProfiles.ProfessionalProfile.Cbo,
+                SpecialtyId = userWithProfiles.ProfessionalProfile.SpecialtyId,
+                SpecialtyName = userWithProfiles.ProfessionalProfile.Specialty?.Name,
+                Gender = userWithProfiles.ProfessionalProfile.Gender,
+                BirthDate = userWithProfiles.ProfessionalProfile.BirthDate,
+                Nationality = userWithProfiles.ProfessionalProfile.Nationality,
+                ZipCode = userWithProfiles.ProfessionalProfile.ZipCode,
+                Address = userWithProfiles.ProfessionalProfile.Address,
+                City = userWithProfiles.ProfessionalProfile.City,
+                State = userWithProfiles.ProfessionalProfile.State
+            } : null
         };
     }
 

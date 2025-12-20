@@ -1,3 +1,5 @@
+import { PatientProfile, ProfessionalProfile } from '@core/services/users.service';
+
 export interface User {
   id: string;
   email: string;
@@ -11,7 +13,13 @@ export interface User {
   emailVerified?: boolean;
   createdAt: string;
   updatedAt?: string;
+  
+  // Campo legado mantido para compatibilidade
   specialtyId?: string;
+  
+  // Perfis específicos por tipo de usuário
+  patientProfile?: PatientProfile;
+  professionalProfile?: ProfessionalProfile;
 }
 
 export type userrole = 'PATIENT' | 'PROFESSIONAL' | 'ADMIN';

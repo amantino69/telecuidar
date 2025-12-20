@@ -11,6 +11,6 @@ public class Specialty : BaseEntity
     public string? CustomFieldsJson { get; set; } // Store CustomField[] as JSON
     
     // Navigation Properties
-    public ICollection<User> Professionals { get; set; } = new List<User>();
+    public ICollection<ProfessionalProfile> Professionals { get; set; } = new List<ProfessionalProfile>();
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }
