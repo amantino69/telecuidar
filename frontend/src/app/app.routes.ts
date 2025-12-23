@@ -16,6 +16,7 @@ import { AppointmentDetailsModalComponent } from '@pages/user/shared/appointment
 import { AppointmentDetailsComponent } from '@pages/user/shared/appointments/appointment-details/appointment-details';
 import { ScheduleBlocksComponent } from '@pages/user/shared/schedule-blocks/schedule-blocks';
 import { MyScheduleComponent } from '@pages/user/professional/my-schedule/my-schedule';
+import { CertificatesComponent } from '@pages/user/professional/certificates/certificates';
 
 // Admin-specific components
 import { ScheduleBlocksComponent as AdminScheduleBlocksComponent } from '@pages/user/admin/schedule-blocks/schedule-blocks';
@@ -37,14 +38,15 @@ import { TeleconsultationComponent } from '@pages/user/shared/teleconsultation/t
 // Guards
 import { authGuard } from '@core/guards/auth.guard';
 import { roleGuard } from '@core/guards/role.guard';
+import { guestGuard } from '@core/guards/guest.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: LandingComponent
   },
-  { path: 'entrar', component: LoginComponent },
-  { path: 'registrar', component: RegisterComponent },
+  { path: 'entrar', component: LoginComponent, canActivate: [guestGuard] },
+  { path: 'registrar', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'esqueci-senha', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'verify-email', component: VerifyEmailComponent },
@@ -85,6 +87,7 @@ export const routes: Routes = [
       // Professional only
       { path: 'bloqueios-agenda', component: ScheduleBlocksComponent, canActivate: [roleGuard(['PROFESSIONAL'])] },
       { path: 'minha-agenda', component: MyScheduleComponent, canActivate: [roleGuard(['PROFESSIONAL'])] },
+      { path: 'certificados', component: CertificatesComponent, canActivate: [roleGuard(['PROFESSIONAL'])] },
       
       // Patient only
       { path: 'agendar', component: SchedulingComponent, canActivate: [roleGuard(['PATIENT'])] },

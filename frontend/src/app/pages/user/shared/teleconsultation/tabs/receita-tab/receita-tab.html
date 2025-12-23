@@ -58,11 +58,9 @@
               variant="primary" 
               size="sm"
               (click)="openSignatureOptions()"
-              [disabled]="isSigning || isLoadingInstalledCerts">
+              [disabled]="isSigning">
               <app-icon name="edit" [size]="16" />
-              @if (isLoadingInstalledCerts) {
-                Carregando...
-              } @else if (isSigning) {
+              @if (isSigning) {
                 Assinando...
               } @else {
                 Assinar e Gerar PDF
@@ -287,170 +285,422 @@
     }
   }
 
-  <!-- Modal de seleção de certificado -->
-  @if (showCertificateModal) {
-    <div class="modal-overlay" (click)="closeCertificateModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Selecione o Certificado Digital</h3>
-          <button class="close-btn" (click)="closeCertificateModal()">
-            <app-icon name="close" [size]="20" />
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <p class="modal-description">
-            Foram encontrados múltiplos certificados digitais A1 (ICP-Brasil). 
-            Selecione qual deseja usar para assinar esta receita:
-          </p>
-          
-          <div class="certificates-list">
-            @for (cert of certificates; track cert.thumbprint) {
-              <div 
-                class="certificate-card" 
-                [class.selected]="selectedCertificate?.thumbprint === cert.thumbprint"
-                (click)="selectCertificate(cert)">
-                <div class="cert-icon">
-                  <app-icon name="settings" [size]="24" />
-                </div>
-                <div class="cert-info">
-                  <strong>{{ cert.subject }}</strong>
-                  <p>Emissor: {{ cert.issuer }}</p>
-                  <p>Válido: {{ cert.validFrom | date:'dd/MM/yyyy' }} - {{ cert.validTo | date:'dd/MM/yyyy' }}</p>
-                </div>
-                @if (cert.isValid) {
-                  <span class="valid-badge">Válido</span>
-                } @else {
-                  <span class="invalid-badge">Expirado</span>
-                }
-              </div>
-            }
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <app-button variant="secondary" (click)="closeCertificateModal()">
-            Cancelar
-          </app-button>
-          <app-button 
-            variant="primary" 
-            (click)="confirmCertificateSelection()"
-            [disabled]="!selectedCertificate">
-            Assinar com este Certificado
-          </app-button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Modal de Senha do PFX -->
+  <!-- ============================================ -->
+  <!-- MODAL: Senha do PFX (uso único) -->
+  <!-- ============================================ -->
   @if (showPfxPasswordModal) {
-    <div class="modal-overlay" (click)="closePfxPasswordModal()">
-      <div class="modal-content pfx-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Senha do Certificado</h3>
-          <button class="close-btn" (click)="closePfxPasswordModal()">
+    <div class="cert-modal-overlay" (click)="closePfxPasswordModal()">
+      <div class="cert-modal cert-modal--sm" (click)="$event.stopPropagation()">
+        <div class="cert-modal__header">
+          <div class="cert-modal__icon cert-modal__icon--primary">
+            <app-icon name="shield" [size]="28" />
+          </div>
+          <div class="cert-modal__title-group">
+            <h2 class="cert-modal__title">Senha do Certificado</h2>
+            <p class="cert-modal__subtitle">{{ pfxFile?.name }}</p>
+          </div>
+          <button class="cert-modal__close" (click)="closePfxPasswordModal()">
             <app-icon name="close" [size]="20" />
           </button>
         </div>
         
-        <div class="modal-body">
-          <p class="modal-description">
-            Informe a senha do certificado digital A1 (PFX) para assinar o documento.
-          </p>
-          
-          <div class="pfx-file-info">
-            <app-icon name="settings" [size]="24" />
-            <span>{{ pfxFile?.name }}</span>
+        <div class="cert-modal__body">
+          <div class="cert-alert cert-alert--info">
+            <app-icon name="alert-circle" [size]="20" />
+            <p>Informe a senha do certificado digital A1 para assinar o documento.</p>
           </div>
           
-          <div class="form-group">
-            <label for="pfxPassword">Senha do Certificado</label>
+          <div class="cert-form-group">
+            <label class="cert-label" for="pfxPassword">Senha do Certificado</label>
             <input 
               type="password" 
               id="pfxPassword"
               [(ngModel)]="pfxPassword"
-              placeholder="Digite a senha do certificado"
-              class="form-control"
-              (keyup.enter)="generateSignedPdf()" />
+              placeholder="Digite a senha"
+              class="cert-input"
+              (keyup.enter)="pfxPassword && generateSignedPdf()" />
           </div>
         </div>
         
-        <div class="modal-footer">
-          <app-button variant="secondary" (click)="closePfxPasswordModal()">
+        <div class="cert-modal__footer">
+          <button type="button" class="cert-btn cert-btn--secondary" (click)="closePfxPasswordModal()">
             Cancelar
-          </app-button>
-          <app-button 
-            variant="primary" 
+          </button>
+          <button 
+            type="button"
+            class="cert-btn cert-btn--primary" 
             (click)="generateSignedPdf()"
             [disabled]="!pfxPassword || isSigning">
-            {{ isSigning ? 'Assinando...' : 'Assinar e Gerar PDF' }}
-          </app-button>
+            @if (isSigning) {
+              <span class="cert-btn__spinner"></span>
+              Assinando...
+            } @else {
+              <app-icon name="edit" [size]="18" />
+              Assinar PDF
+            }
+          </button>
         </div>
       </div>
     </div>
   }
 
-  <!-- Modal de Seleção de Certificados Instalados -->
-  @if (showInstalledCertsModal) {
-    <div class="modal-overlay" (click)="closeInstalledCertsModal()">
-      <div class="modal-content installed-certs-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Selecionar Certificado Digital</h3>
-          <button class="close-btn" (click)="closeInstalledCertsModal()">
+  <!-- ============================================ -->
+  <!-- MODAL: Seleção de Certificados Salvos -->
+  <!-- ============================================ -->
+  @if (showSavedCertsModal) {
+    <div class="cert-modal-overlay" (click)="closeSavedCertsModal()">
+      <div class="cert-modal" (click)="$event.stopPropagation()">
+        <!-- Header com ícone -->
+        <div class="cert-modal__header">
+          <div class="cert-modal__icon cert-modal__icon--primary">
+            <app-icon name="shield" [size]="28" />
+          </div>
+          <div class="cert-modal__title-group">
+            <h2 class="cert-modal__title">Selecionar Certificado</h2>
+            <p class="cert-modal__subtitle">Escolha um certificado para assinar a receita</p>
+          </div>
+          <button class="cert-modal__close" (click)="closeSavedCertsModal()">
             <app-icon name="close" [size]="20" />
           </button>
         </div>
-        
-        <div class="modal-body">
-          <p class="modal-description">
-            Selecione um dos certificados digitais instalados neste computador para assinar a receita:
-          </p>
-          
-          <div class="certificates-list">
-            @for (cert of installedCertificates; track cert.thumbprint) {
-              <div 
-                class="certificate-card" 
-                [class.selected]="selectedInstalledCert?.thumbprint === cert.thumbprint"
-                (click)="selectInstalledCertificate(cert)">
-                <div class="cert-icon">
-                  <app-icon name="settings" [size]="24" />
-                </div>
-                <div class="cert-info">
-                  <strong>{{ cert.subjectName }}</strong>
-                  <p>Emissor: {{ cert.issuerName }}</p>
-                  <p>Válido: {{ cert.validFrom | date:'dd/MM/yyyy' }} - {{ cert.validTo | date:'dd/MM/yyyy' }}</p>
-                  @if (cert.pkiBrazil?.cpf) {
-                    <p class="cpf-info">CPF: {{ cert.pkiBrazil?.cpf }}</p>
+
+        <!-- Lista de certificados -->
+        <div class="cert-modal__body">
+          <div class="cert-list">
+            @for (cert of savedCertificates; track cert.id) {
+              <button 
+                type="button"
+                class="cert-card" 
+                [class.cert-card--selected]="selectedSavedCert?.id === cert.id"
+                (click)="selectSavedCertificate(cert)">
+                <div class="cert-card__check">
+                  @if (selectedSavedCert?.id === cert.id) {
+                    <app-icon name="check" [size]="16" />
                   }
                 </div>
-                <span class="valid-badge">Válido</span>
-              </div>
+                <div class="cert-card__content">
+                  <span class="cert-card__name">{{ cert.name }}</span>
+                  <span class="cert-card__subject">{{ cert.subjectName }}</span>
+                  <div class="cert-card__meta">
+                    <span class="cert-card__validity">
+                      <app-icon name="calendar" [size]="12" />
+                      {{ cert.validFrom | date:'dd/MM/yy' }} - {{ cert.validTo | date:'dd/MM/yy' }}
+                    </span>
+                    @if (cert.requirePasswordOnUse) {
+                      <span class="cert-card__secure">
+                        <app-icon name="shield" [size]="12" />
+                        Protegido
+                      </span>
+                    }
+                  </div>
+                </div>
+              </button>
             }
           </div>
-          
-          <div class="modal-divider">
-            <span>ou</span>
-          </div>
-          
-          <div class="file-option">
-            <app-button variant="outline" size="sm" (click)="useFileCertificate()">
-              <app-icon name="plus" [size]="16" />
-              Usar arquivo de certificado (.pfx)
-            </app-button>
+
+          <!-- Opções alternativas -->
+          <div class="cert-modal__alternatives">
+            <span class="cert-modal__divider-text">ou</span>
+            <div class="cert-modal__alt-buttons">
+              <button type="button" class="cert-alt-btn" (click)="useFileCertificate()">
+                <app-icon name="file" [size]="18" />
+                <span>Usar arquivo .pfx</span>
+              </button>
+              <button type="button" class="cert-alt-btn" (click)="openSaveCertModal()">
+                <app-icon name="plus" [size]="18" />
+                <span>Salvar novo</span>
+              </button>
+            </div>
           </div>
         </div>
-        
-        <div class="modal-footer">
-          <app-button variant="secondary" (click)="closeInstalledCertsModal()">
+
+        <!-- Footer -->
+        <div class="cert-modal__footer">
+          <button type="button" class="cert-btn cert-btn--secondary" (click)="closeSavedCertsModal()">
             Cancelar
-          </app-button>
-          <app-button 
-            variant="primary" 
-            (click)="confirmInstalledCertSignature()"
-            [disabled]="!selectedInstalledCert || isSigning">
-            {{ isSigning ? 'Assinando...' : 'Assinar com este Certificado' }}
-          </app-button>
+          </button>
+          <button 
+            type="button" 
+            class="cert-btn cert-btn--primary"
+            [disabled]="!selectedSavedCert || isSigning"
+            (click)="confirmSavedCertSignature()">
+            @if (isSigning) {
+              <span class="cert-btn__spinner"></span>
+              Assinando...
+            } @else {
+              <app-icon name="edit" [size]="18" />
+              Assinar Receita
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================ -->
+  <!-- MODAL: Senha do Certificado -->
+  <!-- ============================================ -->
+  @if (showCertPasswordModal) {
+    <div class="cert-modal-overlay" (click)="closeCertPasswordModal()">
+      <div class="cert-modal cert-modal--sm" (click)="$event.stopPropagation()">
+        <div class="cert-modal__header">
+          <div class="cert-modal__icon cert-modal__icon--warning">
+            <app-icon name="shield" [size]="28" />
+          </div>
+          <div class="cert-modal__title-group">
+            <h2 class="cert-modal__title">Senha Necessária</h2>
+            <p class="cert-modal__subtitle">{{ selectedSavedCert?.name }}</p>
+          </div>
+          <button class="cert-modal__close" (click)="closeCertPasswordModal()">
+            <app-icon name="close" [size]="20" />
+          </button>
+        </div>
+
+        <div class="cert-modal__body">
+          <div class="cert-form-group">
+            <label class="cert-label" for="certPasswordSign">
+              Digite a senha do certificado
+            </label>
+            <input 
+              type="password" 
+              id="certPasswordSign"
+              class="cert-input"
+              [(ngModel)]="certPasswordForSign"
+              placeholder="••••••••"
+              (keyup.enter)="certPasswordForSign && signWithSavedCert()" />
+          </div>
+        </div>
+
+        <div class="cert-modal__footer">
+          <button type="button" class="cert-btn cert-btn--secondary" (click)="closeCertPasswordModal()">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="cert-btn cert-btn--primary"
+            [disabled]="!certPasswordForSign || isSigning"
+            (click)="signWithSavedCert()">
+            @if (isSigning) {
+              <span class="cert-btn__spinner"></span>
+              Assinando...
+            } @else {
+              Confirmar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================ -->
+  <!-- MODAL: Opções de Assinatura -->
+  <!-- ============================================ -->
+  @if (showSignatureOptionsModal) {
+    <div class="cert-modal-overlay" (click)="closeSignatureOptionsModal()">
+      <div class="cert-modal" (click)="$event.stopPropagation()">
+        <div class="cert-modal__header">
+          <div class="cert-modal__icon cert-modal__icon--info">
+            <app-icon name="edit" [size]="28" />
+          </div>
+          <div class="cert-modal__title-group">
+            <h2 class="cert-modal__title">Assinar Receita Digital</h2>
+            <p class="cert-modal__subtitle">Escolha como deseja assinar</p>
+          </div>
+          <button class="cert-modal__close" (click)="closeSignatureOptionsModal()">
+            <app-icon name="close" [size]="20" />
+          </button>
+        </div>
+
+        <div class="cert-modal__body">
+          <!-- Alerta -->
+          <div class="cert-alert cert-alert--info">
+            <app-icon name="alert-circle" [size]="20" />
+            <p>Você ainda não possui certificados salvos na plataforma.</p>
+          </div>
+
+          <!-- Opções -->
+          <div class="cert-options">
+            <button type="button" class="cert-option-card" (click)="openSaveCertModal()">
+              <div class="cert-option-card__icon">
+                <app-icon name="plus" [size]="24" />
+              </div>
+              <div class="cert-option-card__content">
+                <strong>Salvar Certificado</strong>
+                <span>Salve seu .PFX para uso futuro</span>
+              </div>
+              <app-icon name="arrow-right" [size]="20" class="cert-option-card__arrow" />
+            </button>
+
+            <button type="button" class="cert-option-card" (click)="usePfxFile()">
+              <div class="cert-option-card__icon">
+                <app-icon name="file" [size]="24" />
+              </div>
+              <div class="cert-option-card__content">
+                <strong>Usar Arquivo PFX</strong>
+                <span>Selecione do seu computador</span>
+              </div>
+              <app-icon name="arrow-right" [size]="20" class="cert-option-card__arrow" />
+            </button>
+          </div>
+
+          <!-- Info -->
+          <div class="cert-info-box">
+            <p>
+              A assinatura digital garante a validade jurídica da receita.
+              <a href="https://validar.iti.gov.br" target="_blank">Validar assinatura →</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="cert-modal__footer cert-modal__footer--single">
+          <button type="button" class="cert-btn cert-btn--secondary" (click)="closeSignatureOptionsModal()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================ -->
+  <!-- MODAL: Salvar Certificado -->
+  <!-- ============================================ -->
+  @if (showSaveCertModal) {
+    <div class="cert-modal-overlay" (click)="closeSaveCertModal()">
+      <div class="cert-modal cert-modal--lg" (click)="$event.stopPropagation()">
+        <div class="cert-modal__header">
+          <div class="cert-modal__icon cert-modal__icon--success">
+            <app-icon name="plus" [size]="28" />
+          </div>
+          <div class="cert-modal__title-group">
+            <h2 class="cert-modal__title">Salvar Certificado</h2>
+            <p class="cert-modal__subtitle">Armazene de forma segura e criptografada</p>
+          </div>
+          <button class="cert-modal__close" (click)="closeSaveCertModal()">
+            <app-icon name="close" [size]="20" />
+          </button>
+        </div>
+
+        <div class="cert-modal__body">
+          <!-- Input oculto -->
+          <input 
+            #saveCertPfxInput
+            type="file" 
+            accept=".pfx,.p12"
+            style="display: none;"
+            (change)="onSaveCertPfxSelected($event)" />
+
+          <!-- Step 1: Selecionar arquivo -->
+          <div class="cert-step">
+            <div class="cert-step__number">1</div>
+            <div class="cert-step__content">
+              <label class="cert-label">Selecione o arquivo do certificado</label>
+              <button type="button" class="cert-file-picker" (click)="saveCertPfxInput.click()">
+                <div class="cert-file-picker__icon">
+                  <app-icon name="upload-cloud" [size]="24" />
+                </div>
+                <div class="cert-file-picker__text">
+                  @if (pfxFile) {
+                    <strong>{{ pfxFile.name }}</strong>
+                    <span>Clique para alterar</span>
+                  } @else {
+                    <strong>Clique para selecionar</strong>
+                    <span>Arquivos .pfx ou .p12</span>
+                  }
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Senha -->
+          @if (pfxFile) {
+            <div class="cert-step">
+              <div class="cert-step__number">2</div>
+              <div class="cert-step__content">
+                <label class="cert-label" for="saveCertPassword">Senha do certificado</label>
+                <div class="cert-input-group">
+                  <input 
+                    type="password" 
+                    id="saveCertPassword"
+                    class="cert-input"
+                    [(ngModel)]="pfxPassword"
+                    placeholder="Digite a senha" />
+                  <button 
+                    type="button" 
+                    class="cert-btn cert-btn--outline"
+                    [disabled]="!pfxPassword || isValidatingPfx"
+                    (click)="validatePfxForSave()">
+                    @if (isValidatingPfx) {
+                      <span class="cert-btn__spinner"></span>
+                    } @else {
+                      Validar
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Step 3: Configurações (após validação) -->
+          @if (saveCertInfo?.isValid) {
+            <div class="cert-step">
+              <div class="cert-step__number cert-step__number--success">
+                <app-icon name="check" [size]="14" />
+              </div>
+              <div class="cert-step__content">
+                <!-- Certificado validado -->
+                <div class="cert-validated">
+                  <div class="cert-validated__badge">
+                    <app-icon name="check-circle" [size]="16" />
+                    Certificado Válido
+                  </div>
+                  <p class="cert-validated__subject">{{ saveCertInfo!.subjectName }}</p>
+                  <p class="cert-validated__expiry">Válido até {{ saveCertInfo!.validTo | date:'dd/MM/yyyy' }}</p>
+                </div>
+
+                <!-- Nome do certificado -->
+                <div class="cert-form-group">
+                  <label class="cert-label" for="saveCertName">Nome para identificação</label>
+                  <input 
+                    type="text" 
+                    id="saveCertName"
+                    class="cert-input"
+                    [(ngModel)]="saveCertName"
+                    placeholder="Ex: Meu Certificado Principal" />
+                </div>
+
+                <!-- Opção de segurança -->
+                <label class="cert-checkbox">
+                  <input type="checkbox" [(ngModel)]="saveCertRequirePassword" />
+                  <span class="cert-checkbox__box">
+                    <app-icon name="check" [size]="12" />
+                  </span>
+                  <span class="cert-checkbox__text">
+                    <strong>Solicitar senha ao assinar</strong>
+                    <small>Mais seguro - recomendado</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="cert-modal__footer">
+          <button type="button" class="cert-btn cert-btn--secondary" (click)="closeSaveCertModal()">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="cert-btn cert-btn--primary"
+            [disabled]="!saveCertInfo?.isValid || isSigning"
+            (click)="saveCertificate()">
+            @if (isSigning) {
+              <span class="cert-btn__spinner"></span>
+              Salvando...
+            } @else {
+              <app-icon name="check" [size]="18" />
+              Salvar Certificado
+            }
+          </button>
         </div>
       </div>
     </div>

@@ -9,10 +9,9 @@ import {
   Prescription, 
   PrescriptionItem, 
   AddPrescriptionItemDto,
-  MedicamentoAnvisa,
-  DigitalCertificate
+  MedicamentoAnvisa
 } from '@core/services/prescription.service';
-import { CertificateService, InstalledCertificate } from '@core/services/certificate.service';
+import { CertificateService, SavedCertificate, PfxCertificateInfo } from '@core/services/certificate.service';
 import { ModalService } from '@core/services/modal.service';
 
 @Component({
@@ -44,21 +43,26 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
   showMedicamentoDropdown = false;
   isSearching = false;
   
-  // Certificados digitais instalados
-  installedCertificates: InstalledCertificate[] = [];
-  selectedInstalledCert: InstalledCertificate | null = null;
-  showInstalledCertsModal = false;
-  isLoadingInstalledCerts = false;
-  webPkiAvailable = false;
+  // Certificados salvos na plataforma
+  savedCertificates: SavedCertificate[] = [];
+  selectedSavedCert: SavedCertificate | null = null;
+  showSavedCertsModal = false;
+  isLoadingSavedCerts = false;
+  showSignatureOptionsModal = false;
   
-  // Certificados digitais (legacy - PFX file)
-  certificates: DigitalCertificate[] = [];
-  showCertificateModal = false;
-  selectedCertificate: DigitalCertificate | null = null;
-  isLoadingCertificates = false;
+  // Salvar novo certificado
+  showSaveCertModal = false;
+  saveCertName = '';
+  saveCertRequirePassword = true;
+  saveCertInfo: PfxCertificateInfo | null = null;
+  isValidatingPfx = false;
+  
+  // Assinatura
   isSigning = false;
+  certPasswordForSign = '';
+  showCertPasswordModal = false;
   
-  // PFX file upload (fallback)
+  // PFX file upload
   pfxFile: File | null = null;
   pfxPassword = '';
   showPfxPasswordModal = false;
@@ -88,8 +92,8 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
       this.loadPrescription();
     }
 
-    // Verificar se Web PKI está disponível
-    this.checkWebPkiAvailability();
+    // Carregar certificados salvos do usuário
+    this.loadSavedCertificates();
 
     // Setup debounced search
     this.searchSubject.pipe(
@@ -106,8 +110,13 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  async checkWebPkiAvailability() {
-    this.webPkiAvailable = await this.certificateService.isAvailable();
+  loadSavedCertificates() {
+    this.certificateService.loadSavedCertificates().subscribe();
+    this.certificateService.getSavedCertificates().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(certs => {
+      this.savedCertificates = certs;
+    });
   }
 
   ngOnDestroy() {
@@ -292,139 +301,6 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  // === Assinatura Digital ===
-  
-  async loadCertificates() {
-    this.isLoadingCertificates = true;
-    
-    // Simular carregamento de certificados ICP-Brasil do computador
-    // Em produção, usar Web Crypto API ou biblioteca como LacunaWebPKI
-    try {
-      // Simulação - em produção, usar:
-      // - LacunaWebPKI (https://www.lacunasoftware.com/pt/web-pki)
-      // - Certisign
-      // - ou outra biblioteca compatível com ICP-Brasil
-      
-      this.certificates = await this.detectCertificates();
-      this.isLoadingCertificates = false;
-      
-      if (this.certificates.length === 0) {
-        this.modalService.alert({
-          title: 'Nenhum Certificado Encontrado',
-          message: 'Não foi possível encontrar certificados digitais A1 (ICP-Brasil) instalados neste computador. Verifique se o certificado está instalado corretamente.',
-          variant: 'warning'
-        }).subscribe();
-      } else if (this.certificates.length === 1) {
-        this.selectedCertificate = this.certificates[0];
-        this.signDocument();
-      } else {
-        this.showCertificateModal = true;
-      }
-    } catch (error) {
-      this.isLoadingCertificates = false;
-      this.modalService.alert({
-        title: 'Erro',
-        message: 'Erro ao carregar certificados digitais. Verifique se há um certificado A1 válido instalado.',
-        variant: 'danger'
-      }).subscribe();
-    }
-  }
-
-  private async detectCertificates(): Promise<DigitalCertificate[]> {
-    // Em produção, usar Web Crypto API ou biblioteca específica
-    // Esta é uma simulação para demonstração
-    
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simular detecção de certificados
-        // Em ambiente real, isso listaria os certificados do Windows Certificate Store
-        const mockCertificates: DigitalCertificate[] = [
-          {
-            thumbprint: 'A1B2C3D4E5F6789012345678901234567890ABCD',
-            subject: 'CN=DR. EXEMPLO MÉDICO:12345678900, OU=AR TELECUIDAR, O=ICP-Brasil',
-            issuer: 'CN=AC TELECUIDAR RFB v5, O=ICP-Brasil',
-            validFrom: new Date('2024-01-01'),
-            validTo: new Date('2027-01-01'),
-            isValid: true
-          }
-        ];
-        
-        resolve(mockCertificates);
-      }, 500);
-    });
-  }
-
-  selectCertificate(cert: DigitalCertificate) {
-    this.selectedCertificate = cert;
-  }
-
-  confirmCertificateSelection() {
-    if (this.selectedCertificate) {
-      this.showCertificateModal = false;
-      this.signDocument();
-    }
-  }
-
-  closeCertificateModal() {
-    this.showCertificateModal = false;
-    this.selectedCertificate = null;
-  }
-
-  async signDocument() {
-    if (!this.prescription || !this.selectedCertificate) return;
-
-    this.isSigning = true;
-
-    try {
-      // Gerar assinatura digital
-      // Em produção, usar Web Crypto API com o certificado selecionado
-      const signature = await this.generateSignature();
-      
-      this.prescriptionService.signPrescription(this.prescription.id, {
-        certificateThumbprint: this.selectedCertificate.thumbprint,
-        signature: signature,
-        certificateSubject: this.selectedCertificate.subject
-      }).subscribe({
-        next: (prescription) => {
-          this.prescription = prescription;
-          this.isSigning = false;
-          this.modalService.alert({
-            title: 'Sucesso',
-            message: 'Receita assinada digitalmente com sucesso!',
-            variant: 'success'
-          }).subscribe();
-        },
-        error: (error) => {
-          this.isSigning = false;
-          this.modalService.alert({
-            title: 'Erro',
-            message: error.error?.message || 'Erro ao assinar documento.',
-            variant: 'danger'
-          }).subscribe();
-        }
-      });
-    } catch (error) {
-      this.isSigning = false;
-      this.modalService.alert({
-        title: 'Erro',
-        message: 'Erro ao gerar assinatura digital.',
-        variant: 'danger'
-      }).subscribe();
-    }
-  }
-
-  private async generateSignature(): Promise<string> {
-    // Em produção, usar Web Crypto API para gerar assinatura real
-    // Exemplo com LacunaWebPKI:
-    // return await pki.signHash({
-    //   thumbprint: this.selectedCertificate.thumbprint,
-    //   hash: documentHash,
-    //   digestAlgorithm: 'SHA-256'
-    // });
-    
-    return btoa(`SIGNATURE_${Date.now()}_${this.selectedCertificate?.thumbprint}`);
-  }
-
   // === Geração de PDF ===
 
   generatePdf() {
@@ -447,96 +323,203 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  // === Assinatura com Certificados Instalados ===
+  // === Assinatura com Certificados Salvos ===
 
-  // Abrir modal para selecionar certificado instalado ou arquivo PFX
-  async openSignatureOptions() {
+  // Abrir modal para selecionar certificado ou arquivo PFX
+  openSignatureOptions() {
     if (!this.prescription) return;
 
-    this.isLoadingInstalledCerts = true;
-    
-    // Tentar listar certificados instalados
-    const certs = await this.certificateService.listCertificates();
-    
-    this.isLoadingInstalledCerts = false;
-    
-    if (certs.length > 0) {
-      // Certificados encontrados - mostrar modal de seleção
-      this.installedCertificates = certs;
-      this.selectedInstalledCert = null;
-      this.showInstalledCertsModal = true;
+    if (this.savedCertificates.length > 0) {
+      // Tem certificados salvos - mostrar lista
+      this.selectedSavedCert = null;
+      this.showSavedCertsModal = true;
     } else {
-      // Nenhum certificado encontrado - oferecer opções
-      this.modalService.confirm({
-        title: 'Selecionar Certificado',
-        message: 'Não foram encontrados certificados digitais instalados neste computador. Deseja selecionar um arquivo de certificado (.pfx)?',
-        confirmText: 'Selecionar Arquivo',
-        cancelText: 'Cancelar'
-      }).subscribe(confirmed => {
-        if (confirmed) {
-          this.openPfxSelector();
-        }
-      });
+      // Sem certificados salvos - mostrar opções
+      this.showSignatureOptionsModal = true;
     }
   }
 
-  // Selecionar certificado instalado
-  selectInstalledCertificate(cert: InstalledCertificate) {
-    this.selectedInstalledCert = cert;
+  // Fechar modal de opções de assinatura
+  closeSignatureOptionsModal() {
+    this.showSignatureOptionsModal = false;
   }
 
-  // Fechar modal de certificados instalados
-  closeInstalledCertsModal() {
-    this.showInstalledCertsModal = false;
-    this.selectedInstalledCert = null;
-    this.installedCertificates = [];
+  // Fechar modal de certificados salvos
+  closeSavedCertsModal() {
+    this.showSavedCertsModal = false;
+    this.selectedSavedCert = null;
   }
 
-  // Confirmar assinatura com certificado instalado
-  async confirmInstalledCertSignature() {
-    if (!this.prescription || !this.selectedInstalledCert) return;
+  // Selecionar certificado salvo
+  selectSavedCertificate(cert: SavedCertificate) {
+    this.selectedSavedCert = cert;
+  }
+
+  // Confirmar assinatura com certificado salvo
+  confirmSavedCertSignature() {
+    if (!this.prescription || !this.selectedSavedCert) return;
+
+    if (this.selectedSavedCert.requirePasswordOnUse) {
+      // Precisa pedir senha
+      this.certPasswordForSign = '';
+      this.showCertPasswordModal = true;
+      this.showSavedCertsModal = false;
+    } else {
+      // Não precisa de senha, assinar direto
+      this.signWithSavedCert();
+    }
+  }
+
+  // Fechar modal de senha do certificado
+  closeCertPasswordModal() {
+    this.showCertPasswordModal = false;
+    this.certPasswordForSign = '';
+  }
+
+  // Assinar com certificado salvo
+  signWithSavedCert() {
+    if (!this.prescription || !this.selectedSavedCert) return;
 
     this.isSigning = true;
-    this.showInstalledCertsModal = false;
+    this.showSavedCertsModal = false;
+    this.showCertPasswordModal = false;
+
+    const password = this.selectedSavedCert.requirePasswordOnUse ? this.certPasswordForSign : undefined;
+
+    this.prescriptionService.signWithSavedCert(
+      this.prescription.id, 
+      this.selectedSavedCert.id,
+      password
+    ).subscribe({
+      next: (pdf) => {
+        this.isSigning = false;
+        this.selectedSavedCert = null;
+        this.certPasswordForSign = '';
+        
+        // Download the signed PDF
+        this.downloadPdf(pdf.pdfBase64, pdf.fileName);
+        
+        // Reload prescription to update signed status
+        this.loadPrescription();
+        
+        this.modalService.alert({
+          title: 'Sucesso',
+          message: 'PDF gerado e assinado digitalmente com sucesso!',
+          variant: 'success'
+        }).subscribe();
+      },
+      error: (error) => {
+        this.isSigning = false;
+        this.modalService.alert({
+          title: 'Erro',
+          message: error.error?.message || 'Erro ao gerar PDF assinado.',
+          variant: 'danger'
+        }).subscribe();
+      }
+    });
+  }
+
+  // === Salvar novo certificado ===
+
+  // Usar arquivo PFX e opcionalmente salvar
+  usePfxFile() {
+    this.showSignatureOptionsModal = false;
+    this.openPfxSelector();
+  }
+
+  // Abrir modal para salvar certificado
+  openSaveCertModal() {
+    this.showSignatureOptionsModal = false;
+    this.showSavedCertsModal = false;
+    this.saveCertName = '';
+    this.saveCertRequirePassword = true;
+    this.saveCertInfo = null;
+    this.pfxFile = null;
+    this.pfxPassword = '';
+    this.showSaveCertModal = true;
+  }
+
+  // Fechar modal de salvar certificado
+  closeSaveCertModal() {
+    this.showSaveCertModal = false;
+    this.saveCertInfo = null;
+    this.pfxFile = null;
+    this.pfxPassword = '';
+  }
+
+  // Selecionar arquivo PFX para salvar
+  onSaveCertPfxSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.pfxFile = input.files[0];
+      this.saveCertInfo = null;
+    }
+    input.value = '';
+  }
+
+  // Validar PFX antes de salvar
+  async validatePfxForSave() {
+    if (!this.pfxFile || !this.pfxPassword) return;
+
+    this.isValidatingPfx = true;
 
     try {
-      // Gerar hash do documento para assinatura
-      const documentData = JSON.stringify({
-        prescriptionId: this.prescription.id,
-        items: this.prescription.items,
-        timestamp: Date.now()
+      const pfxBase64 = await this.certificateService.fileToBase64(this.pfxFile);
+      this.certificateService.validatePfx(pfxBase64, this.pfxPassword).subscribe({
+        next: (info) => {
+          this.isValidatingPfx = false;
+          this.saveCertInfo = info;
+          if (!info.isValid) {
+            this.modalService.alert({
+              title: 'Certificado Invalido',
+              message: info.errorMessage || 'O certificado nao e valido.',
+              variant: 'warning'
+            }).subscribe();
+          } else {
+            // Sugerir nome baseado no CN
+            this.saveCertName = this.certificateService.formatSubjectName(info.subjectName);
+          }
+        },
+        error: (error) => {
+          this.isValidatingPfx = false;
+          this.modalService.alert({
+            title: 'Erro',
+            message: error.error?.message || 'Erro ao validar certificado.',
+            variant: 'danger'
+          }).subscribe();
+        }
       });
+    } catch {
+      this.isValidatingPfx = false;
+      this.modalService.alert({
+        title: 'Erro',
+        message: 'Erro ao ler arquivo do certificado.',
+        variant: 'danger'
+      }).subscribe();
+    }
+  }
 
-      // Assinar com o certificado selecionado
-      const signatureResult = await this.certificateService.signData(
-        this.selectedInstalledCert.thumbprint,
-        btoa(documentData)
-      );
+  // Salvar certificado na plataforma
+  async saveCertificate() {
+    if (!this.pfxFile || !this.pfxPassword || !this.saveCertInfo?.isValid) return;
 
-      if (!signatureResult) {
-        throw new Error('Falha ao gerar assinatura digital');
-      }
+    this.isSigning = true;
 
-      // Enviar assinatura para o backend
-      this.prescriptionService.signWithInstalledCert(this.prescription.id, {
-        thumbprint: this.selectedInstalledCert.thumbprint,
-        subjectName: this.selectedInstalledCert.subjectName,
-        signature: signatureResult.signature,
-        certificateContent: signatureResult.certificateContent
+    try {
+      const pfxBase64 = await this.certificateService.fileToBase64(this.pfxFile);
+      
+      this.certificateService.saveCertificate({
+        name: this.saveCertName || this.certificateService.formatSubjectName(this.saveCertInfo.subjectName),
+        pfxBase64,
+        password: this.pfxPassword,
+        requirePasswordOnUse: this.saveCertRequirePassword
       }).subscribe({
-        next: (pdf) => {
+        next: () => {
           this.isSigning = false;
-          this.selectedInstalledCert = null;
-          
-          // Download the signed PDF
-          this.downloadPdf(pdf.pdfBase64, pdf.fileName);
-          
-          // Reload prescription to update signed status
-          this.loadPrescription();
-          
+          this.closeSaveCertModal();
           this.modalService.alert({
             title: 'Sucesso',
-            message: 'PDF gerado e assinado digitalmente com sucesso!',
+            message: 'Certificado salvo com sucesso! Voce pode usa-lo para assinar receitas.',
             variant: 'success'
           }).subscribe();
         },
@@ -544,24 +527,24 @@ export class ReceitaTabComponent implements OnInit, OnDestroy {
           this.isSigning = false;
           this.modalService.alert({
             title: 'Erro',
-            message: error.error?.message || 'Erro ao gerar PDF assinado.',
+            message: error.error?.message || 'Erro ao salvar certificado.',
             variant: 'danger'
           }).subscribe();
         }
       });
-    } catch (error: any) {
+    } catch {
       this.isSigning = false;
       this.modalService.alert({
         title: 'Erro',
-        message: error.message || 'Erro ao assinar com o certificado selecionado.',
+        message: 'Erro ao processar certificado.',
         variant: 'danger'
       }).subscribe();
     }
   }
 
-  // Usar arquivo PFX ao invés de certificado instalado
+  // Usar arquivo PFX direto (sem salvar)
   useFileCertificate() {
-    this.closeInstalledCertsModal();
+    this.closeSavedCertsModal();
     this.openPfxSelector();
   }
 

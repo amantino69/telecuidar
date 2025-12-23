@@ -70,6 +70,7 @@ builder.Services.AddScoped<Application.Interfaces.IAttachmentService, Infrastruc
 builder.Services.AddScoped<Application.Interfaces.IInviteService, Infrastructure.Services.InviteService>();
 builder.Services.AddScoped<Application.Interfaces.IAIService, Infrastructure.Services.AIService>();
 builder.Services.AddScoped<Application.Interfaces.IPrescriptionService, Infrastructure.Services.PrescriptionService>();
+builder.Services.AddScoped<Application.Interfaces.ICertificateStorageService, Infrastructure.Services.CertificateStorageService>();
 
 builder.Services.AddSingleton<Application.Interfaces.ICadsusService, Infrastructure.Services.CadsusService>();
 builder.Services.AddScoped<Application.Interfaces.IJitsiService, Infrastructure.Services.JitsiService>();
@@ -140,7 +141,7 @@ if (seedEnabled)
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
         await WebAPI.Data.DataSeeder.SeedAsync(context);
     }
 }

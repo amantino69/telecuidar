@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Invite> Invites { get; set; }
     public DbSet<ScheduleBlock> ScheduleBlocks { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
+    public DbSet<SavedCertificate> SavedCertificates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

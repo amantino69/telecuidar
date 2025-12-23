@@ -60,6 +60,10 @@
           <app-icon name="slash" [size]="20" />
           <span>Bloqueios de Agenda</span>
         </a>
+        <a routerLink="/certificados" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="shield" [size]="20" />
+          <span>Certificados</span>
+        </a>
       }
       @if (user?.role === 'PATIENT') {
         <a routerLink="/agendar" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">

@@ -19,7 +19,9 @@ using iText.Signatures;
 using iText.Bouncycastle.Crypto;
 using iText.Bouncycastle.X509;
 using iText.Commons.Bouncycastle.Cert;
+using iText.IO.Image;
 using Org.BouncyCastle.Pkcs;
+using QRCoder;
 
 namespace Infrastructure.Services;
 
@@ -353,41 +355,81 @@ public class PrescriptionService : IPrescriptionService
         var primaryColor = new DeviceRgb(37, 99, 235);
         var successColor = new DeviceRgb(34, 197, 94);
         var grayColor = new DeviceRgb(100, 116, 139);
+        var lightGray = new DeviceRgb(248, 250, 252);
         
-        // Header
-        var header = new Paragraph("TeleCuidar")
-            .SetFont(boldFont)
-            .SetFontSize(24)
-            .SetFontColor(primaryColor)
-            .SetTextAlignment(TextAlignment.CENTER);
-        document.Add(header);
+        // === HEADER WITH LOGO ===
+        var headerTable = new Table(2).UseAllAvailableWidth().SetMarginBottom(10);
         
-        var subtitle = new Paragraph("Plataforma de Telemedicina")
-            .SetFont(regularFont)
-            .SetFontSize(12)
-            .SetFontColor(grayColor)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetMarginBottom(5);
-        document.Add(subtitle);
+        // Logo cell (left)
+        var logoCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE);
+        try
+        {
+            // Try to load logo from embedded resource or file
+            var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "assets", "logo.png");
+            if (File.Exists(logoPath))
+            {
+                var logoImage = ImageDataFactory.Create(logoPath);
+                var logo = new Image(logoImage).SetWidth(50).SetHeight(50);
+                logoCell.Add(logo);
+            }
+            else
+            {
+                // Fallback: just show text logo
+                logoCell.Add(new Paragraph("TC").SetFont(boldFont).SetFontSize(24).SetFontColor(primaryColor));
+            }
+        }
+        catch
+        {
+            logoCell.Add(new Paragraph("TC").SetFont(boldFont).SetFontSize(24).SetFontColor(primaryColor));
+        }
+        headerTable.AddCell(logoCell);
         
-        var dateText = new Paragraph($"Data: {DateTime.Now:dd/MM/yyyy HH:mm}")
-            .SetFont(regularFont)
-            .SetFontSize(10)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetMarginBottom(20);
-        document.Add(dateText);
+        // Title and establishment info cell (right)
+        var titleCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetTextAlignment(TextAlignment.RIGHT);
+        titleCell.Add(new Paragraph("TeleCuidar").SetFont(boldFont).SetFontSize(22).SetFontColor(primaryColor).SetMarginBottom(0));
+        titleCell.Add(new Paragraph("Plataforma de Telemedicina").SetFont(regularFont).SetFontSize(10).SetFontColor(grayColor).SetMarginBottom(0));
+        titleCell.Add(new Paragraph("CNPJ: 00.000.000/0001-00").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor).SetMarginBottom(0));
+        titleCell.Add(new Paragraph("Rua Exemplo, 123 - Centro - Cidade/UF").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor));
+        headerTable.AddCell(titleCell);
+        
+        document.Add(headerTable);
+        
+        // Contact info bar
+        var contactBar = new Table(3).UseAllAvailableWidth().SetMarginBottom(15);
+        contactBar.SetBackgroundColor(lightGray);
+        
+        var phoneCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetPadding(8);
+        phoneCell.Add(new Paragraph("Tel: (00) 0000-0000").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor).SetTextAlignment(TextAlignment.LEFT));
+        contactBar.AddCell(phoneCell);
+        
+        var emailCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetPadding(8);
+        emailCell.Add(new Paragraph("contato@telecuidar.com.br").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor).SetTextAlignment(TextAlignment.CENTER));
+        contactBar.AddCell(emailCell);
+        
+        var siteCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetPadding(8);
+        siteCell.Add(new Paragraph("www.telecuidar.com.br").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor).SetTextAlignment(TextAlignment.RIGHT));
+        contactBar.AddCell(siteCell);
+        
+        document.Add(contactBar);
         
         // Separator
-        document.Add(new Paragraph("").SetBorderBottom(new iText.Layout.Borders.SolidBorder(primaryColor, 2)).SetMarginBottom(20));
+        document.Add(new Paragraph("").SetBorderBottom(new iText.Layout.Borders.SolidBorder(primaryColor, 2)).SetMarginBottom(15));
+        
+        // Date
+        var dateText = new Paragraph($"Data de Emissao: {DateTime.Now:dd/MM/yyyy HH:mm}")
+            .SetFont(regularFont)
+            .SetFontSize(10)
+            .SetTextAlignment(TextAlignment.RIGHT)
+            .SetMarginBottom(15);
+        document.Add(dateText);
         
         // Patient and Professional info table
         var infoTable = new Table(2).UseAllAvailableWidth().SetMarginBottom(20);
         
         // Patient cell
         var patientCell = new Cell()
-            .SetBackgroundColor(new DeviceRgb(248, 250, 252))
-            .SetPadding(10)
-            ;
+            .SetBackgroundColor(lightGray)
+            .SetPadding(10);
         patientCell.Add(new Paragraph("DADOS DO PACIENTE").SetFont(boldFont).SetFontSize(10).SetFontColor(primaryColor));
         patientCell.Add(new Paragraph($"Nome: {patient?.Name} {patient?.LastName}").SetFont(regularFont).SetFontSize(9));
         patientCell.Add(new Paragraph($"CPF: {patient?.Cpf}").SetFont(regularFont).SetFontSize(9));
@@ -401,9 +443,8 @@ public class PrescriptionService : IPrescriptionService
         
         // Professional cell
         var professionalCell = new Cell()
-            .SetBackgroundColor(new DeviceRgb(248, 250, 252))
-            .SetPadding(10)
-            ;
+            .SetBackgroundColor(lightGray)
+            .SetPadding(10);
         professionalCell.Add(new Paragraph("DADOS DO PROFISSIONAL").SetFont(boldFont).SetFontSize(10).SetFontColor(primaryColor));
         professionalCell.Add(new Paragraph($"Nome: {professional?.Name} {professional?.LastName}").SetFont(regularFont).SetFontSize(9));
         professionalCell.Add(new Paragraph($"CRM: {professionalProfile?.Crm ?? "N/I"}").SetFont(regularFont).SetFontSize(9));
@@ -419,7 +460,7 @@ public class PrescriptionService : IPrescriptionService
             .SetFontSize(16)
             .SetFontColor(primaryColor)
             .SetTextAlignment(TextAlignment.CENTER)
-            .SetMarginTop(20)
+            .SetMarginTop(10)
             .SetMarginBottom(20);
         document.Add(prescriptionTitle);
         
@@ -430,8 +471,7 @@ public class PrescriptionService : IPrescriptionService
             var medicationTable = new Table(1).UseAllAvailableWidth().SetMarginBottom(15);
             var medicationCell = new Cell()
                 .SetPadding(15)
-                .SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(226, 232, 240), 1))
-                ;
+                .SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(226, 232, 240), 1));
             
             medicationCell.Add(new Paragraph($"{itemNumber}. {item.Medicamento}")
                 .SetFont(boldFont)
@@ -474,8 +514,7 @@ public class PrescriptionService : IPrescriptionService
             var signatureCell = new Cell()
                 .SetBackgroundColor(new DeviceRgb(240, 253, 244))
                 .SetBorder(new iText.Layout.Borders.SolidBorder(successColor, 1))
-                .SetPadding(15)
-                ;
+                .SetPadding(15);
             
             signatureCell.Add(new Paragraph("DOCUMENTO ASSINADO DIGITALMENTE")
                 .SetFont(boldFont)
@@ -490,29 +529,77 @@ public class PrescriptionService : IPrescriptionService
             document.Add(signatureTable);
         }
         
-        // Footer
-        document.Add(new Paragraph("").SetBorderTop(new iText.Layout.Borders.SolidBorder(primaryColor, 2)).SetMarginTop(30).SetMarginBottom(10));
+        // === FOOTER WITH QR CODE ===
+        document.Add(new Paragraph("").SetBorderTop(new iText.Layout.Borders.SolidBorder(primaryColor, 2)).SetMarginTop(30).SetMarginBottom(15));
         
-        var hashText = new Paragraph($"Hash de Validacao: {GenerateDocumentHash(prescription, items)}")
+        // Footer table with QR Code and validation info
+        var footerTable = new Table(new float[] { 1, 3 }).UseAllAvailableWidth();
+        
+        // QR Code cell (left)
+        var qrCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetPadding(10).SetVerticalAlignment(VerticalAlignment.MIDDLE);
+        try
+        {
+            // Generate QR Code for ITI validation
+            var validationUrl = "https://validar.iti.gov.br";
+            using var qrGenerator = new QRCodeGenerator();
+            var qrCodeData = qrGenerator.CreateQrCode(validationUrl, QRCodeGenerator.ECCLevel.M);
+            using var qrCode = new PngByteQRCode(qrCodeData);
+            var qrBytes = qrCode.GetGraphic(5);
+            
+            var qrImage = ImageDataFactory.Create(qrBytes);
+            var qr = new Image(qrImage).SetWidth(80).SetHeight(80);
+            qrCell.Add(qr);
+            qrCell.Add(new Paragraph("Validar Assinatura").SetFont(regularFont).SetFontSize(7).SetFontColor(grayColor).SetTextAlignment(TextAlignment.CENTER));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Erro ao gerar QR Code para PDF");
+            qrCell.Add(new Paragraph("QR Code").SetFont(regularFont).SetFontSize(8).SetFontColor(grayColor));
+        }
+        footerTable.AddCell(qrCell);
+        
+        // Validation info cell (right)
+        var validationInfoCell = new Cell().SetBorder(iText.Layout.Borders.Border.NO_BORDER).SetPadding(10).SetVerticalAlignment(VerticalAlignment.MIDDLE);
+        
+        validationInfoCell.Add(new Paragraph("VALIDACAO DO DOCUMENTO")
             .SetFont(boldFont)
-            .SetFontSize(8)
-            .SetFontColor(grayColor)
-            .SetTextAlignment(TextAlignment.CENTER);
-        document.Add(hashText);
+            .SetFontSize(10)
+            .SetFontColor(primaryColor)
+            .SetMarginBottom(5));
         
-        var validationUrl = new Paragraph("Valide a assinatura digital deste documento em: https://validar.iti.gov.br")
+        var hashText = GenerateDocumentHash(prescription, items);
+        validationInfoCell.Add(new Paragraph($"Hash de Validacao: {hashText}")
+            .SetFont(regularFont)
+            .SetFontSize(8)
+            .SetFontColor(grayColor));
+        
+        validationInfoCell.Add(new Paragraph("Escaneie o QR Code ou acesse: https://validar.iti.gov.br")
+            .SetFont(regularFont)
+            .SetFontSize(8)
+            .SetFontColor(grayColor));
+        
+        validationInfoCell.Add(new Paragraph("para validar a assinatura digital deste documento.")
+            .SetFont(regularFont)
+            .SetFontSize(8)
+            .SetFontColor(grayColor));
+        
+        validationInfoCell.Add(new Paragraph($"Documento gerado em: {DateTime.Now:dd/MM/yyyy} as {DateTime.Now:HH:mm:ss}")
             .SetFont(regularFont)
             .SetFontSize(8)
             .SetFontColor(grayColor)
-            .SetTextAlignment(TextAlignment.CENTER);
-        document.Add(validationUrl);
+            .SetMarginTop(5));
         
-        var generatedText = new Paragraph($"Este documento foi gerado eletronicamente pela plataforma TeleCuidar em {DateTime.Now:dd/MM/yyyy} as {DateTime.Now:HH:mm:ss}")
+        footerTable.AddCell(validationInfoCell);
+        document.Add(footerTable);
+        
+        // Final disclaimer
+        var disclaimer = new Paragraph("Este documento foi gerado eletronicamente pela plataforma TeleCuidar e possui validade juridica conforme legislacao vigente.")
             .SetFont(regularFont)
-            .SetFontSize(8)
+            .SetFontSize(7)
             .SetFontColor(grayColor)
-            .SetTextAlignment(TextAlignment.CENTER);
-        document.Add(generatedText);
+            .SetTextAlignment(TextAlignment.CENTER)
+            .SetMarginTop(10);
+        document.Add(disclaimer);
         
         document.Close();
         return memoryStream.ToArray();
@@ -568,48 +655,6 @@ public class PrescriptionService : IPrescriptionService
             PdfBase64 = pdfBase64,
             FileName = $"receita_assinada_{prescription.Id}_{DateTime.Now:yyyyMMddHHmmss}.pdf",
             DocumentHash = documentHash,
-            IsSigned = true
-        };
-    }
-    
-    public async Task<PrescriptionPdfDto> SignWithInstalledCertAsync(Guid prescriptionId, SignWithInstalledCertDto dto)
-    {
-        var prescription = await _context.Prescriptions
-            .Include(p => p.Professional)
-                .ThenInclude(u => u.ProfessionalProfile)
-            .Include(p => p.Patient)
-                .ThenInclude(u => u.PatientProfile)
-            .Include(p => p.Appointment)
-                .ThenInclude(a => a.Specialty)
-            .FirstOrDefaultAsync(p => p.Id == prescriptionId);
-
-        if (prescription == null)
-            throw new InvalidOperationException("Receita nao encontrada.");
-
-        var items = JsonSerializer.Deserialize<List<PrescriptionItem>>(prescription.ItemsJson) ?? new List<PrescriptionItem>();
-        
-        // Generate PDF with signature info (visual representation)
-        // Note: The actual cryptographic signature was done on the client side
-        prescription.CertificateSubject = dto.SubjectName;
-        prescription.CertificateThumbprint = dto.Thumbprint;
-        prescription.DigitalSignature = dto.Signature;
-        prescription.SignedAt = DateTime.UtcNow;
-        prescription.DocumentHash = GenerateDocumentHash(prescription, items);
-        prescription.UpdatedAt = DateTime.UtcNow;
-        
-        // Generate the signed PDF (with visual signature info)
-        var pdfBytes = GeneratePrescriptionPdf(prescription, items, true);
-        var pdfBase64 = Convert.ToBase64String(pdfBytes);
-        
-        prescription.SignedPdfBase64 = pdfBase64;
-        
-        await _context.SaveChangesAsync();
-
-        return new PrescriptionPdfDto
-        {
-            PdfBase64 = pdfBase64,
-            FileName = $"receita_assinada_{prescription.Id}_{DateTime.Now:yyyyMMddHHmmss}.pdf",
-            DocumentHash = prescription.DocumentHash,
             IsSigned = true
         };
     }

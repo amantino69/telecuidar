@@ -74,12 +74,10 @@ public class GenerateSignedPdfDto
     public string PfxPassword { get; set; } = string.Empty;
 }
 
-public class SignWithInstalledCertDto
+public class SignWithSavedCertDto
 {
-    public string Thumbprint { get; set; } = string.Empty;
-    public string SubjectName { get; set; } = string.Empty;
-    public string Signature { get; set; } = string.Empty;
-    public string CertificateContent { get; set; } = string.Empty;
+    public Guid CertificateId { get; set; }
+    public string? Password { get; set; }
 }
 
 public class MedicamentoAnvisaDto

@@ -87,6 +87,7 @@
   --background: #{$light-background};
   --surface: #{$light-surface};
   --surface-primary: #{$light-surface};
+  --bg-primary: #{$light-surface};
   --text-primary: #{$light-text-primary};
   --text-secondary: #{$light-text-secondary};
   --text-tertiary: #{$light-neutral-400};
@@ -203,6 +204,7 @@
   --background: #{$dark-background};
   --surface: #{$dark-surface};
   --surface-primary: #{$dark-surface};
+  --bg-primary: #{$dark-surface};
   --text-primary: #{$dark-text-primary};
   --text-secondary: #{$dark-text-secondary};
   --text-tertiary: #{$dark-neutral-400};

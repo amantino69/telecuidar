@@ -75,15 +75,6 @@ export interface MedicamentoAnvisa {
   categoria?: string;
 }
 
-export interface DigitalCertificate {
-  thumbprint: string;
-  subject: string;
-  issuer: string;
-  validFrom: Date;
-  validTo: Date;
-  isValid: boolean;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -134,13 +125,11 @@ export class PrescriptionService {
     });
   }
 
-  signWithInstalledCert(prescriptionId: string, data: {
-    thumbprint: string;
-    subjectName: string;
-    signature: string;
-    certificateContent: string;
-  }): Observable<PrescriptionPdf> {
-    return this.http.post<PrescriptionPdf>(`${API_BASE_URL}/prescriptions/${prescriptionId}/pdf/sign-installed`, data);
+  signWithSavedCert(prescriptionId: string, certificateId: string, password?: string): Observable<PrescriptionPdf> {
+    return this.http.post<PrescriptionPdf>(`${API_BASE_URL}/prescriptions/${prescriptionId}/pdf/sign-saved`, {
+      certificateId,
+      password
+    });
   }
 
   signPrescription(prescriptionId: string, dto: SignPrescriptionDto): Observable<Prescription> {

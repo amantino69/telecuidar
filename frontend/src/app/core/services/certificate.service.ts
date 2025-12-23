@@ -1,244 +1,193 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, of, tap, catchError } from 'rxjs';
+import { environment } from '@env/environment';
 
-declare var LacunaWebPKI: any;
-
-export interface InstalledCertificate {
-  thumbprint: string;
+/**
+ * Certificado salvo na plataforma (PFX criptografado no servidor)
+ */
+export interface SavedCertificate {
+  id: string;
+  name: string;
   subjectName: string;
   issuerName: string;
   validFrom: Date;
   validTo: Date;
-  keyUsage?: string;
-  pkiBrazil?: {
-    cpf?: string;
-    cnpj?: string;
-    responsavel?: string;
-    dateOfBirth?: Date;
-    certificateType?: string;
-    isAplicacao?: boolean;
-    isPessoaFisica?: boolean;
-    isPessoaJuridica?: boolean;
-  };
+  thumbprint: string;
+  requirePasswordOnUse: boolean; // Se true, pede senha ao usar
+  createdAt: Date;
 }
 
-export interface SignatureResult {
-  signature: string;
-  certificateContent: string;
-  signatureAlgorithm: string;
+/**
+ * DTO para salvar um novo certificado
+ */
+export interface SaveCertificateDto {
+  name: string;
+  pfxBase64: string;
+  password: string;
+  requirePasswordOnUse: boolean;
+}
+
+/**
+ * Informações extraídas de um arquivo PFX (antes de salvar)
+ */
+export interface PfxCertificateInfo {
+  subjectName: string;
+  issuerName: string;
+  validFrom: Date;
+  validTo: Date;
+  thumbprint: string;
+  isValid: boolean;
+  errorMessage?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CertificateService {
-  private pki: any = null;
-  private isInitialized = false;
-  private initPromise: Promise<boolean> | null = null;
+  private readonly baseUrl = `${environment.apiUrl}/certificates`;
+  
+  private savedCertificates$ = new BehaviorSubject<SavedCertificate[]>([]);
+  private isLoading$ = new BehaviorSubject<boolean>(false);
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   /**
-   * Inicializa a biblioteca Web PKI
+   * Carrega a lista de certificados salvos do usuário atual
    */
-  async initialize(): Promise<boolean> {
-    if (this.isInitialized) {
-      return true;
-    }
-
-    if (this.initPromise) {
-      return this.initPromise;
-    }
-
-    this.initPromise = new Promise<boolean>((resolve) => {
-      // Verificar se a biblioteca está disponível
-      if (typeof LacunaWebPKI === 'undefined') {
-        console.warn('Lacuna Web PKI não está disponível. Usando modo de fallback.');
-        resolve(false);
-        return;
-      }
-
-      this.pki = new LacunaWebPKI();
-      
-      this.pki.init({
-        ready: () => {
-          this.isInitialized = true;
-          resolve(true);
-        },
-        notInstalled: () => {
-          console.warn('Web PKI não está instalado');
-          resolve(false);
-        },
-        defaultFail: (ex: any) => {
-          console.error('Erro ao inicializar Web PKI:', ex);
-          resolve(false);
-        }
-      });
-    });
-
-    return this.initPromise;
+  loadSavedCertificates(): Observable<SavedCertificate[]> {
+    this.isLoading$.next(true);
+    
+    return this.http.get<SavedCertificate[]>(this.baseUrl).pipe(
+      tap(certs => {
+        this.savedCertificates$.next(certs);
+        this.isLoading$.next(false);
+      }),
+      catchError(err => {
+        console.error('Erro ao carregar certificados salvos:', err);
+        this.isLoading$.next(false);
+        return of([]);
+      })
+    );
   }
 
   /**
-   * Lista todos os certificados digitais instalados no computador
+   * Retorna os certificados salvos (cache)
    */
-  async listCertificates(): Promise<InstalledCertificate[]> {
-    const initialized = await this.initialize();
-    
-    if (!initialized || !this.pki) {
-      // Fallback: retornar lista vazia ou usar método alternativo
-      return this.listCertificatesFallback();
-    }
+  getSavedCertificates(): Observable<SavedCertificate[]> {
+    return this.savedCertificates$.asObservable();
+  }
 
-    return new Promise<InstalledCertificate[]>((resolve, reject) => {
-      this.pki.listCertificates({
-        success: (certs: any[]) => {
-          const certificates: InstalledCertificate[] = certs.map(cert => ({
-            thumbprint: cert.thumbprint,
-            subjectName: cert.subjectName,
-            issuerName: cert.issuerName,
-            validFrom: new Date(cert.validityStart),
-            validTo: new Date(cert.validityEnd),
-            keyUsage: cert.keyUsage,
-            pkiBrazil: cert.pkiBrazil ? {
-              cpf: cert.pkiBrazil.cpf,
-              cnpj: cert.pkiBrazil.cnpj,
-              responsavel: cert.pkiBrazil.responsavel,
-              dateOfBirth: cert.pkiBrazil.dateOfBirth ? new Date(cert.pkiBrazil.dateOfBirth) : undefined,
-              certificateType: cert.pkiBrazil.certificateType,
-              isAplicacao: cert.pkiBrazil.isAplicacao,
-              isPessoaFisica: cert.pkiBrazil.isPessoaFisica,
-              isPessoaJuridica: cert.pkiBrazil.isPessoaJuridica
-            } : undefined
-          }));
-          
-          // Filtrar apenas certificados válidos e com chave privada
-          const validCerts = certificates.filter(c => 
-            new Date() >= c.validFrom && new Date() <= c.validTo
-          );
-          
-          resolve(validCerts);
-        },
-        fail: (ex: any) => {
-          console.error('Erro ao listar certificados:', ex);
-          resolve([]);
-        }
-      });
+  /**
+   * Retorna os certificados salvos (valor atual)
+   */
+  getSavedCertificatesValue(): SavedCertificate[] {
+    return this.savedCertificates$.value;
+  }
+
+  /**
+   * Verifica se o usuário tem certificados salvos
+   */
+  hasSavedCertificates(): boolean {
+    return this.savedCertificates$.value.length > 0;
+  }
+
+  /**
+   * Valida um arquivo PFX e retorna informações do certificado
+   */
+  validatePfx(pfxBase64: string, password: string): Observable<PfxCertificateInfo> {
+    return this.http.post<PfxCertificateInfo>(`${this.baseUrl}/validate`, {
+      pfxBase64,
+      password
     });
   }
 
   /**
-   * Assina dados usando um certificado específico
+   * Salva um certificado PFX na plataforma
    */
-  async signData(thumbprint: string, dataToSign: string): Promise<SignatureResult | null> {
-    const initialized = await this.initialize();
-    
-    if (!initialized || !this.pki) {
-      return null;
-    }
+  saveCertificate(dto: SaveCertificateDto): Observable<SavedCertificate> {
+    return this.http.post<SavedCertificate>(this.baseUrl, dto).pipe(
+      tap(newCert => {
+        const current = this.savedCertificates$.value;
+        this.savedCertificates$.next([...current, newCert]);
+      })
+    );
+  }
 
-    return new Promise<SignatureResult | null>((resolve, reject) => {
-      this.pki.signData({
-        thumbprint: thumbprint,
-        data: dataToSign,
-        digestAlgorithm: 'SHA-256',
-        success: (signature: string) => {
-          // Obter o certificado para retornar junto
-          this.pki.readCertificate({
-            thumbprint: thumbprint,
-            success: (certContent: string) => {
-              resolve({
-                signature: signature,
-                certificateContent: certContent,
-                signatureAlgorithm: 'SHA256withRSA'
-              });
-            },
-            fail: () => {
-              resolve({
-                signature: signature,
-                certificateContent: '',
-                signatureAlgorithm: 'SHA256withRSA'
-              });
-            }
-          });
-        },
-        fail: (ex: any) => {
-          console.error('Erro ao assinar dados:', ex);
-          resolve(null);
+  /**
+   * Remove um certificado salvo
+   */
+  deleteCertificate(certificateId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${certificateId}`).pipe(
+      tap(() => {
+        const current = this.savedCertificates$.value;
+        this.savedCertificates$.next(current.filter(c => c.id !== certificateId));
+      })
+    );
+  }
+
+  /**
+   * Atualiza configurações de um certificado (nome, requirePasswordOnUse)
+   */
+  updateCertificate(certificateId: string, updates: { name?: string; requirePasswordOnUse?: boolean }): Observable<SavedCertificate> {
+    return this.http.patch<SavedCertificate>(`${this.baseUrl}/${certificateId}`, updates).pipe(
+      tap(updated => {
+        const current = this.savedCertificates$.value;
+        const index = current.findIndex(c => c.id === certificateId);
+        if (index >= 0) {
+          current[index] = updated;
+          this.savedCertificates$.next([...current]);
         }
-      });
+      })
+    );
+  }
+
+  /**
+   * Valida a senha de um certificado salvo
+   */
+  validateSavedCertificatePassword(certificateId: string, password: string): Observable<{ isValid: boolean }> {
+    return this.http.post<{ isValid: boolean }>(`${this.baseUrl}/${certificateId}/validate-password`, { password });
+  }
+
+  /**
+   * Converte arquivo File para base64
+   */
+  fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove o prefixo data:...;base64,
+        const base64 = result.split(',')[1] || result;
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
     });
   }
 
   /**
-   * Assina um hash usando um certificado específico
+   * Verifica se um certificado ainda é válido
    */
-  async signHash(thumbprint: string, hash: string): Promise<SignatureResult | null> {
-    const initialized = await this.initialize();
-    
-    if (!initialized || !this.pki) {
-      return null;
+  isCertificateValid(cert: SavedCertificate): boolean {
+    const now = new Date();
+    return now >= new Date(cert.validFrom) && now <= new Date(cert.validTo);
+  }
+
+  /**
+   * Formata o nome do sujeito do certificado para exibição
+   */
+  formatSubjectName(subjectName: string): string {
+    // Extrai o CN (Common Name) do subject
+    const cnMatch = subjectName.match(/CN=([^,]+)/i);
+    if (cnMatch) {
+      return cnMatch[1].trim();
     }
-
-    return new Promise<SignatureResult | null>((resolve, reject) => {
-      this.pki.signHash({
-        thumbprint: thumbprint,
-        hash: hash,
-        digestAlgorithm: 'SHA-256',
-        success: (signature: string) => {
-          resolve({
-            signature: signature,
-            certificateContent: '',
-            signatureAlgorithm: 'SHA256withRSA'
-          });
-        },
-        fail: (ex: any) => {
-          console.error('Erro ao assinar hash:', ex);
-          resolve(null);
-        }
-      });
-    });
+    return subjectName;
   }
 
   /**
-   * Verifica se o Web PKI está disponível e instalado
-   */
-  async isAvailable(): Promise<boolean> {
-    return this.initialize();
-  }
-
-  /**
-   * Obtém a URL para download/instalação do Web PKI
-   */
-  getInstallUrl(): string {
-    return 'https://get.webpkiplugin.com/';
-  }
-
-  /**
-   * Fallback para quando Web PKI não está disponível
-   * Lista certificados usando a API nativa do navegador (se disponível)
-   */
-  private async listCertificatesFallback(): Promise<InstalledCertificate[]> {
-    // Tentar usar a API nativa do navegador se disponível
-    // Nota: Esta API tem suporte limitado e geralmente requer HTTPS
-    
-    try {
-      // Verificar se a API SubtleCrypto está disponível
-      if (window.crypto && window.crypto.subtle) {
-        // A Web Crypto API não permite listar certificados instalados diretamente
-        // Retornar lista vazia para forçar uso do método de upload de arquivo
-        console.info('Web PKI não disponível. Use o upload de arquivo PFX.');
-      }
-    } catch (e) {
-      console.warn('Erro ao acessar crypto API:', e);
-    }
-    
-    return [];
-  }
-
-  /**
-   * Extrai informações de um nome de sujeito X.500
+   * Extrai informações do subject name
    */
   parseSubjectName(subjectName: string): { cn?: string; o?: string; ou?: string; c?: string } {
     const result: { cn?: string; o?: string; ou?: string; c?: string } = {};

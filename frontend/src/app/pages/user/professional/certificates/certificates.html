@@ -1,0 +1,476 @@
+<div class="certificates-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="page-header__content">
+      <div class="page-header__icon">
+        <app-icon name="shield" [size]="28" />
+      </div>
+      <div class="page-header__text">
+        <h1 class="page-header__title">Certificados Digitais</h1>
+        <p class="page-header__subtitle">Gerencie seus certificados A1 para assinatura de receitas</p>
+      </div>
+    </div>
+    <button type="button" class="btn-add" (click)="openAddModal()">
+      <app-icon name="plus" [size]="20" />
+      <span>Adicionar Certificado</span>
+    </button>
+  </header>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Carregando certificados...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && certificates.length === 0) {
+    <div class="empty-state">
+      <div class="empty-state__icon">
+        <app-icon name="shield" [size]="48" />
+      </div>
+      <h2 class="empty-state__title">Nenhum certificado salvo</h2>
+      <p class="empty-state__text">
+        Adicione seu certificado digital A1 (arquivo .PFX) para assinar receitas de forma rápida e segura.
+      </p>
+      <button type="button" class="btn-primary" (click)="openAddModal()">
+        <app-icon name="plus" [size]="20" />
+        Adicionar Certificado
+      </button>
+    </div>
+  }
+
+  <!-- Lista de Certificados -->
+  @if (!isLoading && certificates.length > 0) {
+    <div class="certificates-grid">
+      @for (cert of certificates; track cert.id) {
+        <div class="cert-card" [class.cert-card--expired]="getExpiryStatus(cert) === 'expired'" [class.cert-card--warning]="getExpiryStatus(cert) === 'warning'">
+          <!-- Header do Card -->
+          <div class="cert-card__header">
+            <div class="cert-card__icon">
+              <app-icon name="shield" [size]="24" />
+            </div>
+            <div class="cert-card__actions">
+              <button type="button" class="cert-card__action" title="Editar" (click)="openEditModal(cert)">
+                <app-icon name="edit" [size]="18" />
+              </button>
+              <button type="button" class="cert-card__action cert-card__action--danger" title="Excluir" (click)="openDeleteModal(cert)">
+                <app-icon name="trash" [size]="18" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Conteúdo -->
+          <div class="cert-card__content">
+            <h3 class="cert-card__name">{{ cert.name }}</h3>
+            <p class="cert-card__subject">{{ formatSubjectName(cert.subjectName) }}</p>
+          </div>
+
+          <!-- Badges -->
+          <div class="cert-card__badges">
+            @if (cert.requirePasswordOnUse) {
+              <span class="badge badge--secure">
+                <app-icon name="shield" [size]="14" />
+                Pede senha
+              </span>
+            } @else {
+              <span class="badge badge--quick">
+                <app-icon name="check" [size]="14" />
+                Assinatura rápida
+              </span>
+            }
+
+            @switch (getExpiryStatus(cert)) {
+              @case ('valid') {
+                <span class="badge badge--valid">
+                  <app-icon name="check-circle" [size]="14" />
+                  Válido
+                </span>
+              }
+              @case ('warning') {
+                <span class="badge badge--warning">
+                  <app-icon name="alert-circle" [size]="14" />
+                  Expira em {{ getDaysUntilExpiry(cert.validTo) }} dias
+                </span>
+              }
+              @case ('expired') {
+                <span class="badge badge--expired">
+                  <app-icon name="x-circle" [size]="14" />
+                  Expirado
+                </span>
+              }
+            }
+          </div>
+
+          <!-- Footer -->
+          <div class="cert-card__footer">
+            <span class="cert-card__date">
+              Válido de {{ formatDate(cert.validFrom) }} até {{ formatDate(cert.validTo) }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Info Box -->
+  <div class="info-box">
+    <app-icon name="alert-circle" [size]="20" />
+    <div class="info-box__content">
+      <strong>Sobre Certificados Digitais A1</strong>
+      <p>
+        Certificados A1 são armazenados em arquivo (.PFX) e possuem validade de 1 ano. 
+        Eles são utilizados para assinar digitalmente documentos, garantindo autenticidade e validade jurídica.
+        Seus certificados são armazenados de forma criptografada em nossos servidores.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input -->
+<input 
+  type="file" 
+  #pfxFileInput 
+  accept=".pfx,.p12"
+  style="display: none"
+  (change)="onFileSelected($event)" />
+
+<!-- ============================================ -->
+<!-- MODAL: Adicionar Certificado -->
+<!-- ============================================ -->
+@if (showAddModal) {
+  <div class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal" [class.modal--lg]="addStep === 'configure'" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__icon modal__icon--primary">
+          <app-icon name="plus" [size]="28" />
+        </div>
+        <div class="modal__title-group">
+          <h2 class="modal__title">Adicionar Certificado</h2>
+          <p class="modal__subtitle">
+            @switch (addStep) {
+              @case ('select') { Selecione o arquivo .PFX }
+              @case ('validate') { Informe a senha do certificado }
+              @case ('configure') { Configure o certificado }
+            }
+          </p>
+        </div>
+        <button class="modal__close" (click)="closeAddModal()">
+          <app-icon name="close" [size]="20" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <!-- Step 1: Selecionar arquivo -->
+        @if (addStep === 'select') {
+          <button type="button" class="file-picker" (click)="triggerFileSelect()">
+            <div class="file-picker__icon">
+              <app-icon name="upload-cloud" [size]="32" />
+            </div>
+            <div class="file-picker__text">
+              <strong>Clique para selecionar</strong>
+              <span>Arquivo .PFX ou .P12</span>
+            </div>
+          </button>
+        }
+
+        <!-- Step 2: Validar senha -->
+        @if (addStep === 'validate') {
+          <div class="file-info">
+            <app-icon name="file" [size]="24" />
+            <span>{{ pfxFile?.name }}</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pfxPassword">Senha do Certificado</label>
+            <input 
+              type="password" 
+              id="pfxPassword"
+              class="form-input"
+              [(ngModel)]="pfxPassword"
+              placeholder="Digite a senha"
+              (keyup.enter)="pfxPassword && validatePfx()" />
+          </div>
+        }
+
+        <!-- Step 3: Configurar -->
+        @if (addStep === 'configure' && certInfo) {
+          <div class="cert-preview">
+            <div class="cert-preview__badge">
+              <app-icon name="check-circle" [size]="16" />
+              Certificado válido
+            </div>
+            <h4 class="cert-preview__name">{{ formatSubjectName(certInfo.subjectName) }}</h4>
+            <p class="cert-preview__issuer">Emitido por: {{ certInfo.issuerName }}</p>
+            <p class="cert-preview__validity">
+              Válido de {{ formatDate(certInfo.validFrom) }} até {{ formatDate(certInfo.validTo) }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="certName">Nome do Certificado</label>
+            <input 
+              type="text" 
+              id="certName"
+              class="form-input"
+              [(ngModel)]="certName"
+              placeholder="Ex: Meu Certificado Principal" />
+            <small class="form-hint">Um nome para identificar este certificado</small>
+          </div>
+
+          <div class="switch-card">
+            <div class="switch-card__content">
+              <strong>Pedir senha ao usar</strong>
+              <span>Recomendado para maior segurança. A senha será solicitada cada vez que você assinar um documento.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="requirePasswordOnUse" />
+              <span class="switch__slider"></span>
+            </label>
+          </div>
+
+          @if (!requirePasswordOnUse) {
+            <div class="alert alert--warning">
+              <app-icon name="alert-circle" [size]="20" />
+              <p>
+                <strong>Atenção:</strong> Ao desativar esta opção, qualquer pessoa com acesso à sua conta poderá assinar documentos sem informar a senha do certificado.
+              </p>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="modal__footer">
+        @if (addStep === 'select') {
+          <button type="button" class="btn-secondary" (click)="closeAddModal()">
+            Cancelar
+          </button>
+        }
+
+        @if (addStep === 'validate') {
+          <button type="button" class="btn-secondary" (click)="addStep = 'select'">
+            Voltar
+          </button>
+          <button 
+            type="button" 
+            class="btn-primary" 
+            (click)="validatePfx()"
+            [disabled]="!pfxPassword || isValidating">
+            @if (isValidating) {
+              <span class="btn-spinner"></span>
+              Validando...
+            } @else {
+              Validar
+            }
+          </button>
+        }
+
+        @if (addStep === 'configure') {
+          <button type="button" class="btn-secondary" (click)="addStep = 'validate'">
+            Voltar
+          </button>
+          <button 
+            type="button" 
+            class="btn-primary" 
+            (click)="saveCertificate()"
+            [disabled]="isSaving">
+            @if (isSaving) {
+              <span class="btn-spinner"></span>
+              Salvando...
+            } @else {
+              <app-icon name="check" [size]="18" />
+              Salvar Certificado
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================ -->
+<!-- MODAL: Editar Certificado -->
+<!-- ============================================ -->
+@if (showEditModal && editingCert) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__icon modal__icon--primary">
+          <app-icon name="edit" [size]="28" />
+        </div>
+        <div class="modal__title-group">
+          <h2 class="modal__title">Editar Certificado</h2>
+          <p class="modal__subtitle">{{ formatSubjectName(editingCert.subjectName) }}</p>
+        </div>
+        <button class="modal__close" (click)="closeEditModal()">
+          <app-icon name="close" [size]="20" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label" for="editName">Nome do Certificado</label>
+          <input 
+            type="text" 
+            id="editName"
+            class="form-input"
+            [(ngModel)]="editName"
+            placeholder="Nome do certificado" />
+        </div>
+
+        <div class="switch-card">
+          <div class="switch-card__content">
+            <strong>Pedir senha ao usar</strong>
+            <span>A senha será solicitada cada vez que você assinar um documento.</span>
+          </div>
+          <label class="switch">
+            <input 
+              type="checkbox" 
+              [ngModel]="editRequirePassword"
+              (ngModelChange)="onRequirePasswordChange($event)" />
+            <span class="switch__slider"></span>
+          </label>
+        </div>
+
+        @if (!editRequirePassword) {
+          <div class="alert alert--warning">
+            <app-icon name="alert-circle" [size]="20" />
+            <p>
+              <strong>Atenção:</strong> Documentos serão assinados automaticamente sem confirmação de senha.
+            </p>
+          </div>
+        }
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" (click)="closeEditModal()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn-primary" 
+          (click)="updateCertificate()"
+          [disabled]="isUpdating || !editName">
+          @if (isUpdating) {
+            <span class="btn-spinner"></span>
+            Salvando...
+          } @else {
+            <app-icon name="check" [size]="18" />
+            Salvar Alterações
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================ -->
+<!-- MODAL: Confirmar Exclusão -->
+<!-- ============================================ -->
+@if (showDeleteModal && deletingCert) {
+  <div class="modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal modal--sm" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__icon modal__icon--danger">
+          <app-icon name="trash" [size]="28" />
+        </div>
+        <div class="modal__title-group">
+          <h2 class="modal__title">Excluir Certificado</h2>
+          <p class="modal__subtitle">Esta ação não pode ser desfeita</p>
+        </div>
+        <button class="modal__close" (click)="closeDeleteModal()">
+          <app-icon name="close" [size]="20" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <p class="confirm-text">
+          Tem certeza que deseja excluir o certificado <strong>{{ deletingCert.name }}</strong>?
+        </p>
+        <p class="confirm-subtext">
+          Você precisará adicionar o certificado novamente se quiser usá-lo no futuro.
+        </p>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn-danger" 
+          (click)="deleteCertificate()"
+          [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span class="btn-spinner"></span>
+            Excluindo...
+          } @else {
+            <app-icon name="trash" [size]="18" />
+            Excluir
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================ -->
+<!-- MODAL: Confirmar Desativar Senha -->
+<!-- ============================================ -->
+@if (showConfirmNoPasswordModal) {
+  <div class="modal-overlay" (click)="closeConfirmNoPasswordModal()">
+    <div class="modal modal--sm" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__icon modal__icon--warning">
+          <app-icon name="alert-circle" [size]="28" />
+        </div>
+        <div class="modal__title-group">
+          <h2 class="modal__title">Confirmar Alteração</h2>
+          <p class="modal__subtitle">Digite a senha do certificado para confirmar</p>
+        </div>
+        <button class="modal__close" (click)="closeConfirmNoPasswordModal()">
+          <app-icon name="close" [size]="20" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="alert alert--warning">
+          <app-icon name="alert-circle" [size]="20" />
+          <p>
+            Ao desativar a exigência de senha, documentos poderão ser assinados automaticamente por qualquer pessoa com acesso à sua conta.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Senha do Certificado</label>
+          <input 
+            type="password" 
+            id="confirmPassword"
+            class="form-input"
+            [(ngModel)]="confirmPassword"
+            placeholder="Digite a senha para confirmar"
+            (keyup.enter)="confirmPassword && confirmDisablePassword()" />
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" (click)="closeConfirmNoPasswordModal()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn-warning" 
+          (click)="confirmDisablePassword()"
+          [disabled]="!confirmPassword || isValidating">
+          @if (isValidating) {
+            <span class="btn-spinner"></span>
+            Verificando...
+          } @else {
+            Confirmar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

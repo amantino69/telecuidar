@@ -14,11 +14,16 @@ public class PrescriptionsController : ControllerBase
 {
     private readonly IPrescriptionService _prescriptionService;
     private readonly IAuditLogService _auditLogService;
+    private readonly ICertificateStorageService _certificateStorageService;
 
-    public PrescriptionsController(IPrescriptionService prescriptionService, IAuditLogService auditLogService)
+    public PrescriptionsController(
+        IPrescriptionService prescriptionService, 
+        IAuditLogService auditLogService,
+        ICertificateStorageService certificateStorageService)
     {
         _prescriptionService = prescriptionService;
         _auditLogService = auditLogService;
+        _certificateStorageService = certificateStorageService;
     }
 
     private Guid? GetCurrentUserId()
@@ -201,21 +206,33 @@ public class PrescriptionsController : ControllerBase
         }
     }
 
-    [HttpPost("{id}/pdf/sign-installed")]
-    public async Task<ActionResult<PrescriptionPdfDto>> SignWithInstalledCert(Guid id, [FromBody] SignWithInstalledCertDto dto)
+    [HttpPost("{id}/pdf/sign-saved")]
+    public async Task<ActionResult<PrescriptionPdfDto>> SignWithSavedCert(Guid id, [FromBody] SignWithSavedCertDto dto)
     {
         try
         {
-            var pdf = await _prescriptionService.SignWithInstalledCertAsync(id, dto);
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            // Obter certificado para assinatura
+            var (pfxBytes, password) = await _certificateStorageService.GetCertificateForSigningAsync(
+                userId.Value,
+                dto.CertificateId,
+                dto.Password
+            );
+
+            // Usar o serviço existente com os bytes do certificado
+            var pdf = await _prescriptionService.GenerateSignedPdfAsync(id, pfxBytes, password);
             
             // Audit log
             await _auditLogService.CreateAuditLogAsync(
-                GetCurrentUserId(),
-                "sign_pdf_installed",
+                userId,
+                "sign_pdf_saved_cert",
                 "Prescription",
                 id.ToString(),
                 null,
-                HttpContextExtensions.SerializeToJson(new { dto.SubjectName, SignedAt = DateTime.UtcNow }),
+                HttpContextExtensions.SerializeToJson(new { CertificateId = dto.CertificateId, SignedAt = DateTime.UtcNow }),
                 HttpContext.GetIpAddress(),
                 HttpContext.GetUserAgent()
             );
