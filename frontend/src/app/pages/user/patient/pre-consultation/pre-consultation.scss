@@ -275,6 +275,16 @@
 .add-buttons {
   display: flex;
   gap: $spacing-md;
+  width: 100%;
+  
+  > .add-attachment-btn,
+  > app-mobile-upload-button {
+    flex: 1;
+  }
+
+  > app-mobile-upload-button {
+    display: block;
+  }
   
   @include mobile {
     flex-direction: column;
@@ -297,6 +307,7 @@
 .add-attachment-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: $spacing-sm;
   padding: $spacing-sm $spacing-md;
   background: var(--surface);

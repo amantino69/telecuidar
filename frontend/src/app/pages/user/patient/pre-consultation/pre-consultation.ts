@@ -4,11 +4,10 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ButtonComponent } from '@shared/components/atoms/button/button';
 import { IconComponent } from '@shared/components/atoms/icon/icon';
-import { QrCodeModalComponent } from './qrcode-modal/qrcode-modal';
+import { MobileUploadButtonComponent, MobileUploadReceivedEvent } from '@shared/components/organisms/mobile-upload-button/mobile-upload-button';
 import { MediaPreviewModalComponent } from '@shared/components/molecules/media-preview-modal/media-preview-modal';
 import { AppointmentsService, Appointment } from '@core/services/appointments.service';
 import { ModalService } from '@core/services/modal.service';
-import { TemporaryUploadService } from '@core/services/temporary-upload.service';
 import { DeviceDetectorService } from '@core/services/device-detector.service';
 
 interface Attachment {
@@ -28,7 +27,7 @@ interface Attachment {
     RouterModule,
     ButtonComponent,
     IconComponent,
-    QrCodeModalComponent,
+    MobileUploadButtonComponent,
     MediaPreviewModalComponent
   ],
   templateUrl: './pre-consultation.html',
@@ -53,12 +52,8 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
   // Editing existing attachment
   editingAttachmentIndex: number | null = null;
 
-  // Mobile Upload
-  isQrCodeModalOpen = false;
-  mobileUploadUrl = '';
-  mobileUploadToken = '';
+  // Device detection
   isMobile = false;
-  private pollingInterval: any;
 
   // Media Preview
   isPreviewModalOpen = false;
@@ -72,7 +67,6 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private appointmentsService: AppointmentsService,
     private modalService: ModalService,
-    private temporaryUploadService: TemporaryUploadService,
     private deviceDetector: DeviceDetectorService
   ) {
     this.checkIfMobile();
@@ -120,7 +114,7 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopPolling();
+    // Cleanup if needed
   }
 
   ngOnInit() {
@@ -325,117 +319,17 @@ export class PreConsultationComponent implements OnInit, OnDestroy {
     this.cancelAddingAttachment();
   }
 
-  // Mobile Upload Methods
-  openMobileUpload() {
-    // Only generate new token if we don't have one active
-    if (!this.mobileUploadToken) {
-      this.mobileUploadToken = Math.random().toString(36).substring(7);
-      this.mobileUploadUrl = `${window.location.origin}/mobile-upload?token=${this.mobileUploadToken}`;
-      this.startPolling(); // Start polling and keep it running
-    }
-    this.isQrCodeModalOpen = true;
-  }
-
-  regenerateQrCode() {
-    this.stopPolling(); // Stop previous poll
-    this.mobileUploadToken = Math.random().toString(36).substring(7);
-    this.mobileUploadUrl = `${window.location.origin}/mobile-upload?token=${this.mobileUploadToken}`;
-    this.startPolling(); // Start new poll
-  }
-
-  closeQrCodeModal() {
-    this.isQrCodeModalOpen = false;
-    // DON'T stop polling - keep listening for uploads even with modal closed
-  }
-
-  startPolling() {
-    // Poll every 2 seconds via API
-    this.pollingInterval = setInterval(() => {
-      this.checkMobileUpload();
-    }, 2000);
-  }
-
-  stopPolling() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
-    }
-  }
-
-  checkMobileUpload() {
-    if (!this.mobileUploadToken) return;
-
-    // First check if upload exists (HEAD request - doesn't log 404 errors)
-    this.temporaryUploadService.checkUpload(this.mobileUploadToken).subscribe({
-      next: (exists) => {
-        if (exists) {
-          // Fetch all available uploads in the queue
-          this.fetchAllPendingUploads();
-        }
-      }
-    });
-  }
-
-  private fetchAllPendingUploads() {
-    const receivedFiles: string[] = [];
-    
-    const fetchNext = () => {
-      this.temporaryUploadService.getUpload(this.mobileUploadToken).subscribe({
-        next: (payload) => {
-          if (payload) {
-            // Add to attachments
-            this.attachments.push({
-              title: payload.title,
-              file: new File([], payload.title),
-              previewUrl: payload.fileUrl,
-              type: payload.type
-            });
-            receivedFiles.push(payload.title);
-            
-            // Check if there are more uploads
-            this.temporaryUploadService.checkUpload(this.mobileUploadToken).subscribe({
-              next: (moreExists) => {
-                if (moreExists) {
-                  fetchNext();
-                } else {
-                  // No more uploads, show single notification
-                  this.showUploadNotification(receivedFiles);
-                }
-              }
-            });
-          } else {
-            // No payload returned, show notification for what we have
-            if (receivedFiles.length > 0) {
-              this.showUploadNotification(receivedFiles);
-            }
-          }
-        },
-        error: () => {
-          // Error fetching, show notification for what we have
-          if (receivedFiles.length > 0) {
-            this.showUploadNotification(receivedFiles);
-          }
-        }
-      });
-    };
-    
-    fetchNext();
-  }
-
-  private showUploadNotification(files: string[]) {
-    const count = files.length;
-    let message: string;
-    
-    if (count === 1) {
-      message = `Arquivo "${files[0]}" adicionado! Você pode enviar mais arquivos.`;
-    } else {
-      message = `${count} arquivos adicionados! Você pode enviar mais arquivos.`;
-    }
-    
-    this.modalService.alert({
-      title: 'Upload Recebido',
-      message: message,
-      variant: 'success'
+  // ====== MOBILE UPLOAD (via component) ======
+  /**
+   * Handles mobile upload received from MobileUploadButtonComponent
+   */
+  onMobileUploadReceived(event: MobileUploadReceivedEvent) {
+    // Add to attachments
+    this.attachments.push({
+      title: event.title,
+      file: new File([], event.title),
+      previewUrl: event.fileUrl,
+      type: event.type
     });
   }
 

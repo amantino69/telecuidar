@@ -367,7 +367,7 @@ $response.Content
 
     private async Task ExtractPemFromPfxAsync(string certPath, string keyPath)
     {
-        var cert = new X509Certificate2(_certPath!, _certPassword, 
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(_certPath!, _certPassword, 
             X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet);
         
         // Exportar certificado

@@ -3,7 +3,7 @@
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Adicionar via Celular</h2>
-        <button class="close-btn" (click)="onClose()">
+        <button type="button" class="close-btn" (click)="onClose()">
           <app-icon name="close" [size]="24" />
         </button>
       </div>
@@ -16,7 +16,7 @@
         </div>
 
         <div class="actions">
-          <app-button variant="outline" size="sm" (click)="onRegenerate()">
+          <app-button variant="outline" size="sm" type="button" (click)="onRegenerate()">
             <app-icon name="refresh-cw" [size]="16" />
             Gerar Novo Código
           </app-button>

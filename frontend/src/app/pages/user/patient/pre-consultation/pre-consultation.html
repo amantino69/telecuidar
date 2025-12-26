@@ -327,21 +327,14 @@
             <!-- Desktop Buttons -->
             <button type="button" class="add-attachment-btn" (click)="startAddingAttachment()">
               <app-icon name="plus" [size]="20" />
-              Adicionar Novo Anexo
+              Adicionar Anexo
             </button>
-            @if (mobileUploadToken) {
-              <!-- Link ativo - mostrar indicador -->
-              <button type="button" class="add-attachment-btn mobile-btn active" (click)="openMobileUpload()">
-                <span class="pulse-indicator"></span>
-                <app-icon name="smartphone" [size]="20" />
-                Link Ativo - Ver QR Code
-              </button>
-            } @else {
-              <button type="button" class="add-attachment-btn mobile-btn" (click)="openMobileUpload()">
-                <app-icon name="smartphone" [size]="20" />
-                Adicionar pelo Celular
-              </button>
-            }
+            <app-mobile-upload-button
+              variant="button"
+              buttonText="Usar Celular"
+              activeText="Link Ativo - Ver QR Code"
+              (uploadReceived)="onMobileUploadReceived($event)">
+            </app-mobile-upload-button>
           }
         </div>
       }
@@ -359,13 +352,6 @@
     </div>
   </form>
 </div>
-
-<app-qrcode-modal
-  [isOpen]="isQrCodeModalOpen"
-  [uploadUrl]="mobileUploadUrl"
-  (close)="closeQrCodeModal()"
-  (regenerate)="regenerateQrCode()">
-</app-qrcode-modal>
 
 <app-media-preview-modal
   [isOpen]="isPreviewModalOpen"
