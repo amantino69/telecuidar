@@ -26,7 +26,7 @@
         </h3>
       </div>
       
-      @if (isProfessional && !showItemForm) {
+      @if (canEdit && !showItemForm) {
         <div class="header-actions">
           <app-button 
             variant="primary" 
@@ -300,7 +300,7 @@
                           title="Baixar PDF Assinado (validável em validar.iti.gov.br)">
                           <app-icon name="download" [size]="16" />
                         </button>
-                      } @else {
+                      } @else if (canEdit) {
                         <button 
                           class="action-btn pdf" 
                           (click)="generatePdf(prescription)" 

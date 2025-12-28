@@ -15,7 +15,7 @@
         </h3>
       </div>
       
-      @if (isProfessional && !showForm) {
+      @if (canEdit && !showForm) {
         <div class="header-actions">
           <app-button 
             variant="primary" 
@@ -202,7 +202,7 @@
                         <app-icon name="trash" [size]="16" />
                       </button>
                     }
-                    @if (!cert.isSigned) {
+                    @if (!cert.isSigned && canEdit) {
                       <button 
                         class="action-btn sign" 
                         type="button"
@@ -218,7 +218,7 @@
                         title="Baixar PDF Assinado (validável em validar.iti.gov.br)">
                         <app-icon name="download" [size]="16" />
                       </button>
-                    } @else {
+                    } @else if (canEdit) {
                       <button 
                         class="action-btn pdf" 
                         (click)="generatePdf(cert)" 

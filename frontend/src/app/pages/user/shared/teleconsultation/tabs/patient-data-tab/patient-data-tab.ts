@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '@shared/components/atoms/icon/icon';
 import { UsersService, User } from '@core/services/users.service';
@@ -11,7 +11,7 @@ import { AppointmentsService, Appointment } from '@core/services/appointments.se
   templateUrl: './patient-data-tab.html',
   styleUrls: ['./patient-data-tab.scss']
 })
-export class PatientDataTabComponent implements OnInit {
+export class PatientDataTabComponent implements OnInit, OnChanges {
   @Input() appointmentId: string | null = null;
   @Input() appointment: Appointment | null = null;
   
@@ -26,6 +26,12 @@ export class PatientDataTabComponent implements OnInit {
 
   ngOnInit() {
     this.loadPatientData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['appointment'] && changes['appointment'].currentValue) {
+      this.loadPatientData();
+    }
   }
 
   loadPatientData() {
