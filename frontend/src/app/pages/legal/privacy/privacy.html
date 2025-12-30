@@ -1,0 +1,138 @@
+<div class="legal-page">
+  <app-header></app-header>
+  
+  <main class="legal-content">
+    <!-- Hero Section -->
+    <section class="legal-hero">
+      <div class="container">
+        <div class="legal-hero__content">
+          <div class="legal-hero__badge">
+            <span class="legal-hero__badge-icon">🔒</span>
+            <span class="legal-hero__badge-text">LGPD Compliance</span>
+          </div>
+          <h1 class="legal-hero__title">Política de Privacidade</h1>
+          <p class="legal-hero__subtitle">
+            Sua privacidade é nossa prioridade. Saiba como protegemos seus dados pessoais e de saúde
+          </p>
+          <div class="legal-hero__meta">
+            <span class="legal-hero__date">
+              <span class="icon">📅</span>
+              Última atualização: {{ lastUpdated }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="legal-hero__decoration"></div>
+    </section>
+
+    <!-- Highlights Section -->
+    <section class="highlights">
+      <div class="container">
+        <div class="highlights__grid">
+          @for (highlight of highlights; track highlight.title) {
+            <div class="highlight-card">
+              <div class="highlight-card__icon">{{ highlight.icon }}</div>
+              <h3 class="highlight-card__title">{{ highlight.title }}</h3>
+              <p class="highlight-card__description">{{ highlight.description }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Navigation -->
+    <section class="quick-nav">
+      <div class="container">
+        <div class="quick-nav__content">
+          <h2 class="quick-nav__title">Navegação Rápida</h2>
+          <div class="quick-nav__grid">
+            @for (section of sections; track section.id) {
+              <a href="javascript:void(0)" (click)="scrollToSection(section.id, $event)" class="quick-nav__item">
+                <span class="quick-nav__icon">{{ section.icon }}</span>
+                <span class="quick-nav__text">{{ section.title }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy Sections -->
+    <section class="privacy-sections">
+      <div class="container">
+        @for (section of sections; track section.id) {
+          <article class="privacy-section" [id]="section.id">
+            <div class="privacy-section__header">
+              <span class="privacy-section__icon">{{ section.icon }}</span>
+              <h2 class="privacy-section__title">{{ section.title }}</h2>
+            </div>
+            <div class="privacy-section__content" [innerHTML]="section.content"></div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- Rights Summary -->
+    <section class="rights-summary">
+      <div class="container">
+        <div class="rights-summary__content">
+          <h2 class="rights-summary__title">Resumo dos Seus Direitos</h2>
+          <div class="rights-grid">
+            <div class="right-item">
+              <span class="right-item__icon">👁️</span>
+              <span class="right-item__text">Acesso</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">✏️</span>
+              <span class="right-item__text">Correção</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">🗑️</span>
+              <span class="right-item__text">Exclusão</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">📦</span>
+              <span class="right-item__text">Portabilidade</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">🚫</span>
+              <span class="right-item__text">Oposição</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">↩️</span>
+              <span class="right-item__text">Revogação</span>
+            </div>
+          </div>
+          <p class="rights-summary__cta">
+            Para exercer qualquer um desses direitos, entre em contato pelo e-mail 
+            <a href="mailto:privacidade@telecuidar.com.br">privacidade@telecuidar.com.br</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact-cta">
+      <div class="container">
+        <div class="contact-cta__content">
+          <div class="contact-cta__icon">🛡️</div>
+          <h2 class="contact-cta__title">Sua Privacidade é Nossa Prioridade</h2>
+          <p class="contact-cta__text">
+            Estamos comprometidos com a proteção dos seus dados. Se tiver qualquer dúvida, 
+            nossa equipe está pronta para ajudar.
+          </p>
+          <div class="contact-cta__actions">
+            <a href="mailto:privacidade@telecuidar.com.br" class="contact-cta__button contact-cta__button--primary">
+              <span>📧</span> Falar sobre Privacidade
+            </a>
+            <a href="/termos" class="contact-cta__button contact-cta__button--secondary">
+              <span>📋</span> Ver Termos de Uso
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <app-footer></app-footer>
+</div>

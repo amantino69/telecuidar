@@ -2,10 +2,10 @@
 @use 'mixins' as *;
 
 .impact {
-  padding: $spacing-4xl 0;
+  padding: $spacing-3xl 0;
 
   @include mobile {
-    padding: $spacing-3xl 0;
+    padding: $spacing-2xl 0;
   }
 }
 
@@ -21,11 +21,12 @@
 }
 
 .benefit-column {
-  background: var(--surface-primary);
+  background: var(--surface-card);
   border-radius: $radius-xl;
   padding: $spacing-2xl;
   border: 2px solid var(--border-color);
   transition: all $transition-base;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-8px);
@@ -47,6 +48,17 @@
     box-shadow: 0 8px 24px rgba(22, 163, 74, 0.2);
   }
 
+  @keyframes icon-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-8px) scale(1.1); }
+    50% { transform: translateY(0) scale(1.2); }
+    75% { transform: translateY(-4px) scale(1.1); }
+  }
+
+  &:hover &__icon {
+    animation: icon-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   &__header {
     @include flex-column;
     align-items: center;
@@ -59,6 +71,8 @@
   &__icon {
     font-size: 3rem;
     margin-bottom: $spacing-md;
+    display: inline-block;
+    transition: transform 0.3s ease;
   }
 
   &__title {
@@ -89,5 +103,20 @@
     font-weight: $font-weight-bold;
     font-size: $font-size-lg;
     flex-shrink: 0;
+  }
+
+  &__more {
+    display: block;
+    margin-top: $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--primary-600);
+    opacity: 0;
+    transition: opacity $transition-base;
+    text-align: center;
+  }
+
+  &:hover &__more {
+    opacity: 1;
   }
 }

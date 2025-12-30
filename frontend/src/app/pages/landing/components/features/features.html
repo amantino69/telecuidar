@@ -14,6 +14,8 @@
           [title]="feature.title"
           [description]="feature.description"
           [color]="feature.color"
+          [clickable]="true"
+          (cardClick)="openModal(feature)"
         ></app-feature-card>
       }
       @for (feature of professionalFeatures; track feature.title) {
@@ -22,8 +24,16 @@
           [title]="feature.title"
           [description]="feature.description"
           [color]="feature.color"
+          [clickable]="true"
+          (cardClick)="openModal(feature)"
         ></app-feature-card>
       }
     </div>
   </div>
 </section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

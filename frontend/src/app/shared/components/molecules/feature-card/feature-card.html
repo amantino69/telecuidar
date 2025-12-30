@@ -1,7 +1,10 @@
-<div class="feature-card" [class]="'feature-card-' + color">
+<div class="feature-card" [class]="'feature-card-' + color" [class.feature-card--clickable]="clickable" (click)="onClick()">
   <div class="feature-card__icon">
     <app-icon [name]="icon" [size]="32"></app-icon>
   </div>
   <h3 class="feature-card__title">{{ title }}</h3>
   <p class="feature-card__description">{{ description }}</p>
+  @if (clickable) {
+    <span class="feature-card__more">Saiba mais →</span>
+  }
 </div>

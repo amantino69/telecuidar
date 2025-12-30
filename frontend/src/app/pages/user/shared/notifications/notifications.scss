@@ -145,6 +145,16 @@
     border-left-color: var(--green-500);
   }
 
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+      border-color: var(--primary-200);
+    }
+  }
+
   &__icon {
     width: 40px;
     height: 40px;
@@ -204,6 +214,20 @@
     color: var(--text-secondary);
     margin: 0;
     line-height: $line-height-relaxed;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    margin-top: $spacing-xs;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-sm;
+    }
   }
 
   &__timestamp {

@@ -14,6 +14,10 @@
     transform: translateY(-8px);
   }
 
+  &--clickable {
+    cursor: pointer;
+  }
+
   &__icon {
     @include flex-center;
     width: 64px;
@@ -21,6 +25,25 @@
     margin: 0 auto;
     border-radius: $radius-xl;
     @include transition(all);
+    cursor: pointer;
+
+    // Hover direto no ícone também dispara a animação
+    &:hover {
+      animation: icon-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+
+  // Animação do ícone quando hover no card
+  &:hover &__icon {
+    animation: icon-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes icon-bounce {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    20% { transform: scale(1.2) rotate(-8deg); }
+    40% { transform: scale(1.25) rotate(8deg); }
+    60% { transform: scale(1.15) rotate(-4deg); }
+    80% { transform: scale(1.05) rotate(4deg); }
   }
 
   &__title {
@@ -35,6 +58,19 @@
     color: var(--text-secondary);
     line-height: $line-height-relaxed;
     margin: 0;
+  }
+
+  &__more {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--primary-600);
+    opacity: 0;
+    transition: opacity $transition-base;
+    margin-top: auto;
+  }
+
+  &:hover &__more {
+    opacity: 1;
   }
 
   &-primary {

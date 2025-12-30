@@ -1,0 +1,83 @@
+<div class="legal-page">
+  <app-header></app-header>
+  
+  <main class="legal-content">
+    <!-- Hero Section -->
+    <section class="legal-hero">
+      <div class="container">
+        <div class="legal-hero__content">
+          <div class="legal-hero__badge">
+            <span class="legal-hero__badge-icon">📋</span>
+            <span class="legal-hero__badge-text">Documento Legal</span>
+          </div>
+          <h1 class="legal-hero__title">Termos de Uso</h1>
+          <p class="legal-hero__subtitle">
+            Conheça as regras e condições para utilização da plataforma TeleCuidar
+          </p>
+          <div class="legal-hero__meta">
+            <span class="legal-hero__date">
+              <span class="icon">📅</span>
+              Última atualização: {{ lastUpdated }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="legal-hero__decoration"></div>
+    </section>
+
+    <!-- Quick Navigation -->
+    <section class="quick-nav">
+      <div class="container">
+        <div class="quick-nav__content">
+          <h2 class="quick-nav__title">Navegação Rápida</h2>
+          <div class="quick-nav__grid">
+            @for (section of sections; track section.id) {
+              <a href="javascript:void(0)" (click)="scrollToSection(section.id, $event)" class="quick-nav__item">
+                <span class="quick-nav__icon">{{ section.icon }}</span>
+                <span class="quick-nav__text">{{ section.title }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Terms Sections -->
+    <section class="terms-sections">
+      <div class="container">
+        @for (section of sections; track section.id) {
+          <article class="terms-section" [id]="section.id">
+            <div class="terms-section__header">
+              <span class="terms-section__icon">{{ section.icon }}</span>
+              <h2 class="terms-section__title">{{ section.title }}</h2>
+            </div>
+            <div class="terms-section__content" [innerHTML]="section.content"></div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact-cta">
+      <div class="container">
+        <div class="contact-cta__content">
+          <div class="contact-cta__icon">💬</div>
+          <h2 class="contact-cta__title">Dúvidas sobre os Termos?</h2>
+          <p class="contact-cta__text">
+            Nossa equipe está disponível para esclarecer qualquer dúvida sobre estes Termos de Uso
+          </p>
+          <div class="contact-cta__actions">
+            <a href="mailto:contato@telecuidar.com.br" class="contact-cta__button contact-cta__button--primary">
+              <span>📧</span> Enviar E-mail
+            </a>
+            <a href="/privacidade" class="contact-cta__button contact-cta__button--secondary">
+              <span>🔒</span> Ver Política de Privacidade
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <app-footer></app-footer>
+</div>

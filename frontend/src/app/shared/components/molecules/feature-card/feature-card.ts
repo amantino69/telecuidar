@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '@app/shared/components/atoms/icon/icon';
 
@@ -13,4 +13,12 @@ export class FeatureCardComponent {
   @Input() title!: string;
   @Input() description!: string;
   @Input() color: 'primary' | 'red' | 'green' | 'blue' = 'primary';
+  @Input() clickable = false;
+  @Output() cardClick = new EventEmitter<void>();
+
+  onClick(): void {
+    if (this.clickable) {
+      this.cardClick.emit();
+    }
+  }
 }

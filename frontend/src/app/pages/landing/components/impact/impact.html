@@ -1,4 +1,4 @@
-<section class="impact">
+<section class="impact" id="impact">
   <div class="container">
     <div class="section-header">
       <h2 class="section-title">Transformando Vidas e Comunidades</h2>
@@ -9,7 +9,7 @@
 
     <div class="benefits-grid">
       @for (benefit of benefits; track benefit.title) {
-        <div class="benefit-column">
+        <div class="benefit-column" (click)="openModal(benefit)">
           <div class="benefit-column__header">
             <span class="benefit-column__icon">{{ benefit.icon }}</span>
             <h3 class="benefit-column__title">{{ benefit.title }}</h3>
@@ -22,8 +22,15 @@
               </li>
             }
           </ul>
+          <span class="benefit-column__more">Saiba mais →</span>
         </div>
       }
     </div>
   </div>
 </section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

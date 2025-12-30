@@ -1,4 +1,4 @@
-<section class="why-exist">
+<section class="why-exist" id="about">
   <div class="container">
     <div class="section-header">
       <h2 class="section-title">Por que existimos?</h2>
@@ -9,15 +9,16 @@
 
     <div class="challenges-grid">
       @for (challenge of challenges; track challenge.title) {
-        <div class="challenge-card">
+        <div class="challenge-card" (click)="openModal(challenge)">
           <div class="challenge-card__icon">{{ challenge.icon }}</div>
           <h3 class="challenge-card__title">{{ challenge.title }}</h3>
           <p class="challenge-card__description">{{ challenge.description }}</p>
+          <span class="challenge-card__more">Saiba mais →</span>
         </div>
       }
     </div>
 
-    <div class="solution-banner">
+    <div class="solution-banner" (click)="openSolutionModal()">
       <div class="solution-banner__content">
         <h3 class="solution-banner__title">Nossa Resposta Tecnológica</h3>
         <p class="solution-banner__text">
@@ -25,7 +26,14 @@
           IA, IoT e Big Data para criar uma ponte entre o conhecimento médico especializado e as comunidades 
           que mais precisam de cuidados de qualidade.
         </p>
+        <span class="solution-banner__more">Clique para saber mais →</span>
       </div>
     </div>
   </div>
 </section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

@@ -2,13 +2,14 @@
 @use 'mixins' as *;
 
 .hero {
-  padding: $spacing-2xl 0 $spacing-xl;
+  padding: $spacing-3xl 0 $spacing-xl;
   min-height: auto;
   position: relative;
   overflow: hidden;
+  scroll-margin-top: 0;
 
   @include mobile {
-    padding: $spacing-xl 0 $spacing-lg;
+    padding: $spacing-2xl 0 $spacing-lg;
   }
 
   &::before {
@@ -97,6 +98,14 @@
   &__image {
     position: relative;
     z-index: 1;
+  }
+
+  &__img {
+    width: 100%;
+    height: auto;
+    border-radius: $radius-2xl;
+    @include shadow-elevated;
+    object-fit: cover;
   }
 
   &__image-placeholder {

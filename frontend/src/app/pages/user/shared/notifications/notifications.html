@@ -58,6 +58,8 @@
           [class.notification-card--warning]="notification.type === 'Warning'"
           [class.notification-card--error]="notification.type === 'Error'"
           [class.notification-card--success]="notification.type === 'Success'"
+          [class.notification-card--clickable]="hasRelatedPage(notification)"
+          (click)="onCardClick(notification)"
         >
           <div class="notification-card__icon">
             @switch (notification.type) {
@@ -84,7 +86,18 @@
               }
             </div>
             <p class="notification-card__message">{{ notification.message }}</p>
-            <span class="notification-card__timestamp">{{ formatTimestamp(notification.createdAt) }}</span>
+            <div class="notification-card__footer">
+              <span class="notification-card__timestamp">{{ formatTimestamp(notification.createdAt) }}</span>
+              @if (hasRelatedPage(notification)) {
+                <app-button 
+                  variant="ghost" 
+                  size="sm" 
+                  (click)="navigateToRelatedPage(notification, $event)">
+                  {{ getActionLabel(notification) }}
+                  <app-icon name="arrow-right" [size]="14" />
+                </app-button>
+              }
+            </div>
           </div>
 
           <div class="notification-card__actions">
@@ -92,7 +105,7 @@
               <button
                 type="button"
                 class="notification-card__action-btn"
-                (click)="markAsRead(notification.id)"
+                (click)="markAsRead(notification.id); $event.stopPropagation()"
                 title="Marcar como lida"
               >
                 <app-icon name="check" [size]="18" />
@@ -101,7 +114,7 @@
             <button
               type="button"
               class="notification-card__action-btn notification-card__action-btn--delete"
-              (click)="deleteNotification(notification.id)"
+              (click)="deleteNotification(notification.id); $event.stopPropagation()"
               title="Excluir"
             >
               <app-icon name="close" [size]="18" />

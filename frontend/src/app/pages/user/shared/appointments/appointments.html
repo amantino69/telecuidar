@@ -114,6 +114,7 @@
       <div class="card-actions">
         <app-button variant="ghost" size="sm" (click)="openDetails(appointment)">Detalhes</app-button>
         
+        <!-- Pré-consulta temporariamente desativada
         <app-button 
             *ngIf="userrole === 'PATIENT' && (appointment.status === 'Scheduled' || appointment.status === 'Confirmed')" 
             variant="outline" 
@@ -122,6 +123,7 @@
             <app-icon name="file" [size]="16"></app-icon>
             Pré-consulta
         </app-button>
+        -->
         
         <app-button 
             *ngIf="appointment.status !== 'Cancelled' && appointment.status !== 'Completed'" 

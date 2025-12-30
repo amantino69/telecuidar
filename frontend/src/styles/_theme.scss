@@ -87,12 +87,21 @@
   --background: #{$light-background};
   --surface: #{$light-surface};
   --surface-primary: #{$light-surface};
+  --surface-card: #{$light-neutral-100};
   --bg-primary: #{$light-surface};
   --text-primary: #{$light-text-primary};
   --text-secondary: #{$light-text-secondary};
   --text-tertiary: #{$light-neutral-400};
   --border: #{$light-border};
   --border-color: #{$light-border};
+
+  // Section Backgrounds
+  --section-bg-primary: #{$light-background};
+  --section-bg-secondary: #{$light-neutral-100};
+
+  // Text on Gradient Cards
+  --text-on-gradient-light: #ffffff;
+  --text-on-gradient-dark: #{$light-neutral-800};
 
   // RGB Values for transparency
   --primary-rgb: 130, 202, 157;
@@ -204,6 +213,7 @@
   --background: #{$dark-background};
   --surface: #{$dark-surface};
   --surface-primary: #{$dark-surface};
+  --surface-card: #{$dark-surface};
   --bg-primary: #{$dark-surface};
   --text-primary: #{$dark-text-primary};
   --text-secondary: #{$dark-text-secondary};
@@ -218,6 +228,10 @@
   // Section Backgrounds
   --section-bg-primary: #{$dark-background};
   --section-bg-secondary: var(--neutral-800);
+
+  // Text on Gradient Cards (dark text for dark mode too)
+  --text-on-gradient-light: #ffffff;
+  --text-on-gradient-dark: #{$dark-neutral-50};
 
   // Success, Warning, Error, Info
   --success: var(--green-500);

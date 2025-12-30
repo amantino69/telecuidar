@@ -1,9 +1,11 @@
 import { Component, afterNextRender, inject, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { IconComponent } from '@app/shared/components/atoms/icon/icon';
 import { SearchInputComponent } from '@app/shared/components/atoms/search-input/search-input';
 import { FilterSelectComponent, FilterOption } from '@app/shared/components/atoms/filter-select/filter-select';
+import { ButtonComponent } from '@app/shared/components/atoms/button/button';
 import { 
   NotificationsService, 
   Notification, 
@@ -13,9 +15,11 @@ import { AuthService } from '@app/core/services/auth.service';
 import { RealTimeService, UserNotificationUpdate } from '@app/core/services/real-time.service';
 import { Subscription } from 'rxjs';
 
+type NotificationCategory = 'appointment' | 'schedule-block' | 'general';
+
 @Component({
   selector: 'app-notifications',
-  imports: [FormsModule, IconComponent, SearchInputComponent, FilterSelectComponent],
+  imports: [FormsModule, IconComponent, SearchInputComponent, FilterSelectComponent, ButtonComponent],
   templateUrl: './notifications.html',
   styleUrl: './notifications.scss'
 })
@@ -45,6 +49,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private realTimeService = inject(RealTimeService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   private realTimeSubscriptions: Subscription[] = [];
   private isBrowser: boolean;
 
@@ -210,5 +215,101 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   private updateUnreadCount(): void {
     this.unreadCount = this.notifications.filter(n => !n.isRead).length;
+  }
+
+  // Métodos de navegação/redirecionamento
+  getNotificationCategory(notification: Notification): NotificationCategory {
+    const title = notification.title.toLowerCase();
+    const message = notification.message.toLowerCase();
+
+    // Notificações de agendamento/consulta
+    if (
+      title.includes('consulta') ||
+      title.includes('agendada') ||
+      title.includes('confirmada') ||
+      title.includes('cancelada') ||
+      message.includes('consulta')
+    ) {
+      return 'appointment';
+    }
+
+    // Notificações de bloqueio de agenda
+    if (
+      title.includes('bloqueio') ||
+      title.includes('solicitação de bloqueio') ||
+      message.includes('bloqueio')
+    ) {
+      return 'schedule-block';
+    }
+
+    return 'general';
+  }
+
+  getNotificationRoute(notification: Notification): string | null {
+    const category = this.getNotificationCategory(notification);
+    const user = this.authService.getCurrentUser();
+    const role = user?.role;
+
+    switch (category) {
+      case 'appointment':
+        return '/consultas';
+      
+      case 'schedule-block':
+        if (role === 'ADMIN') {
+          return '/solicitacoes-bloqueio';
+        } else if (role === 'PROFESSIONAL') {
+          return '/bloqueios-agenda';
+        }
+        return null;
+      
+      default:
+        return null;
+    }
+  }
+
+  hasRelatedPage(notification: Notification): boolean {
+    return this.getNotificationRoute(notification) !== null;
+  }
+
+  getActionLabel(notification: Notification): string {
+    const category = this.getNotificationCategory(notification);
+    
+    switch (category) {
+      case 'appointment':
+        return 'Ver Consultas';
+      case 'schedule-block':
+        return 'Ver Bloqueios';
+      default:
+        return 'Ver Detalhes';
+    }
+  }
+
+  navigateToRelatedPage(notification: Notification, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    const route = this.getNotificationRoute(notification);
+    
+    if (route) {
+      // Marcar como lida ao navegar
+      if (!notification.isRead) {
+        this.markAsRead(notification.id);
+      }
+      
+      this.router.navigate([route]);
+    }
+  }
+
+  onCardClick(notification: Notification): void {
+    // Se tiver página relacionada, navegar
+    if (this.hasRelatedPage(notification)) {
+      this.navigateToRelatedPage(notification);
+    } else {
+      // Caso contrário, apenas marcar como lida
+      if (!notification.isRead) {
+        this.markAsRead(notification.id);
+      }
+    }
   }
 }

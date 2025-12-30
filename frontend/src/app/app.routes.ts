@@ -7,6 +7,11 @@ import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-passwor
 import { VerifyEmailComponent } from '@pages/auth/verify-email/verify-email';
 import { VerifyEmailChangeComponent } from '@pages/auth/verify-email-change/verify-email-change';
 
+// Legal pages
+import { TermsComponent } from '@pages/legal/terms/terms';
+import { PrivacyComponent } from '@pages/legal/privacy/privacy';
+import { LgpdComponent } from '@pages/legal/lgpd/lgpd';
+
 // Shared user components
 import { UserLayoutComponent } from '@pages/user/shared/user-layout/user-layout';
 import { DashboardComponent } from '@pages/user/shared/dashboard/dashboard';
@@ -46,6 +51,9 @@ export const routes: Routes = [
     path: '',
     component: LandingComponent
   },
+  { path: 'termos', component: TermsComponent },
+  { path: 'privacidade', component: PrivacyComponent },
+  { path: 'lgpd', component: LgpdComponent },
   { path: 'entrar', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'registrar', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'esqueci-senha', component: ForgotPasswordComponent },

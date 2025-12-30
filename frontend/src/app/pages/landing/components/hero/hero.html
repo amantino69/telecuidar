@@ -9,16 +9,16 @@
         </h1>
 
         <p class="hero__description">
-          Plataforma moderna de telesaúde pública que combina IA, IoT e cuidado humano para levar 
+          Plataforma moderna de telesaúde pública que combina IA, IoT (Internet das Coisas) e cuidado humano para levar 
           atendimento médico especializado a todos os cantos do Brasil.
         </p>
 
         <div class="hero__buttons">
-          <app-button variant="primary" size="lg">
+          <app-button variant="primary" size="lg" (click)="scrollToSection('solution')">
             Conheça Nossa Solução
             <app-icon name="arrow-right" [size]="20"></app-icon>
           </app-button>
-          <app-button variant="outline" size="lg">
+          <app-button variant="outline" size="lg" (click)="scrollToSection('contact')">
             Fale Conosco
           </app-button>
         </div>
@@ -43,9 +43,12 @@
 
       <div class="hero__visual">
         <div class="hero__image">
-          <div class="hero__image-placeholder">
-            <app-icon name="heart" [size]="120" color="var(--primary-300)"></app-icon>
-          </div>
+          <img 
+            src="images/landing/hero-telemedicine.jpg" 
+            alt="Médico realizando atendimento de telemedicina" 
+            class="hero__img"
+            loading="eager"
+          />
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-<section class="technology">
+<section class="technology" id="technology">
   <div class="container">
     <div class="section-header">
       <h2 class="section-title">Tecnologia de Ponta a Serviço da Vida</h2>
@@ -9,7 +9,7 @@
 
     <div class="tech-grid">
       @for (category of categories; track category.title) {
-        <div class="tech-card">
+        <div class="tech-card" (click)="openModal(category)">
           <div class="tech-card__header">
             <span class="tech-card__icon">{{ category.icon }}</span>
             <h3 class="tech-card__title">{{ category.title }}</h3>
@@ -22,8 +22,15 @@
               </li>
             }
           </ul>
+          <span class="tech-card__more">Saiba mais →</span>
         </div>
       }
     </div>
   </div>
 </section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

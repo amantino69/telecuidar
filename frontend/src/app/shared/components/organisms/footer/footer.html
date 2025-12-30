@@ -15,7 +15,7 @@
           <ul class="footer__links-list">
             @for (link of links.platform; track link.label) {
               <li>
-                <a [href]="link.href" class="footer__link">{{ link.label }}</a>
+                <a [href]="link.href" class="footer__link" (click)="handlePlatformLinkClick(link, $event)">{{ link.label }}</a>
               </li>
             }
           </ul>
@@ -26,7 +26,11 @@
           <ul class="footer__links-list">
             @for (link of links.legal; track link.label) {
               <li>
-                <a [href]="link.href" class="footer__link">{{ link.label }}</a>
+                @if (link.isExternal) {
+                  <a [href]="link.href" class="footer__link" [target]="link.href.startsWith('http') ? '_blank' : '_self'">{{ link.label }}</a>
+                } @else {
+                  <a [routerLink]="link.href" class="footer__link">{{ link.label }}</a>
+                }
               </li>
             }
           </ul>

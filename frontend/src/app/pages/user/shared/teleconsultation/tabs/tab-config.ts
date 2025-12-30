@@ -64,8 +64,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     label: 'Dados da Pré Consulta',
     icon: 'file',
     roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
+    showInTeleconsultation: false, // Temporariamente desativado
+    showInDetails: false, // Temporariamente desativado
     order: 2
   },
   {

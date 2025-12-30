@@ -2,11 +2,11 @@
 @use 'mixins' as *;
 
 .vision {
-  padding: $spacing-4xl 0;
+  padding: $spacing-3xl 0;
   background: var(--surface-secondary);
 
   @include mobile {
-    padding: $spacing-3xl 0;
+    padding: $spacing-2xl 0;
   }
 }
 
@@ -20,6 +20,13 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(var(--primary-rgb), 0.3);
+  }
 
   @include mobile {
     padding: $spacing-2xl;
@@ -39,15 +46,19 @@
   &__title {
     @include heading-2;
     margin: 0 0 $spacing-xl 0;
-    color: var(--white);
+    color: var(--text-on-gradient-light);
     position: relative;
     z-index: 1;
+  }
+
+  :host-context([data-theme='dark']) &__title {
+    color: var(--text-on-gradient-dark);
   }
 
   &__text {
     font-size: $font-size-lg;
     line-height: $line-height-relaxed;
-    color: var(--white);
+    color: var(--text-on-gradient-light);
     margin: 0 0 $spacing-2xl 0;
     opacity: 0.95;
     position: relative;
@@ -58,10 +69,14 @@
     }
   }
 
+  :host-context([data-theme='dark']) &__text {
+    color: var(--text-on-gradient-dark);
+  }
+
   &__quote {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
-    border-left: 4px solid var(--white);
+    border-left: 4px solid var(--text-on-gradient-light);
     padding: $spacing-xl;
     border-radius: $radius-lg;
     margin: 0;
@@ -73,10 +88,15 @@
     }
   }
 
+  :host-context([data-theme='dark']) &__quote {
+    background: rgba(0, 0, 0, 0.15);
+    border-left-color: var(--text-on-gradient-dark);
+  }
+
   &__quote-text {
     font-size: $font-size-lg;
     line-height: $line-height-relaxed;
-    color: var(--white);
+    color: var(--text-on-gradient-light);
     margin: 0;
     font-style: italic;
     font-weight: $font-weight-medium;
@@ -102,5 +122,29 @@
       margin-left: $spacing-xs;
       opacity: 0.5;
     }
+  }
+
+  :host-context([data-theme='dark']) &__quote-text {
+    color: var(--text-on-gradient-dark);
+  }
+
+  &__more {
+    display: block;
+    margin-top: $spacing-xl;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--text-on-gradient-light);
+    opacity: 0.8;
+    transition: opacity $transition-base;
+    position: relative;
+    z-index: 1;
+  }
+
+  :host-context([data-theme='dark']) &__more {
+    color: var(--text-on-gradient-dark);
+  }
+
+  &:hover &__more {
+    opacity: 1;
   }
 }
