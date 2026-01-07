@@ -26,6 +26,12 @@
     // When sidebar is open, adjust the width (40% sidebar)
     &.sidebar-open {
       margin-right: 40vw;
+      
+      // Tablets: aumentar sidebar para 55% (mais espaço para leitura/digitação)
+      @media (min-width: 768px) and (max-width: 1024px) {
+        margin-right: 55vw;
+      }
+      
       // Respect min/max width of sidebar
       @media (max-width: 1000px) {
         margin-right: 400px;

@@ -9,6 +9,14 @@
   width: 40vw; // 40% for sidebar, 60% for video
   min-width: 400px; // Prevent too narrow on small screens
   max-width: 600px; // Prevent too wide on large screens
+  
+  // Tablets: 55% para mais espaço de leitura/digitação
+  @media (min-width: 768px) and (max-width: 1024px) {
+    width: 55vw;
+    min-width: 500px;
+    max-width: none;
+  }
+  
   background: var(--surface);
   border-left: 1px solid var(--border);
   transform: translateX(100%);
@@ -140,6 +148,18 @@
         border-left: 3px solid transparent;
         transition: all $transition-fast;
         text-align: left;
+        
+        // Tablets: botões maiores para melhor usabilidade
+        @media (min-width: 768px) and (max-width: 1024px) {
+          padding: $spacing-lg;
+          gap: $spacing-md;
+          font-size: $font-size-lg;
+          
+          app-icon {
+            width: 24px;
+            height: 24px;
+          }
+        }
 
         @include mobile {
           flex: 1;
@@ -214,6 +234,18 @@
         border-left: 3px solid transparent;
         transition: all $transition-fast;
         text-align: left;
+        
+        // Tablets: botões maiores
+        @media (min-width: 768px) and (max-width: 1024px) {
+          padding: $spacing-md $spacing-lg;
+          gap: $spacing-md;
+          font-size: $font-size-base;
+          
+          app-icon {
+            width: 22px;
+            height: 22px;
+          }
+        }
 
         @include mobile {
           flex: 1 1 auto;
@@ -289,6 +321,18 @@
         transition: all $transition-fast;
         white-space: nowrap;
         flex-shrink: 0;
+        
+        // Tablets: sub-tabs maiores e mais legíveis
+        @media (min-width: 768px) and (max-width: 1024px) {
+          padding: $spacing-sm $spacing-lg;
+          font-size: $font-size-base;
+          gap: $spacing-sm;
+          
+          app-icon {
+            width: 20px;
+            height: 20px;
+          }
+        }
 
         @include mobile {
           padding: $spacing-xs $spacing-sm;
