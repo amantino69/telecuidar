@@ -31,14 +31,46 @@
     </div>
   </div>
 
-  <div class="sidebar-tabs">
-    <button 
-      *ngFor="let tab of tabs" 
-      class="tab-btn" 
-      [class.active]="activeTab === tab"
-      (click)="onTabChange(tab)">
-      {{ tab }}
-    </button>
+  <!-- NAVEGAÇÃO POR GRUPOS -->
+  <div class="sidebar-nav">
+    <!-- Grupos de Abas (Exame Físico, Documentos) -->
+    <div class="nav-groups">
+      <button 
+        *ngFor="let group of getGroupedTabs()" 
+        class="group-btn" 
+        [class.active]="activeGroup === group.id"
+        (click)="setActiveGroup(group.id)">
+        <app-icon [name]="group.icon" [size]="18" />
+        <span>{{ group.label }}</span>
+        <app-icon name="chevron-down" [size]="16" class="chevron" />
+      </button>
+    </div>
+
+    <!-- Tabs Standalone (IA, CNS, Concluir) -->
+    <div class="nav-standalone" *ngIf="getStandaloneGroup() as standaloneGroup">
+      <button 
+        *ngFor="let tab of standaloneGroup.tabs" 
+        class="standalone-btn" 
+        [class.active]="isTabActive(tab.label)"
+        (click)="onTabChange(tab.label)">
+        <app-icon [name]="tab.icon" [size]="18" />
+        <span>{{ tab.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SUB-TABS DO GRUPO ATIVO -->
+  <div class="sub-tabs" *ngIf="activeGroup">
+    <div class="sub-tabs-container">
+      <button 
+        *ngFor="let tab of getActiveGroupTabs()" 
+        class="sub-tab-btn" 
+        [class.active]="isTabActive(tab.label)"
+        (click)="onTabChange(tab.label)">
+        <app-icon [name]="tab.icon" [size]="16" />
+        <span>{{ tab.label }}</span>
+      </button>
+    </div>
   </div>
 
   <div class="sidebar-content">

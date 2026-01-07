@@ -11,6 +11,18 @@ export interface TabConfig {
   showInDetails: boolean;
   /** Ordem de exibição */
   order: number;
+  /** Grupo ao qual a tab pertence (para organização em categorias) */
+  group?: 'exame-fisico' | 'documentos' | 'standalone';
+}
+
+/**
+ * Interface para grupos de tabs (categorias)
+ */
+export interface TabGroup {
+  id: 'exame-fisico' | 'documentos' | 'standalone';
+  label: string;
+  icon: IconName;
+  tabs: TabConfig[];
 }
 
 /**
@@ -48,7 +60,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: false, // Não mostra na teleconsulta, apenas nos detalhes
     showInDetails: true,
-    order: 0
+    order: 0,
+    group: 'standalone'
   },
   {
     id: 'patient-data',
@@ -56,8 +69,9 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'user',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 1
+    showInDetails: true,
+    order: 1,
+    group: 'exame-fisico'
   },
   {
     id: 'pre-consultation',
@@ -66,7 +80,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: false, // Temporariamente desativado
     showInDetails: false, // Temporariamente desativado
-    order: 2
+    order: 2,
+    group: 'standalone'
   },
   {
     id: 'anamnesis',
@@ -74,8 +89,9 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'book',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 3
+    showInDetails: true,
+    order: 2,
+    group: 'exame-fisico'
   },
   {
     id: 'specialty',
@@ -83,54 +99,59 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'stethoscope',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 4
+    showInDetails: true,
+    order: 3,
+    group: 'exame-fisico'
   },
   {
     id: 'medical-devices',
     label: 'Dispositivos Médicos',
-    icon: 'bluetooth',
+    icon: 'smartphone',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
-    showInDetails: false, // Só faz sentido durante a teleconsulta ao vivo
-    order: 5
+    showInDetails: false,
+    order: 4,
+    group: 'exame-fisico'
   },
   {
     id: 'phonocardiogram',
     label: 'Fonocardiograma',
     icon: 'activity',
     roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
+    showInTeleconsultation: false, // REMOVIDO conforme solicitação
     showInDetails: true,
-    order: 6
+    order: 5,
+    group: 'standalone'
   },
   {
     id: 'biometrics',
     label: 'Biométricos',
     icon: 'heart',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 6
+    showInTeleconsultation: false, // REMOVIDO conforme solicitação
+    showInDetails: true,
+    order: 6,
+    group: 'standalone'
   },
   {
     id: 'attachments',
     label: 'Chat Anexos',
-    icon: 'camera',
+    icon: 'image',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 7
+    showInDetails: true,
+    order: 5,
+    group: 'exame-fisico'
   },
-  // SOAP foi removido - campos integrados na aba Anamnese
   {
     id: 'receita',
     label: 'Receita',
     icon: 'file',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 9
+    showInDetails: true,
+    order: 1,
+    group: 'documentos'
   },
   {
     id: 'atestado',
@@ -138,26 +159,9 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'file',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 10
-  },
-  {
-    id: 'ai',
-    label: 'IA',
-    icon: 'activity',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 11
-  },
-  {
-    id: 'cns',
-    label: 'CNS',
-    icon: 'user',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: false, // CNS NÃO aparece nos detalhes (apenas na teleconsulta)
-    order: 12
+    showInDetails: true,
+    order: 2,
+    group: 'documentos'
   },
   {
     id: 'return',
@@ -165,8 +169,9 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'calendar',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 13
+    showInDetails: true,
+    order: 3,
+    group: 'documentos'
   },
   {
     id: 'referral',
@@ -174,8 +179,29 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'arrow-right',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 14
+    showInDetails: true,
+    order: 4,
+    group: 'documentos'
+  },
+  {
+    id: 'ai',
+    label: 'IA',
+    icon: 'activity',
+    roles: ['PROFESSIONAL', 'ADMIN'],
+    showInTeleconsultation: true,
+    showInDetails: true,
+    order: 90,
+    group: 'standalone'
+  },
+  {
+    id: 'cns',
+    label: 'CNS',
+    icon: 'user',
+    roles: ['PROFESSIONAL', 'ADMIN'],
+    showInTeleconsultation: true,
+    showInDetails: false,
+    order: 91,
+    group: 'standalone'
   },
   {
     id: 'conclusion',
@@ -183,8 +209,9 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     icon: 'check',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 15
+    showInDetails: true,
+    order: 99,
+    group: 'standalone'
   }
 ];
 
@@ -196,6 +223,37 @@ export function getTeleconsultationTabs(role: 'PATIENT' | 'PROFESSIONAL' | 'ADMI
   return TELECONSULTATION_TABS
     .filter(tab => tab.showInTeleconsultation && tab.roles.includes(role))
     .sort((a, b) => a.order - b.order);
+}
+
+/**
+ * Retorna os grupos de tabs organizados para a teleconsulta
+ */
+export function getTeleconsultationTabGroups(role: 'PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT'): TabGroup[] {
+  const tabs = getTeleconsultationTabs(role);
+  
+  const groups: TabGroup[] = [
+    {
+      id: 'exame-fisico',
+      label: 'Exame Físico',
+      icon: 'stethoscope',
+      tabs: tabs.filter(t => t.group === 'exame-fisico').sort((a, b) => a.order - b.order)
+    },
+    {
+      id: 'documentos',
+      label: 'Documentos',
+      icon: 'file',
+      tabs: tabs.filter(t => t.group === 'documentos').sort((a, b) => a.order - b.order)
+    },
+    {
+      id: 'standalone',
+      label: 'Outras',
+      icon: 'settings',
+      tabs: tabs.filter(t => t.group === 'standalone').sort((a, b) => a.order - b.order)
+    }
+  ];
+  
+  // Remove grupos vazios
+  return groups.filter(g => g.tabs.length > 0);
 }
 
 /**

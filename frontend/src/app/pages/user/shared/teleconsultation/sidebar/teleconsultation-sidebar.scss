@@ -103,56 +103,224 @@
     }
   }
 
-  .sidebar-tabs {
+  // NAVEGAÇÃO POR GRUPOS
+  .sidebar-nav {
     display: flex;
+    flex-direction: column;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
+    
+    @include mobile {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: $spacing-xs;
+      padding: $spacing-sm;
+    }
+
+    .nav-groups {
+      display: flex;
+      flex-direction: column;
+      
+      @include mobile {
+        flex-direction: row;
+        flex: 1;
+        gap: $spacing-xs;
+      }
+
+      .group-btn {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-md;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-weight: $font-weight-medium;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+        transition: all $transition-fast;
+        text-align: left;
+
+        @include mobile {
+          flex: 1;
+          flex-direction: column;
+          text-align: center;
+          padding: $spacing-sm;
+          border-left: none;
+          border-bottom: 3px solid transparent;
+          font-size: $font-size-xs;
+          gap: $spacing-xs;
+        }
+
+        .chevron {
+          margin-left: auto;
+          transition: transform $transition-fast;
+          
+          @include mobile {
+            display: none;
+          }
+        }
+
+        &:hover {
+          background: var(--primary-50);
+          color: var(--primary-600);
+        }
+
+        &.active {
+          background: var(--primary-100);
+          color: var(--primary-700);
+          border-left-color: var(--primary-600);
+          font-weight: $font-weight-semibold;
+
+          @include mobile {
+            border-left-color: transparent;
+            border-bottom-color: var(--primary-600);
+          }
+
+          .chevron {
+            transform: rotate(180deg);
+          }
+        }
+      }
+    }
+
+    .nav-standalone {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      margin-top: $spacing-xs;
+      padding-top: $spacing-xs;
+      
+      @include mobile {
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-top: none;
+        margin-top: 0;
+        padding-top: 0;
+        gap: $spacing-xs;
+        flex: 1;
+      }
+
+      .standalone-btn {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-sm $spacing-md;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-weight: $font-weight-medium;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+        transition: all $transition-fast;
+        text-align: left;
+
+        @include mobile {
+          flex: 1 1 auto;
+          min-width: max-content;
+          flex-direction: column;
+          text-align: center;
+          padding: $spacing-xs;
+          border-left: none;
+          border-bottom: 2px solid transparent;
+          font-size: $font-size-xs;
+          gap: $spacing-xs;
+        }
+
+        &:hover {
+          background: var(--neutral-100);
+          color: var(--neutral-800);
+        }
+
+        &.active {
+          background: var(--neutral-200);
+          color: var(--neutral-900);
+          border-left-color: var(--neutral-600);
+          font-weight: $font-weight-semibold;
+
+          @include mobile {
+            border-left-color: transparent;
+            border-bottom-color: var(--neutral-600);
+          }
+        }
+      }
+    }
+  }
+
+  // SUB-TABS (tabs dentro de um grupo)
+  .sub-tabs {
     background: var(--background);
+    border-bottom: 1px solid var(--border);
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-300) var(--background);
 
-    &::-webkit-scrollbar {
-      height: 6px;
+    @include mobile {
+      max-height: 60px;
     }
 
-    &::-webkit-scrollbar-track {
-      background: var(--background);
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--primary-300);
-      border-radius: 3px;
-
-      &:hover {
-        background: var(--primary-400);
-      }
-    }
-
-    .tab-btn {
-      flex: 1 1 auto;
-      min-width: fit-content;
-      padding: $spacing-md;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-weight: $font-weight-medium;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all $transition-fast;
-      white-space: nowrap;
-      text-align: center;
-
-      &:hover {
-        color: var(--primary-600);
-        background: var(--primary-50);
+    .sub-tabs-container {
+      display: flex;
+      padding: $spacing-xs $spacing-sm;
+      gap: $spacing-xs;
+      
+      @include mobile {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
 
-      &.active {
-        color: var(--primary-600);
-        border-bottom-color: var(--primary-600);
+      .sub-tab-btn {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        padding: $spacing-xs $spacing-md;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-secondary);
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        cursor: pointer;
+        border-radius: $border-radius-md;
+        transition: all $transition-fast;
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        @include mobile {
+          padding: $spacing-xs $spacing-sm;
+          font-size: $font-size-xs;
+          gap: 4px;
+          
+          span {
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        &:hover {
+          background: var(--primary-50);
+          color: var(--primary-700);
+          border-color: var(--primary-300);
+        }
+
+        &.active {
+          background: var(--primary-600);
+          color: white;
+          border-color: var(--primary-600);
+          font-weight: $font-weight-semibold;
+        }
       }
     }
+  }
+
+  // FALLBACK: Tabs antigas (para compatibilidade)
+  .sidebar-tabs {
+    display: none; // Esconde sistema antigo quando novo sistema está ativo
   }
 
   .sidebar-content {
