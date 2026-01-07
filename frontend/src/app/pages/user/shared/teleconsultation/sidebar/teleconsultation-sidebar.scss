@@ -6,7 +6,9 @@
   top: 0;
   right: 0;
   height: 100%;
-  width: 450px;
+  width: 40vw; // 40% for sidebar, 60% for video
+  min-width: 400px; // Prevent too narrow on small screens
+  max-width: 600px; // Prevent too wide on large screens
   background: var(--surface);
   border-left: 1px solid var(--border);
   transform: translateX(100%);

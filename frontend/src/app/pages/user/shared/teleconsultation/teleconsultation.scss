@@ -23,9 +23,16 @@
     transition: margin-right $transition-base, width $transition-base;
     overflow: hidden;
 
-    // When sidebar is open, adjust the width
+    // When sidebar is open, adjust the width (40% sidebar)
     &.sidebar-open {
-      margin-right: 450px;
+      margin-right: 40vw;
+      // Respect min/max width of sidebar
+      @media (max-width: 1000px) {
+        margin-right: 400px;
+      }
+      @media (min-width: 1500px) {
+        margin-right: 600px;
+      }
     }
 
     &.sidebar-open.full-screen {

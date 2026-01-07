@@ -477,34 +477,42 @@
 // MELHORIA UI/UX: Cards quadrados com max-width para não esticar
 @mixin buttons-grid($columns: 5, $rows: 2) {
   .buttons-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     flex: 1;
     min-height: 0;
-    justify-content: center;
-    align-content: center;
+    overflow-y: auto;
+    padding-bottom: 20px;
 
+    // Mobile: lista vertical compacta
+    @media (max-width: 767px) {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    // Desktop: grid responsivo com auto-fit
     @media (min-width: 768px) {
-      // Cards com tamanho máximo para não esticar excessivamente
-      grid-template-columns: repeat($columns, minmax(120px, 200px));
-      grid-template-rows: repeat($rows, auto);
+      display: grid;
+      flex-direction: unset;
+      overflow-y: visible;
+      padding: 20px;
+      // Auto-fit para adaptação automática
+      grid-template-columns: repeat(auto-fit, minmax(110px, 120px));
+      gap: 16px;
       justify-content: center;
+      align-content: start;
     }
 
-    @media (min-width: 768px) and (max-width: 1365px) {
-      gap: 1vw;
-      grid-template-columns: repeat($columns, minmax(100px, 160px));
+    @media (min-width: 1200px) {
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 140px));
     }
 
-    @media (min-width: 1366px) and (max-width: 1919px) {
-      gap: 1vw;
-      grid-template-columns: repeat($columns, minmax(140px, 200px));
-    }
-
-    @media (min-width: 1920px) {
+    @media (min-width: 1600px) {
       gap: 24px;
-      grid-template-columns: repeat($columns, minmax(180px, 240px));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 160px));
     }
   }
 }
@@ -517,147 +525,185 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 10px;
+    padding: 16px 12px;
     border: none;
     border-radius: 16px;
     cursor: pointer;
     overflow: hidden;
-    transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-    min-height: 120px;
+    transition: all 0.2s ease;
     text-align: center;
-    animation: fadeInUp 0.5s ease-out backwards;
+    animation: fadeInUp 0.4s ease-out backwards;
+    
+    // Tamanho fixo quadrado no desktop
+    @media (min-width: 768px) {
+      width: 115px;
+      height: 115px;
+      padding: 10px 6px;
+      gap: 6px;
+    }
+
+    @media (min-width: 1200px) {
+      width: 135px;
+      height: 135px;
+      padding: 12px 8px;
+      gap: 8px;
+    }
+
+    @media (min-width: 1600px) {
+      width: 155px;
+      height: 155px;
+      padding: 14px 10px;
+      gap: 10px;
+    }
+
+    // Mobile: layout horizontal compacto estilo lista
+    @media (max-width: 767px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      text-align: left;
+    }
 
     @for $i from 1 through 12 {
       &:nth-child(#{$i}) {
-        animation-delay: #{0.15 + ($i * 0.05)}s;
+        animation-delay: #{0.1 + ($i * 0.04)}s;
       }
-    }
-
-    @media (min-width: 768px) and (max-width: 1365px) {
-      min-height: auto;
-      height: 100%;
-      padding: 1.5vh 0.8vw;
-      gap: 0.8vh;
-      border-radius: 1.2vw;
-    }
-
-    @media (min-width: 1366px) and (max-width: 1919px) {
-      min-height: auto;
-      height: 100%;
-      padding: 1.5vh 1vw;
-      gap: 1vh;
-      border-radius: 1vw;
-    }
-
-    @media (min-width: 1920px) {
-      min-height: auto;
-      height: 100%;
-      padding: 32px 24px;
-      gap: 16px;
-      border-radius: 28px;
     }
 
     &__icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 56px;
-      height: 56px;
-      min-width: 56px;
-      min-height: 56px;
-      border-radius: 14px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 10px;
       background: rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(4px);
       box-shadow: 
-        inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-        inset 0 3px 6px rgba(255, 255, 255, 0.4),
-        0 4px 12px rgba(0, 0, 0, 0.15);
+        inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3),
+        0 3px 8px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
       flex-shrink: 0;
 
-      @media (min-width: 768px) and (max-width: 1365px) {
-        width: 56px;
-        height: 56px;
-        min-width: 56px;
-        min-height: 56px;
-        border-radius: 14px;
+      // Mobile: ícone para layout horizontal
+      @media (max-width: 767px) {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 11px;
       }
 
-      @media (min-width: 1366px) and (max-width: 1919px) {
-        width: 64px;
-        height: 64px;
-        min-width: 64px;
-        min-height: 64px;
-        border-radius: 16px;
+      @media (min-width: 1200px) {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        border-radius: 10px;
       }
 
-      @media (min-width: 1920px) {
-        width: 88px;
-        height: 88px;
-        min-width: 88px;
-        min-height: 88px;
-        border-radius: 24px;
+      @media (min-width: 1600px) {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 12px;
       }
 
       app-icon {
         color: white;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
       }
     }
 
     &__title {
       display: block;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 600;
       color: white;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      line-height: 1.15;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      max-width: 100%;
+      text-align: center;
 
-      @media (min-width: 768px) and (max-width: 1365px) {
-        font-size: 1.4vw;
+      @media (max-width: 767px) {
+        font-size: 15px;
+        font-weight: 600;
+        text-align: left;
       }
 
-      @media (min-width: 1366px) and (max-width: 1919px) {
-        font-size: 1.1vw;
+      @media (min-width: 1200px) {
+        font-size: 11px;
       }
 
-      @media (min-width: 1920px) {
-        font-size: 24px;
+      @media (min-width: 1600px) {
+        font-size: 12px;
       }
     }
 
     &__desc {
       display: block;
-      font-size: 9px;
-      color: rgba(255, 255, 255, 0.9);
-      line-height: 1.3;
-      max-width: 95%;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.2;
+      max-width: 100%;
 
-      @media (min-width: 768px) and (max-width: 1365px) {
-        font-size: 0.9vw;
+      @media (max-width: 767px) {
+        font-size: 12px;
+        opacity: 0.85;
       }
 
-      @media (min-width: 1366px) and (max-width: 1919px) {
-        font-size: 0.7vw;
+      @media (min-width: 1200px) {
+        font-size: 9px;
       }
 
-      @media (min-width: 1920px) {
-        font-size: 14px;
+      @media (min-width: 1600px) {
+        font-size: 10px;
+      }
+    }
+
+    // Container para título e descrição no mobile (layout horizontal)
+    &__text {
+      display: none;
+      
+      @media (max-width: 767px) {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
       }
     }
 
     &__badge {
       position: absolute;
-      top: 8px;
-      right: 8px;
-      padding: 4px 10px;
+      top: 6px;
+      right: 6px;
+      padding: 3px 8px;
       background: rgba(255, 255, 255, 0.3);
       border-radius: 100px;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       color: white;
       backdrop-filter: blur(4px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+      @media (max-width: 767px) {
+        position: static;
+        margin-left: auto;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
 
       @media (min-width: 768px) and (max-width: 1919px) {
         top: 0.5vh;
@@ -667,47 +713,72 @@
       }
     }
 
+    // Seta de navegação no mobile
+    &__arrow {
+      display: none;
+      
+      @media (max-width: 767px) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
     &:hover {
-      transform: translateY(-10px) scale(1.02);
+      transform: translateY(-4px) scale(1.02);
+
+      @media (max-width: 767px) {
+        transform: translateX(4px);
+      }
       
       .control-btn__icon {
-        transform: scale(1.1) rotate(-3deg);
+        transform: scale(1.08);
+
+        @media (max-width: 767px) {
+          transform: scale(1.05);
+        }
       }
     }
 
     &:active {
-      transform: translateY(-2px) scale(0.98);
+      transform: translateY(-1px) scale(0.98);
+
+      @media (max-width: 767px) {
+        transform: scale(0.98);
+      }
     }
 
     &:focus-visible {
-      outline: 4px solid white;
-      outline-offset: 4px;
+      outline: 3px solid white;
+      outline-offset: 3px;
     }
 
     // GREEN
     &--green {
       background: linear-gradient(145deg, #4ade80 0%, #22c55e 40%, #16a34a 100%);
       box-shadow: 
-        0 10px 0 #15803d,
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 15px 40px rgba(34, 197, 94, 0.35),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        0 6px 0 #15803d,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(34, 197, 94, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         box-shadow: 
-          0 14px 0 #15803d,
-          0 20px 40px rgba(0, 0, 0, 0.25),
-          0 25px 60px rgba(34, 197, 94, 0.45),
-          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+          0 8px 0 #15803d,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(34, 197, 94, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
       }
 
       &:active {
         box-shadow: 
-          0 4px 0 #15803d,
-          0 6px 15px rgba(0, 0, 0, 0.15),
-          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+          0 3px 0 #15803d,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
     }
 
@@ -715,26 +786,26 @@
     &--blue {
       background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #2563eb 100%);
       box-shadow: 
-        0 10px 0 #1d4ed8,
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 15px 40px rgba(59, 130, 246, 0.35),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        0 6px 0 #1d4ed8,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(59, 130, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         box-shadow: 
-          0 14px 0 #1d4ed8,
-          0 20px 40px rgba(0, 0, 0, 0.25),
-          0 25px 60px rgba(59, 130, 246, 0.45),
-          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+          0 8px 0 #1d4ed8,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(59, 130, 246, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
       }
 
       &:active {
         box-shadow: 
-          0 4px 0 #1d4ed8,
-          0 6px 15px rgba(0, 0, 0, 0.15),
-          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+          0 3px 0 #1d4ed8,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
     }
 
@@ -742,26 +813,26 @@
     &--red {
       background: linear-gradient(145deg, #f87171 0%, #ef4444 40%, #dc2626 100%);
       box-shadow: 
-        0 10px 0 #b91c1c,
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 15px 40px rgba(239, 68, 68, 0.35),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        0 6px 0 #b91c1c,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(239, 68, 68, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         box-shadow: 
-          0 14px 0 #b91c1c,
-          0 20px 40px rgba(0, 0, 0, 0.25),
-          0 25px 60px rgba(239, 68, 68, 0.45),
-          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+          0 8px 0 #b91c1c,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(239, 68, 68, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
       }
 
       &:active {
         box-shadow: 
-          0 4px 0 #b91c1c,
-          0 6px 15px rgba(0, 0, 0, 0.15),
-          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+          0 3px 0 #b91c1c,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
     }
 
@@ -769,26 +840,26 @@
     &--purple {
       background: linear-gradient(145deg, #c084fc 0%, #a855f7 40%, #9333ea 100%);
       box-shadow: 
-        0 10px 0 #7e22ce,
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 15px 40px rgba(168, 85, 247, 0.35),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        0 6px 0 #7e22ce,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(168, 85, 247, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         box-shadow: 
-          0 14px 0 #7e22ce,
-          0 20px 40px rgba(0, 0, 0, 0.25),
-          0 25px 60px rgba(168, 85, 247, 0.45),
-          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+          0 8px 0 #7e22ce,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(168, 85, 247, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
       }
 
       &:active {
         box-shadow: 
-          0 4px 0 #7e22ce,
-          0 6px 15px rgba(0, 0, 0, 0.15),
-          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+          0 3px 0 #7e22ce,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
     }
 
@@ -796,26 +867,26 @@
     &--orange {
       background: linear-gradient(145deg, #fb923c 0%, #f97316 40%, #ea580c 100%);
       box-shadow: 
-        0 10px 0 #c2410c,
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 15px 40px rgba(249, 115, 22, 0.35),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        0 6px 0 #c2410c,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(249, 115, 22, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         box-shadow: 
-          0 14px 0 #c2410c,
-          0 20px 40px rgba(0, 0, 0, 0.25),
-          0 25px 60px rgba(249, 115, 22, 0.45),
-          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+          0 8px 0 #c2410c,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(249, 115, 22, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
       }
 
       &:active {
         box-shadow: 
-          0 4px 0 #c2410c,
-          0 6px 15px rgba(0, 0, 0, 0.15),
-          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+          0 3px 0 #c2410c,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
     }
   }
@@ -864,7 +935,7 @@
 @mixin branding-card-styles {
   .branding-card {
     position: relative;
-    display: flex;
+    display: none; // Escondido no mobile
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -882,6 +953,11 @@
     );
     border: 2px dashed rgba(59, 130, 246, 0.2);
     animation: fadeInUp 0.6s ease-out 0.4s backwards;
+
+    // Mostra apenas no desktop
+    @media (min-width: 768px) {
+      display: flex;
+    }
 
     @media (min-width: 768px) and (max-width: 1365px) {
       border-radius: 1.2vw;
