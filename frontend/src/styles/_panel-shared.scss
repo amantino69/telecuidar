@@ -474,6 +474,7 @@
 }
 
 // Mixin para diferentes grids baseado no número de botões
+// MELHORIA UI/UX: Cards quadrados com max-width para não esticar
 @mixin buttons-grid($columns: 5, $rows: 2) {
   .buttons-grid {
     display: grid;
@@ -481,22 +482,29 @@
     gap: 12px;
     flex: 1;
     min-height: 0;
+    justify-content: center;
+    align-content: center;
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat($columns, 1fr);
-      grid-template-rows: repeat($rows, 1fr);
+      // Cards com tamanho máximo para não esticar excessivamente
+      grid-template-columns: repeat($columns, minmax(120px, 200px));
+      grid-template-rows: repeat($rows, auto);
+      justify-content: center;
     }
 
     @media (min-width: 768px) and (max-width: 1365px) {
       gap: 1vw;
+      grid-template-columns: repeat($columns, minmax(100px, 160px));
     }
 
     @media (min-width: 1366px) and (max-width: 1919px) {
       gap: 1vw;
+      grid-template-columns: repeat($columns, minmax(140px, 200px));
     }
 
     @media (min-width: 1920px) {
       gap: 24px;
+      grid-template-columns: repeat($columns, minmax(180px, 240px));
     }
   }
 }
@@ -850,6 +858,130 @@
   }
 }
 
+// ========================================
+// MELHORIA UI/UX: Card decorativo para preencher espaços vazios
+// ========================================
+@mixin branding-card-styles {
+  .branding-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    // Gradiente sutil com cores da marca
+    background: linear-gradient(145deg, 
+      rgba(59, 130, 246, 0.08) 0%, 
+      rgba(139, 92, 246, 0.08) 50%,
+      rgba(236, 72, 153, 0.05) 100%
+    );
+    border: 2px dashed rgba(59, 130, 246, 0.2);
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      border-radius: 1.2vw;
+      gap: 0.8vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      border-radius: 1vw;
+      gap: 1vw;
+    }
+
+    @media (min-width: 1920px) {
+      border-radius: 28px;
+      gap: 16px;
+    }
+
+    &__logo {
+      width: 60%;
+      max-width: 80px;
+      height: auto;
+      opacity: 0.6;
+      filter: grayscale(20%);
+      transition: all 0.3s ease;
+
+      @media (min-width: 1920px) {
+        max-width: 100px;
+      }
+    }
+
+    &__text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-align: center;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 0.9vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 0.75vw;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 13px;
+      }
+    }
+
+    &__tagline {
+      font-size: 9px;
+      color: #94a3b8;
+      font-style: italic;
+      text-align: center;
+
+      @media (min-width: 1920px) {
+        font-size: 11px;
+      }
+    }
+
+    // Animação sutil de pulso no hover
+    &:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: linear-gradient(145deg, 
+        rgba(59, 130, 246, 0.12) 0%, 
+        rgba(139, 92, 246, 0.12) 50%,
+        rgba(236, 72, 153, 0.08) 100%
+      );
+
+      .branding-card__logo {
+        opacity: 0.85;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .branding-card {
+    background: linear-gradient(145deg, 
+      rgba(59, 130, 246, 0.1) 0%, 
+      rgba(139, 92, 246, 0.1) 50%,
+      rgba(236, 72, 153, 0.06) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.25);
+
+    &__text { color: #94a3b8; }
+    &__tagline { color: #64748b; }
+    &__logo { opacity: 0.5; filter: grayscale(30%) brightness(1.2); }
+
+    &:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: linear-gradient(145deg, 
+        rgba(59, 130, 246, 0.15) 0%, 
+        rgba(139, 92, 246, 0.15) 50%,
+        rgba(236, 72, 153, 0.1) 100%
+      );
+    }
+  }
+}
+
 // Mixin completo para aplicar todos os estilos do painel
 @mixin user-panel-styles($gridColumns: 5, $gridRows: 2) {
   @include panel-base;
@@ -860,5 +992,6 @@
   @include quick-stats-styles;
   @include buttons-grid($gridColumns, $gridRows);
   @include control-btn-styles;
+  @include branding-card-styles;
   @include animations;
 }

@@ -1,13 +1,16 @@
 @use 'panel-shared' as *;
 
-// Patient Panel - 5 botões em layout 3+2
-// Grid: 3 colunas na primeira linha, 2 centralizadas na segunda
-@include user-panel-styles(5, 1);
+// Patient Panel - 5 botões + 1 branding card = 6 items em layout 3x2
+// Layout mais equilibrado e compacto que 5x1
+@include user-panel-styles(3, 2);
 
-// Ajuste específico para o grid do paciente (5 botões)
+// Ajuste específico para centralizar o grid
 .buttons-grid {
   @media (min-width: 768px) {
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: 1fr;
+    // Grid 3x2 com cards centralizados e tamanho máximo
+    grid-template-columns: repeat(3, minmax(120px, 200px));
+    grid-template-rows: repeat(2, auto);
+    justify-content: center;
+    align-content: center;
   }
 }

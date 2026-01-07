@@ -1,19 +1,15 @@
 @use 'panel-shared' as *;
 
-// Professional Panel - 7 botões em layout 4+3
+// Professional Panel - 7 botões + 1 branding card = 8 items em layout 4x2
 @include user-panel-styles(4, 2);
 
-// Ajuste específico para o grid do profissional (7 botões)
+// Ajuste específico para centralizar o grid
 .buttons-grid {
   @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    
-    // Centralizar a segunda linha com 3 botões
-    .control-btn:nth-child(5),
-    .control-btn:nth-child(6),
-    .control-btn:nth-child(7) {
-      // Os últimos 3 botões ficam nas posições 2, 3 e 4 da segunda linha
-    }
+    // Grid 4x2 com cards centralizados e tamanho máximo
+    grid-template-columns: repeat(4, minmax(120px, 180px));
+    grid-template-rows: repeat(2, auto);
+    justify-content: center;
+    align-content: center;
   }
 }

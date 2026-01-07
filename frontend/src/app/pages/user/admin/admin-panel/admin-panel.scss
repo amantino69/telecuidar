@@ -472,36 +472,42 @@
 }
 
 // ========================================
-// BUTTONS GRID
+// BUTTONS GRID - MELHORIA UI/UX: Cards quadrados centralizados
 // ========================================
 .buttons-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   flex: 1;
-  min-height: 0; // Permite shrink no flexbox
+  min-height: 0;
+  justify-content: center;
+  align-content: center;
 
-  // Tablet e acima: layout fixo 5 colunas
+  // Tablet e acima: layout fixo 5 colunas com max-width
   @media (min-width: 768px) {
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(5, minmax(120px, 180px));
+    grid-template-rows: repeat(2, auto);
+    justify-content: center;
   }
 
   @media (min-width: 768px) and (max-width: 1365px) {
     gap: 1vw;
+    grid-template-columns: repeat(5, minmax(100px, 150px));
   }
 
   @media (min-width: 1366px) and (max-width: 1919px) {
     gap: 1vw;
+    grid-template-columns: repeat(5, minmax(120px, 170px));
   }
 
   @media (min-width: 1920px) {
     gap: 24px;
+    grid-template-columns: repeat(5, minmax(160px, 210px));
   }
 }
 
 // ========================================
-// 3D CONTROL BUTTONS
+// 3D CONTROL BUTTONS - MELHORIA UI/UX: Cards quadrados
 // ========================================
 .control-btn {
   position: relative;
@@ -518,11 +524,13 @@
   transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-height: 120px;
   text-align: center;
+  // MELHORIA: Aspect ratio para manter cards quadrados
+  aspect-ratio: 1 / 1;
 
   // Tablet (768px - 1365px)
   @media (min-width: 768px) and (max-width: 1365px) {
     min-height: auto;
-    height: 100%;
+    height: auto;
     padding: 1.5vh 0.8vw;
     gap: 0.8vh;
     border-radius: 1.2vw;
@@ -531,7 +539,7 @@
   // HD (1366px - 1919px)
   @media (min-width: 1366px) and (max-width: 1919px) {
     min-height: auto;
-    height: 100%;
+    height: auto;
     padding: 1.5vh 1vw;
     gap: 1vh;
     border-radius: 1vw;
@@ -540,7 +548,7 @@
   // FHD (1920px+) - referência
   @media (min-width: 1920px) {
     min-height: auto;
-    height: 100%;
+    height: auto;
     padding: 32px 24px;
     gap: 16px;
     border-radius: 28px;
