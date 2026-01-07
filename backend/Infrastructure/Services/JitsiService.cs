@@ -106,22 +106,37 @@ public class JitsiService : IJitsiService
         if (!isPatient && !isProfessional && !isAdmin && !isAssistant)
             return null;
 
-        // Profissional, Admin e Assistente são moderadores, paciente é convidado
-        var isModerator = isProfessional || isAdmin || isAssistant;
+        // Profissional e Admin são moderadores
+        // Assistente NÃO é moderador (atua em nome do paciente)
+        var isModerator = isProfessional || isAdmin;
 
         // Nome da sala: apenas o GUID sem prefixo (mais curto na URL)
         var roomName = appointmentId.ToString("N");
 
-        // Nome de exibição (Nome + Sobrenome)
-        var displayName = $"{user.Name} {user.LastName}".Trim();
+        // Nome de exibição e avatar
+        // Se for ASSISTENTE, usa os dados do PACIENTE (assistente é invisível para o médico)
+        string displayName;
+        string? avatarUrl;
+        string displayEmail;
         
-        // URL do avatar (se existir no usuário)
-        string? avatarUrl = user.Avatar;
+        if (isAssistant)
+        {
+            // Assistente entra com o nome do paciente
+            displayName = $"{appointment.Patient.Name} {appointment.Patient.LastName}".Trim();
+            avatarUrl = appointment.Patient.Avatar;
+            displayEmail = appointment.Patient.Email;
+        }
+        else
+        {
+            displayName = $"{user.Name} {user.LastName}".Trim();
+            avatarUrl = user.Avatar;
+            displayEmail = user.Email;
+        }
 
         // Gerar token JWT para o Jitsi
         var token = GenerateJitsiJwt(
             userId: userId.ToString(),
-            email: user.Email,
+            email: displayEmail,
             displayName: displayName,
             avatarUrl: avatarUrl,
             roomName: roomName,
@@ -133,13 +148,19 @@ public class JitsiService : IJitsiService
         // Resolver domínio dinamicamente baseado no host da requisição
         var resolvedDomain = ResolveDomain(requestHost);
 
+        // Nome da sala para servidor público (prefixado para evitar colisões)
+        // Usa um prefixo único + ID do agendamento
+        var publicRoomName = $"telecuidar-{roomName}";
+
         return new JitsiTokenResponseDto
         {
             Token = token,
             RoomName = roomName,
             Domain = resolvedDomain,
+            PublicDomain = "meet.jit.si",
+            PublicRoomName = publicRoomName,
             DisplayName = displayName,
-            Email = user.Email,
+            Email = displayEmail,
             AvatarUrl = avatarUrl,
             IsModerator = isModerator,
             ExpiresAt = expiresAt

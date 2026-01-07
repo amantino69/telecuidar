@@ -76,12 +76,28 @@
       </app-specialty-fields-tab>
     </div>
 
-    <!-- IOT -->
+    <!-- IOT (legado) -->
     <div class="tab-content" *ngIf="activeTab === 'IOT'">
       <app-iot-tab
         [appointmentId]="appointmentId"
         [userrole]="userrole">
       </app-iot-tab>
+    </div>
+
+    <!-- Dispositivos Médicos IoMT -->
+    <div class="tab-content" *ngIf="activeTab === 'Dispositivos Médicos'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-medical-devices-tab>
+    </div>
+
+    <!-- Fonocardiograma -->
+    <div class="tab-content" *ngIf="activeTab === 'Fonocardiograma'" style="height: 100%">
+      <app-phonocardiogram-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-phonocardiogram-tab>
     </div>
 
     <!-- Biométricos -->
@@ -136,7 +152,8 @@
     <div class="tab-content" *ngIf="activeTab === 'Receita'" style="height: 100%">
       <app-receita-tab
         [appointmentId]="appointmentId"
-        [userrole]="userrole">
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
       </app-receita-tab>
     </div>
 
@@ -144,24 +161,9 @@
     <div class="tab-content" *ngIf="activeTab === 'Atestado'" style="height: 100%">
       <app-atestado-tab
         [appointmentId]="appointmentId"
-        [userrole]="userrole">
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
       </app-atestado-tab>
-    </div>
-
-    <!-- Exame -->
-    <div class="tab-content" *ngIf="activeTab === 'Exame'" style="height: 100%">
-      <app-exame-tab
-        [appointmentId]="appointmentId"
-        [userrole]="userrole">
-      </app-exame-tab>
-    </div>
-
-    <!-- Laudo -->
-    <div class="tab-content" *ngIf="activeTab === 'Laudo'" style="height: 100%">
-      <app-laudo-tab
-        [appointmentId]="appointmentId"
-        [userrole]="userrole">
-      </app-laudo-tab>
     </div>
 
     <!-- Retorno -->
@@ -178,7 +180,8 @@
       <app-referral-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment"
-        [userrole]="userrole">
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
       </app-referral-tab>
     </div>
 

@@ -30,7 +30,9 @@ var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"
     ?? builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Data Source=telecuidar.db";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlite(connectionString)
+           .ConfigureWarnings(warnings => warnings.Ignore(
+               Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // Email Configuration
 var emailSettings = new EmailSettings
@@ -125,6 +127,25 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
         NameClaimType = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub
     };
+    
+    // SignalR envia o token via query string, não header
+    // Precisamos ler o token da query string para autenticar conexões SignalR
+    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            
+            // Se a request for para um hub SignalR
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                // Lê o token da query string
+                context.Token = accessToken;
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+    };
 });
 
 // Memory Cache for temporary uploads
@@ -193,6 +214,7 @@ if (seedEnabled)
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await context.Database.MigrateAsync();
         await WebAPI.Data.DataSeeder.SeedAsync(context);
+        await WebAPI.Data.AdditionalUserSeeder.SeedAsync(context);
     }
 }
 
@@ -223,5 +245,6 @@ app.MapControllers();
 app.MapHub<SchedulingHub>("/hubs/scheduling");
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapHub<TeleconsultationHub>("/hubs/teleconsultation");
+app.MapHub<MedicalDevicesHub>("/hubs/medical-devices");
 
 app.Run();

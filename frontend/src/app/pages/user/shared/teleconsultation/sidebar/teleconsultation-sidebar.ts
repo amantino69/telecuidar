@@ -6,6 +6,7 @@ import { AttachmentsChatTabComponent } from '../tabs/attachments-chat-tab/attach
 import { SoapTabComponent } from '../tabs/soap-tab/soap-tab';
 import { ConclusionTabComponent } from '../tabs/conclusion-tab/conclusion-tab';
 import { PatientDataTabComponent } from '../tabs/patient-data-tab/patient-data-tab';
+import { PreConsultationDataTabComponent } from '../tabs/pre-consultation-data-tab/pre-consultation-data-tab';
 import { AnamnesisTabComponent } from '../tabs/anamnesis-tab/anamnesis-tab';
 import { SpecialtyFieldsTabComponent } from '../tabs/specialty-fields-tab/specialty-fields-tab';
 import { IotTabComponent } from '../tabs/iot-tab/iot-tab';
@@ -13,10 +14,10 @@ import { AITabComponent } from '../tabs/ai-tab/ai-tab';
 import { CnsTabComponent } from '../tabs/cns-tab/cns-tab';
 import { ReceitaTabComponent } from '../tabs/receita-tab/receita-tab';
 import { AtestadoTabComponent } from '../tabs/atestado-tab/atestado-tab';
-import { ExameTabComponent } from '../tabs/exame-tab/exame-tab';
-import { LaudoTabComponent } from '../tabs/laudo-tab/laudo-tab';
 import { ReturnTabComponent } from './../tabs/return-tab/return-tab';
 import { ReferralTabComponent } from './../tabs/referral-tab/referral-tab';
+import { PhonocardiogramTabComponent } from '../tabs/phonocardiogram-tab/phonocardiogram-tab';
+import { MedicalDevicesTabComponent } from '../tabs/medical-devices-tab/medical-devices-tab';
 import { DictationService } from '@core/services/dictation.service';
 import { Appointment } from '@core/services/appointments.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -32,6 +33,7 @@ import { Subject, takeUntil } from 'rxjs';
     SoapTabComponent,
     ConclusionTabComponent,
     PatientDataTabComponent,
+    PreConsultationDataTabComponent,
     AnamnesisTabComponent,
     SpecialtyFieldsTabComponent,
     IotTabComponent,
@@ -39,10 +41,10 @@ import { Subject, takeUntil } from 'rxjs';
     CnsTabComponent,
     ReceitaTabComponent,
     AtestadoTabComponent,
-    ExameTabComponent,
-    LaudoTabComponent,
     ReturnTabComponent,
-    ReferralTabComponent
+    ReferralTabComponent,
+    PhonocardiogramTabComponent,
+    MedicalDevicesTabComponent
   ],
   templateUrl: './teleconsultation-sidebar.html',
   styleUrls: ['./teleconsultation-sidebar.scss']

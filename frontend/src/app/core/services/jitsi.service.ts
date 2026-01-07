@@ -23,6 +23,8 @@ export interface JitsiToken {
   token: string;
   roomName: string;
   domain: string;
+  publicDomain: string;      // Servidor público (meet.jit.si) para app mobile
+  publicRoomName: string;    // Nome da sala no servidor público
   displayName: string;
   email: string;
   avatarUrl?: string;

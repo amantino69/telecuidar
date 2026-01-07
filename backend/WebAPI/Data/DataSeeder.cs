@@ -104,6 +104,18 @@ public static class DataSeeder
                 Role = UserRole.ASSISTANT,
                 Status = UserStatus.Active,
                 EmailVerified = true
+            },
+            new User
+            {
+                Name = "Assis",
+                LastName = "Assistente",
+                Email = "assis@assis.com",
+                Cpf = "55555555555",
+                Phone = "11955555555",
+                PasswordHash = passwordHasher.HashPassword(defaultPassword),
+                Role = UserRole.ASSISTANT,
+                Status = UserStatus.Active,
+                EmailVerified = true
             }
         };
 

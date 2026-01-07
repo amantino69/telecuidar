@@ -198,7 +198,9 @@ export class AuthService {
   // Get Access Token
   getAccessToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      // Tentar localStorage primeiro (remember me), depois sessionStorage
+      return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) 
+        || sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     }
     return null;
   }

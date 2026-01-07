@@ -243,4 +243,45 @@ export class DeviceDetectorService {
     this.cachedIsTablet = null;
     this.cachedIsDesktop = null;
   }
+
+  // ===== MÉTODOS DE DETECÇÃO DE SISTEMA OPERACIONAL =====
+
+  /**
+   * Detecta se o dispositivo está executando Android
+   */
+  isAndroid(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    return /android/i.test(userAgent);
+  }
+
+  /**
+   * Detecta se o dispositivo está executando iOS (iPhone, iPad, iPod)
+   */
+  isIOS(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/i.test(userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPad com iPadOS
+  }
+
+  /**
+   * Detecta se é um dispositivo móvel Android ou iOS
+   */
+  isMobileDevice(): boolean {
+    return this.isAndroid() || this.isIOS();
+  }
+
+  /**
+   * Retorna o sistema operacional do dispositivo móvel
+   */
+  getMobileOS(): 'android' | 'ios' | 'other' {
+    if (this.isAndroid()) return 'android';
+    if (this.isIOS()) return 'ios';
+    return 'other';
+  }
 }

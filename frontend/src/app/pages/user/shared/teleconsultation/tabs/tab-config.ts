@@ -1,12 +1,10 @@
 import type { IconName } from '@shared/components/atoms/icon/icon';
 
-export type UserRoleType = 'PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT';
-
 export interface TabConfig {
   id: string;
   label: string;
   icon: IconName;
-  roles: UserRoleType[];
+  roles: ('PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT')[];
   /** Se a tab deve aparecer na teleconsulta (modo de atendimento) */
   showInTeleconsultation: boolean;
   /** Se a tab deve aparecer nos detalhes da consulta (modo de visualização) */
@@ -47,7 +45,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     id: 'basic',
     label: 'Informações Básicas',
     icon: 'file',
-    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
+    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: false, // Não mostra na teleconsulta, apenas nos detalhes
     showInDetails: true,
     order: 0
@@ -89,13 +87,22 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     order: 4
   },
   {
-    id: 'iot',
-    label: 'IOT',
+    id: 'medical-devices',
+    label: 'Dispositivos Médicos',
+    icon: 'bluetooth',
+    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
+    showInTeleconsultation: true,
+    showInDetails: false, // Só faz sentido durante a teleconsulta ao vivo
+    order: 5
+  },
+  {
+    id: 'phonocardiogram',
+    label: 'Fonocardiograma',
     icon: 'activity',
     roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: false, // Aparece apenas nos detalhes
+    showInTeleconsultation: true,
     showInDetails: true,
-    order: 5
+    order: 6
   },
   {
     id: 'biometrics',
@@ -115,20 +122,12 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     showInDetails: true, // Aparece automaticamente nos detalhes
     order: 7
   },
-  {
-    id: 'soap',
-    label: 'SOAP',
-    icon: 'book',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 8
-  },
+  // SOAP foi removido - campos integrados na aba Anamnese
   {
     id: 'receita',
     label: 'Receita',
     icon: 'file',
-    roles: ['PROFESSIONAL', 'ADMIN'],
+    roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
     order: 9
@@ -137,28 +136,10 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     id: 'atestado',
     label: 'Atestado',
     icon: 'file',
-    roles: ['PROFESSIONAL', 'ADMIN'],
+    roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
     order: 10
-  },
-  {
-    id: 'exame',
-    label: 'Exame',
-    icon: 'file',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 11
-  },
-  {
-    id: 'laudo',
-    label: 'Laudo',
-    icon: 'file',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 12
   },
   {
     id: 'ai',
@@ -167,7 +148,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 13
+    order: 11
   },
   {
     id: 'cns',
@@ -176,7 +157,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: false, // CNS NÃO aparece nos detalhes (apenas na teleconsulta)
-    order: 14
+    order: 12
   },
   {
     id: 'return',
@@ -185,16 +166,16 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 15
+    order: 13
   },
   {
     id: 'referral',
     label: 'Encaminhamento',
     icon: 'arrow-right',
-    roles: ['PROFESSIONAL', 'ADMIN'],
+    roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 16
+    order: 14
   },
   {
     id: 'conclusion',
@@ -203,14 +184,15 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true, // Aparece automaticamente nos detalhes
-    order: 17
+    order: 15
   }
 ];
 
 /**
  * Retorna as tabs disponíveis para a teleconsulta, filtradas por role
  */
-export function getTeleconsultationTabs(role: UserRoleType): TabConfig[] {
+export function getTeleconsultationTabs(role: 'PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT'): TabConfig[] {
+  // ASSISTANT agora tem suas próprias permissões definidas no array roles
   return TELECONSULTATION_TABS
     .filter(tab => tab.showInTeleconsultation && tab.roles.includes(role))
     .sort((a, b) => a.order - b.order);
@@ -219,7 +201,8 @@ export function getTeleconsultationTabs(role: UserRoleType): TabConfig[] {
 /**
  * Retorna as tabs disponíveis para a página de detalhes, filtradas por role
  */
-export function getDetailsTabs(role: UserRoleType): TabConfig[] {
+export function getDetailsTabs(role: 'PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT'): TabConfig[] {
+  // ASSISTANT agora tem suas próprias permissões definidas no array roles
   return TELECONSULTATION_TABS
     .filter(tab => tab.showInDetails && tab.roles.includes(role))
     .sort((a, b) => a.order - b.order);
@@ -238,17 +221,15 @@ export function getAllDetailsTabs(): TabConfig[] {
  * Mapeamento de id da tab para o nome usado na teleconsulta antiga
  */
 export const TAB_ID_TO_LEGACY_NAME: Record<string, string> = {
+  'medical-devices': 'Dispositivos Médicos',
   'patient-data': 'Dados do Paciente',
   'pre-consultation': 'Dados da Pré Consulta',
   'anamnesis': 'Anamnese',
   'specialty': 'Campos da Especialidade',
   'biometrics': 'Biométricos',
   'attachments': 'Chat Anexos',
-  'soap': 'SOAP',
   'receita': 'Receita',
   'atestado': 'Atestado',
-  'exame': 'Exame',
-  'laudo': 'Laudo',
   'ai': 'IA',
   'cns': 'CNS',
   'return': 'Retorno',

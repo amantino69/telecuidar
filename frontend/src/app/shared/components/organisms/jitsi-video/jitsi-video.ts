@@ -15,6 +15,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { JitsiService, JitsiToken, JitsiCallState } from '@core/services/jitsi.service';
 import { ThemeService } from '@core/services/theme.service';
+import { DeviceDetectorService } from '@core/services/device-detector.service';
 import { IconComponent } from '@shared/components/atoms/icon/icon';
 import { ButtonComponent } from '@shared/components/atoms/button/button';
 import { Subscription } from 'rxjs';
@@ -54,6 +55,13 @@ export class JitsiVideoComponent implements OnInit, AfterViewInit, OnDestroy {
   
   // Tema
   isDarkTheme = false;
+  
+  // Deep link para app móvel
+  isAndroid = false;
+  isIOS = false;
+  showMobileAppPrompt = false;
+  jitsiDeepLink: string | null = null;
+  userDeclinedMobileApp = false;
 
   private subscriptions: Subscription[] = [];
   private containerId = 'jitsi-meet-container';
@@ -62,10 +70,15 @@ export class JitsiVideoComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private jitsiService: JitsiService,
     private themeService: ThemeService,
+    private deviceDetector: DeviceDetectorService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.isAndroid = this.deviceDetector.isAndroid();
+      this.isIOS = this.deviceDetector.isIOS();
+    }
   }
 
   ngOnInit(): void {
@@ -134,7 +147,17 @@ export class JitsiVideoComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.isModerator = this.token.isModerator;
 
-      // Inicializar chamada
+      // Em dispositivos Android/iOS, mostrar opção de abrir no app
+      // O app permite compartilhamento de tela + split-screen com o sistema
+      if ((this.isAndroid || this.isIOS) && !this.userDeclinedMobileApp) {
+        this.generateDeepLink();
+        this.showMobileAppPrompt = true;
+        this.isLoading = false;
+        try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+        return;
+      }
+
+      // Inicializar chamada no navegador
       await this.jitsiService.initCall(this.containerId, this.token, {
         width: this.width,
         height: this.height,
@@ -194,5 +217,124 @@ export class JitsiVideoComponent implements OnInit, AfterViewInit, OnDestroy {
   retry(): void {
     this.errorMessage = null;
     this.initializeCall();
+  }
+
+  // ===== DEEP LINK PARA APP MÓVEL =====
+
+  /**
+   * Retorna a URL completa da sala com JWT para exibição
+   */
+  getFullRoomUrl(): string {
+    if (!this.token) return '';
+    
+    let url = `https://${this.token.domain}/${this.token.roomName}`;
+    if (this.token.token) {
+      url += `?jwt=${this.token.token}`;
+    }
+    return url;
+  }
+
+  /**
+   * Gera o deep link para abrir no app Jitsi Meet
+   * Usamos uma página intermediária que tenta abrir o app automaticamente
+   */
+  private generateDeepLink(): void {
+    if (!this.token) return;
+
+    // URL da página intermediária que abre o app
+    // Esta página tenta abrir o app e oferece fallback
+    const openAppUrl = `https://${this.token.domain}/open-app?room=${this.token.roomName}`;
+    
+    // Adicionar JWT se existir
+    if (this.token.token) {
+      this.jitsiDeepLink = `${openAppUrl}&jwt=${this.token.token}`;
+    } else {
+      this.jitsiDeepLink = openAppUrl;
+    }
+  }
+
+  /**
+   * Abre o app Jitsi Meet através da página intermediária
+   * Esta página lida com a lógica de abrir o app ou fallback para web
+   */
+  openInMobileApp(): void {
+    if (!this.token) return;
+
+    const domain = this.token.domain;
+    const roomName = this.token.roomName;
+    const jwt = this.token.token;
+    
+    console.log('[JitsiVideo] Abrindo sala:', roomName);
+    console.log('[JitsiVideo] Domínio:', domain);
+    console.log('[JitsiVideo] JWT presente:', !!jwt);
+    
+    // Usar deep link direto do Jitsi Meet
+    // O app Jitsi Meet aceita URLs no formato: org.jitsi.meet://server/room?jwt=TOKEN
+    let deepLink = `org.jitsi.meet://${domain}/${roomName}`;
+    if (jwt) {
+      deepLink += `?jwt=${jwt}`;
+    }
+    
+    console.log('[JitsiVideo] Deep link:', deepLink);
+    
+    // Abrir o deep link
+    window.location.href = deepLink;
+  }
+
+  /**
+   * Usuário escolheu continuar no navegador em vez do app
+   */
+  continueInBrowser(): void {
+    this.showMobileAppPrompt = false;
+    this.userDeclinedMobileApp = true;
+    this.initializeCall(); // Reinicia a chamada no modo web
+  }
+
+  /**
+   * Copia o nome da sala pública (para meet.jit.si) para a área de transferência
+   */
+  copyPublicRoomName(): void {
+    if (!this.token) return;
+    
+    const roomName = this.token.publicRoomName || `telecuidar-${this.token.roomName}`;
+    
+    navigator.clipboard.writeText(roomName).then(() => {
+      console.log('[JitsiVideo] Nome da sala copiado:', roomName);
+      alert(`✅ Nome da sala copiado!\n\n📋 ${roomName}\n\nAgora:\n1. Abra o App Jitsi Meet\n2. Cole "${roomName}" no campo de texto\n3. Toque em "Entrar"`);
+    }).catch(err => {
+      console.error('[JitsiVideo] Erro ao copiar:', err);
+      prompt('Copie o nome da sala:', roomName);
+    });
+  }
+
+  /**
+   * Copia a URL completa da sala (com JWT) para a área de transferência
+   * Usado para servidor self-hosted
+   */
+  copyRoomUrl(): void {
+    if (!this.token) return;
+    
+    // URL completa com JWT para autenticação
+    const roomUrl = this.getFullRoomUrl();
+    
+    navigator.clipboard.writeText(roomUrl).then(() => {
+      console.log('[JitsiVideo] URL da sala copiada (com JWT)');
+      alert('✅ URL copiada!\n\nAgora:\n1. Abra o App Jitsi Meet\n2. Na TELA INICIAL, cole a URL no campo de texto\n3. Toque no botão azul "Entrar"');
+    }).catch(err => {
+      console.error('[JitsiVideo] Erro ao copiar:', err);
+      // Fallback: mostrar a URL para copiar manualmente
+      prompt('Copie a URL abaixo:', roomUrl);
+    });
+  }
+
+  /**
+   * Abre a loja de apps para baixar o Jitsi Meet
+   */
+  downloadMobileApp(): void {
+    if (this.isAndroid) {
+      window.open('https://play.google.com/store/apps/details?id=org.jitsi.meet', '_blank');
+    } else if (this.isIOS) {
+      window.open('https://apps.apple.com/app/jitsi-meet/id1165655521', '_blank');
+    }
   }
 }

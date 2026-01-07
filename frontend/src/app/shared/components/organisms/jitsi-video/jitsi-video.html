@@ -1,4 +1,31 @@
 <div class="jitsi-video-wrapper" [class.dark-theme]="isDarkTheme">
+  <!-- Mobile App Prompt (Android/iOS) para Split-Screen -->
+  <div class="mobile-app-prompt" *ngIf="showMobileAppPrompt && !isLoading">
+    <div class="prompt-content">
+      <div class="prompt-icon">
+        <app-icon name="smartphone" [size]="64" />
+      </div>
+      <h3>Abra o App Jitsi Meet e cole:</h3>
+      
+      <div class="url-to-copy large">
+        <code class="server-url room-name">{{ token?.publicRoomName }}</code>
+        <button class="copy-btn" (click)="copyPublicRoomName()" title="Copiar">
+          <app-icon name="copy" [size]="16" />
+          Copiar
+        </button>
+      </div>
+      
+      <p class="tip">⚠️ <em>Médico e paciente devem usar o MESMO código acima!</em></p>
+      
+      <div class="prompt-actions">
+        <app-button variant="secondary" (click)="continueInBrowser()">
+          <app-icon name="globe" [size]="18" />
+          Usar Navegador (sem compartilhamento)
+        </app-button>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading State -->
   <div class="loading-overlay" *ngIf="isLoading">
     <div class="loading-content">

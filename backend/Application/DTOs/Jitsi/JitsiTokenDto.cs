@@ -17,19 +17,30 @@ public class JitsiTokenRequestDto
 public class JitsiTokenResponseDto
 {
     /// <summary>
-    /// Token JWT para autenticação no Jitsi
+    /// Token JWT para autenticação no Jitsi (servidor self-hosted)
     /// </summary>
     public string Token { get; set; } = string.Empty;
     
     /// <summary>
-    /// Nome da sala (room) no Jitsi
+    /// Nome da sala (room) no Jitsi - prefixado com "telecuidar-" para o servidor público
     /// </summary>
     public string RoomName { get; set; } = string.Empty;
     
     /// <summary>
-    /// Domínio do servidor Jitsi
+    /// Domínio do servidor Jitsi self-hosted (requer JWT)
     /// </summary>
     public string Domain { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Domínio do servidor Jitsi público (meet.jit.si) para uso no app mobile
+    /// Não requer JWT, qualquer pessoa pode entrar com o nome da sala
+    /// </summary>
+    public string PublicDomain { get; set; } = "meet.jit.si";
+    
+    /// <summary>
+    /// Nome da sala para o servidor público (prefixado para evitar colisões)
+    /// </summary>
+    public string PublicRoomName { get; set; } = string.Empty;
     
     /// <summary>
     /// Nome do usuário a ser exibido
