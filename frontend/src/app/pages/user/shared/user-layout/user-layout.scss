@@ -1,6 +1,13 @@
 @use 'variables' as *;
 @use 'mixins' as *;
 
+// =========================================
+// Variáveis para sidebar colapsável
+// =========================================
+$sidebar-collapsed-width: 72px;
+$sidebar-expanded-width: 280px;
+$sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
 .admin-layout {
   display: flex;
   min-height: 100vh;
@@ -16,7 +23,8 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 280px;
+  // Desktop: começa colapsada, expande no hover
+  width: $sidebar-collapsed-width;
   // Design 3D para sidebar
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border-right: none;
@@ -26,9 +34,30 @@
   display: flex;
   flex-direction: column;
   z-index: $z-index-fixed;
-  @include transition(transform);
+  transition: width $sidebar-transition;
+  overflow: hidden;
+
+  // Expande ao hover no desktop
+  @media (min-width: $breakpoint-tablet + 1) {
+    &:hover {
+      width: $sidebar-expanded-width;
+      
+      .admin-sidebar__link span,
+      .admin-sidebar__logout span,
+      .admin-sidebar__badge {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+      }
+      
+      .admin-sidebar__header app-logo {
+        transform: scale(1);
+      }
+    }
+  }
 
   @include max-width($breakpoint-tablet) {
+    width: $sidebar-expanded-width;
     transform: translateX(-100%);
     box-shadow:
       4px 0 0 rgba(0, 0, 0, 0.02),
@@ -37,16 +66,40 @@
     &--open {
       transform: translateX(0);
     }
+    
+    // No mobile, textos sempre visíveis
+    .admin-sidebar__link span,
+    .admin-sidebar__logout span,
+    .admin-sidebar__badge {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
   }
 
   &__header {
-    padding: clamp($spacing-md, 2vh, $spacing-lg) $spacing-xl;
+    padding: clamp($spacing-md, 2vh, $spacing-lg) $spacing-md;
     height: clamp(50px, 8vh, 73px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    @include flex-between;
+    display: flex;
     align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, transparent 100%);
+    overflow: hidden;
+    
+    app-logo {
+      transition: transform $sidebar-transition;
+      
+      @media (min-width: $breakpoint-tablet + 1) {
+        transform: scale(0.7);
+      }
+    }
+    
+    @include max-width($breakpoint-tablet) {
+      padding: clamp($spacing-md, 2vh, $spacing-lg) $spacing-xl;
+      justify-content: space-between;
+    }
   }
 
   &__close {
@@ -74,11 +127,16 @@
 
   &__nav {
     flex: 1;
-    padding: clamp($spacing-sm, 2vh, $spacing-lg);
+    padding: $spacing-sm;
     @include flex-column;
     gap: clamp(4px, 0.6vh, $spacing-sm);
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
+    
+    @include max-width($breakpoint-tablet) {
+      padding: clamp($spacing-sm, 2vh, $spacing-lg);
+    }
     
     &::-webkit-scrollbar {
       width: 4px;
@@ -102,7 +160,7 @@
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-lg;
+    padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-md;
     border-radius: 12px;
     text-decoration: none;
     color: #64748b;
@@ -112,9 +170,34 @@
     position: relative;
     flex-shrink: 0;
     border: 1px solid transparent;
+    white-space: nowrap;
+    min-height: 44px;
+    
+    // Centraliza ícone quando colapsado
+    justify-content: center;
+    
+    @media (min-width: $breakpoint-tablet + 1) {
+      justify-content: flex-start;
+    }
+    
+    @include max-width($breakpoint-tablet) {
+      padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-lg;
+      justify-content: flex-start;
+    }
 
     app-icon {
       flex-shrink: 0;
+      min-width: 20px;
+    }
+    
+    span {
+      transition: opacity $sidebar-transition, visibility $sidebar-transition, transform $sidebar-transition;
+      
+      @media (min-width: $breakpoint-tablet + 1) {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-10px);
+      }
     }
 
     &:hover {
@@ -149,21 +232,48 @@
     min-width: 20px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    transition: opacity $sidebar-transition, visibility $sidebar-transition, transform $sidebar-transition;
+    
+    @media (min-width: $breakpoint-tablet + 1) {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-10px);
+      
+      // Badge compacto quando colapsado (mostra dot vermelho)
+      .admin-sidebar:not(:hover) & {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 10px;
+        height: 10px;
+        min-width: 10px;
+        padding: 0;
+        font-size: 0;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+      }
+    }
   }
 
   &__footer {
-    padding: clamp($spacing-sm, 1.5vh, $spacing-lg);
+    padding: $spacing-sm;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
     flex-shrink: 0;
     background: linear-gradient(180deg, transparent 0%, rgba(248, 250, 252, 0.8) 100%);
+    
+    @include max-width($breakpoint-tablet) {
+      padding: clamp($spacing-sm, 1.5vh, $spacing-lg);
+    }
   }
 
   &__logout {
     width: 100%;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: $spacing-md;
-    padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-lg;
+    padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-md;
     border-radius: 12px;
     // Botão logout 3D
     background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
@@ -173,6 +283,27 @@
     font-size: clamp($font-size-sm, 1.6vh, $font-size-base);
     cursor: pointer;
     @include transition(all);
+    white-space: nowrap;
+    min-height: 44px;
+    
+    @media (min-width: $breakpoint-tablet + 1) {
+      justify-content: flex-start;
+    }
+    
+    @include max-width($breakpoint-tablet) {
+      padding: clamp($spacing-xs, 1.2vh, $spacing-md) $spacing-lg;
+      justify-content: flex-start;
+    }
+    
+    span {
+      transition: opacity $sidebar-transition, visibility $sidebar-transition, transform $sidebar-transition;
+      
+      @media (min-width: $breakpoint-tablet + 1) {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-10px);
+      }
+    }
 
     &:hover {
       background: var(--red-100);
@@ -183,11 +314,12 @@
 
 .admin-content {
   flex: 1;
-  margin-left: 280px;
+  margin-left: $sidebar-collapsed-width;
   display: flex;
   flex-direction: column;
   min-width: 0;
   overflow-x: hidden;
+  transition: margin-left $sidebar-transition;
 
   @include max-width($breakpoint-tablet) {
     margin-left: 0;
@@ -198,7 +330,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  left: 280px;
+  left: $sidebar-collapsed-width;
   width: auto;
   z-index: $z-index-sticky;
   // Header 3D
@@ -213,7 +345,7 @@
   align-items: center;
   gap: $spacing-lg;
   backdrop-filter: blur(12px);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, left $sidebar-transition;
 
   &--hidden {
     transform: translateY(-100%);
