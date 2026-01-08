@@ -356,32 +356,50 @@ import { environment } from '@env/environment';
     }
 
     .btn-connect {
-      display: flex;
+      display: flex !important;
+      visibility: visible !important;
       align-items: center;
-      gap: 6px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
+      gap: 8px;
+      padding: 14px 24px;
+      border: 3px solid #ff0000;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: var(--color-primary);
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       color: white;
       white-space: nowrap;
+      min-width: 140px;
+      animation: piscar 0.5s infinite;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
 
       &:hover:not(:disabled) {
-        background: var(--color-primary-dark);
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        transform: scale(1.1);
       }
 
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+        animation: none;
       }
 
       &.connected {
-        background: var(--bg-success);
-        color: var(--text-success);
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-color: #10b981;
+        animation: none;
+      }
+    }
+
+    @keyframes piscar {
+      0%, 100% { 
+        opacity: 1; 
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+      }
+      50% { 
+        opacity: 0.7; 
+        box-shadow: 0 0 40px rgba(139, 92, 246, 1);
       }
     }
 
