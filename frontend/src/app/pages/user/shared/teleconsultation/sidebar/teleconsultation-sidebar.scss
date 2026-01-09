@@ -6,11 +6,10 @@
   top: 0;
   right: 0;
   height: 100%;
-  width: 40vw; // 40% for sidebar, 60% for video
-  min-width: 400px; // Prevent too narrow on small screens
-  max-width: 600px; // Prevent too wide on large screens
+  width: 40vw;
+  min-width: 400px;
+  max-width: 600px;
   
-  // Tablets: 55% para mais espaço de leitura/digitação
   @media (min-width: 768px) and (max-width: 1024px) {
     width: 55vw;
     min-width: 500px;
@@ -34,33 +33,28 @@
 
   &.full-screen {
     width: 100%;
-    top: 80px; // Start below the header when visible
+    top: 80px;
     height: calc(100% - 80px);
-    z-index: 60; // Above Jitsi status overlay (z-index: 50)
+    z-index: 60;
     
     @include mobile {
-      top: 120px; // Mobile header is taller
+      top: 120px;
       height: calc(100% - 120px);
     }
   }
 
-  // When header is hidden, sidebar goes to top
   &.full-screen.header-hidden {
     top: 0;
     height: 100%;
-    
-    @include mobile {
-      top: 0;
-      height: 100%;
-    }
   }
 
   .sidebar-header {
-    padding: $spacing-md;
+    padding: $spacing-sm $spacing-md;
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 48px;
   }
 
   .sidebar-actions-left {
@@ -111,153 +105,129 @@
     }
   }
 
-  // NAVEGAÇÃO POR GRUPOS
-  .sidebar-nav {
+  // NOVA NAVEGAÇÃO COMPACTA
+  .compact-nav {
     display: flex;
     flex-direction: column;
-    background: var(--surface);
+    background: var(--background);
     border-bottom: 1px solid var(--border);
+    max-height: 280px;
+    overflow-y: auto;
     
     @include mobile {
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: $spacing-xs;
-      padding: $spacing-sm;
+      max-height: 220px;
     }
 
-    .nav-groups {
-      display: flex;
-      flex-direction: column;
+    // Seções de navegação (Avaliação Clínica, Prescrições)
+    .nav-section {
+      border-bottom: 1px solid var(--border);
       
-      @include mobile {
-        flex-direction: row;
-        flex: 1;
-        gap: $spacing-xs;
+      &:last-of-type {
+        border-bottom: none;
       }
 
-      .group-btn {
+      .section-header {
         display: flex;
         align-items: center;
-        gap: $spacing-sm;
-        padding: $spacing-md;
+        justify-content: space-between;
+        width: 100%;
+        padding: $spacing-sm $spacing-md;
         border: none;
         background: transparent;
         color: var(--text-secondary);
-        font-weight: $font-weight-medium;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        border-left: 3px solid transparent;
         transition: all $transition-fast;
         text-align: left;
-        
-        // Tablets: botões maiores para melhor usabilidade
-        @media (min-width: 768px) and (max-width: 1024px) {
-          padding: $spacing-lg;
-          gap: $spacing-md;
-          font-size: $font-size-lg;
-          
-          app-icon {
-            width: 24px;
-            height: 24px;
-          }
-        }
 
-        @include mobile {
-          flex: 1;
-          flex-direction: column;
-          text-align: center;
-          padding: $spacing-sm;
-          border-left: none;
-          border-bottom: 3px solid transparent;
-          font-size: $font-size-xs;
-          gap: $spacing-xs;
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
         }
 
         .chevron {
-          margin-left: auto;
           transition: transform $transition-fast;
-          
-          @include mobile {
-            display: none;
-          }
+          opacity: 0.5;
         }
 
         &:hover {
           background: var(--primary-50);
           color: var(--primary-600);
         }
+      }
 
-        &.active {
+      &.expanded {
+        .section-header {
           background: var(--primary-100);
           color: var(--primary-700);
-          border-left-color: var(--primary-600);
-          font-weight: $font-weight-semibold;
-
-          @include mobile {
-            border-left-color: transparent;
-            border-bottom-color: var(--primary-600);
-          }
-
+          
           .chevron {
             transform: rotate(180deg);
+            opacity: 1;
+          }
+        }
+      }
+
+      .section-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: $spacing-xs $spacing-sm $spacing-sm;
+        background: var(--surface);
+
+        .nav-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: $border-radius-md;
+          background: var(--background);
+          color: var(--text-secondary);
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all $transition-fast;
+          white-space: nowrap;
+
+          &:hover {
+            background: var(--primary-50);
+            color: var(--primary-700);
+            border-color: var(--primary-300);
+          }
+
+          &.active {
+            background: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
           }
         }
       }
     }
 
-    .nav-standalone {
+    // Ferramentas (Análise IA, CADSUS)
+    .nav-tools {
       display: flex;
-      flex-direction: column;
-      border-top: 1px solid var(--border);
-      margin-top: $spacing-xs;
-      padding-top: $spacing-xs;
-      
-      @include mobile {
-        flex-direction: row;
-        flex-wrap: wrap;
-        border-top: none;
-        margin-top: 0;
-        padding-top: 0;
-        gap: $spacing-xs;
-        flex: 1;
-      }
+      gap: 4px;
+      padding: $spacing-xs $spacing-sm;
+      border-bottom: 1px solid var(--border);
 
-      .standalone-btn {
+      .tool-btn {
         display: flex;
         align-items: center;
-        gap: $spacing-sm;
-        padding: $spacing-sm $spacing-md;
-        border: none;
-        background: transparent;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        border-radius: $border-radius-md;
+        background: var(--surface);
         color: var(--text-secondary);
-        font-weight: $font-weight-medium;
+        font-size: 12px;
+        font-weight: 500;
         cursor: pointer;
-        border-left: 3px solid transparent;
         transition: all $transition-fast;
-        text-align: left;
-        
-        // Tablets: botões maiores
-        @media (min-width: 768px) and (max-width: 1024px) {
-          padding: $spacing-md $spacing-lg;
-          gap: $spacing-md;
-          font-size: $font-size-base;
-          
-          app-icon {
-            width: 22px;
-            height: 22px;
-          }
-        }
-
-        @include mobile {
-          flex: 1 1 auto;
-          min-width: max-content;
-          flex-direction: column;
-          text-align: center;
-          padding: $spacing-xs;
-          border-left: none;
-          border-bottom: 2px solid transparent;
-          font-size: $font-size-xs;
-          gap: $spacing-xs;
-        }
+        white-space: nowrap;
 
         &:hover {
           background: var(--neutral-100);
@@ -265,108 +235,46 @@
         }
 
         &.active {
-          background: var(--neutral-200);
-          color: var(--neutral-900);
-          border-left-color: var(--neutral-600);
-          font-weight: $font-weight-semibold;
-
-          @include mobile {
-            border-left-color: transparent;
-            border-bottom-color: var(--neutral-600);
-          }
+          background: var(--neutral-700);
+          color: white;
+          border-color: var(--neutral-700);
         }
       }
     }
-  }
 
-  // SUB-TABS (tabs dentro de um grupo)
-  .sub-tabs {
-    background: var(--background);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    @include mobile {
-      max-height: 60px;
-    }
-
-    .sub-tabs-container {
-      display: flex;
-      padding: $spacing-xs $spacing-sm;
-      gap: $spacing-xs;
+    // Botão Finalizar Consulta
+    .nav-finish {
+      padding: $spacing-xs $spacing-sm $spacing-sm;
       
-      @include mobile {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        
-        &::-webkit-scrollbar {
-          display: none;
-        }
-      }
-
-      .sub-tab-btn {
+      .finish-btn {
         display: flex;
         align-items: center;
-        gap: $spacing-xs;
-        padding: $spacing-xs $spacing-md;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text-secondary);
-        font-size: $font-size-sm;
-        font-weight: $font-weight-medium;
-        cursor: pointer;
+        justify-content: center;
+        gap: $spacing-sm;
+        width: 100%;
+        padding: 10px 16px;
+        border: none;
         border-radius: $border-radius-md;
+        background: #10b981;
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
         transition: all $transition-fast;
-        white-space: nowrap;
-        flex-shrink: 0;
-        
-        // Tablets: sub-tabs maiores e mais legíveis
-        @media (min-width: 768px) and (max-width: 1024px) {
-          padding: $spacing-sm $spacing-lg;
-          font-size: $font-size-base;
-          gap: $spacing-sm;
-          
-          app-icon {
-            width: 20px;
-            height: 20px;
-          }
-        }
-
-        @include mobile {
-          padding: $spacing-xs $spacing-sm;
-          font-size: $font-size-xs;
-          gap: 4px;
-          
-          span {
-            max-width: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-        }
 
         &:hover {
-          background: var(--primary-50);
-          color: var(--primary-700);
-          border-color: var(--primary-300);
+          background: #059669;
         }
 
         &.active {
-          background: var(--primary-600);
-          color: white;
-          border-color: var(--primary-600);
-          font-weight: $font-weight-semibold;
+          background: #047857;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
         }
       }
     }
   }
 
-  // FALLBACK: Tabs antigas (para compatibilidade)
-  .sidebar-tabs {
-    display: none; // Esconde sistema antigo quando novo sistema está ativo
-  }
-
+  // Conteúdo
   .sidebar-content {
     flex: 1;
     overflow: hidden;
@@ -383,8 +291,8 @@
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: $radius-md;
   border: 1px solid var(--border);
   background: transparent;
@@ -401,9 +309,9 @@
   }
 
   &.close-btn:hover {
-      color: var(--red-600);
-      background: var(--red-50);
-      border-color: var(--red-200);
+    color: var(--red-600);
+    background: var(--red-50);
+    border-color: var(--red-200);
   }
 }
 

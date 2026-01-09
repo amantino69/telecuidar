@@ -31,49 +31,75 @@
     </div>
   </div>
 
-  <!-- NAVEGAÇÃO POR GRUPOS -->
-  <div class="sidebar-nav">
-    <!-- Grupos de Abas (Exame Físico, Documentos) -->
-    <div class="nav-groups">
-      <button 
-        *ngFor="let group of getGroupedTabs()" 
-        class="group-btn" 
-        [class.active]="activeGroup === group.id"
-        (click)="setActiveGroup(group.id)">
-        <app-icon [name]="group.icon" [size]="18" />
-        <span>{{ group.label }}</span>
-        <app-icon name="chevron-down" [size]="16" class="chevron" />
-      </button>
-    </div>
+  <!-- NOVA NAVEGAÇÃO COMPACTA -->
+  <div class="compact-nav">
+    <!-- Grupos principais (Avaliação Clínica, Prescrições) -->
+    @for (group of getGroupedTabs(); track group.id) {
+      <div class="nav-section" [class.expanded]="activeGroup === group.id">
+        <button class="section-header" (click)="setActiveGroup(group.id)">
+          <div class="section-title">
+            <app-icon [name]="group.icon" [size]="18" />
+            <span>{{ group.label }}</span>
+          </div>
+          <app-icon name="chevron-down" [size]="16" class="chevron" />
+        </button>
+        
+        @if (activeGroup === group.id) {
+          <div class="section-items">
+            @for (tab of group.tabs; track tab.id) {
+              <button 
+                class="nav-item" 
+                [class.active]="isTabActive(tab.label)"
+                (click)="onTabChange(tab.label)">
+                <app-icon [name]="tab.icon" [size]="16" />
+                <span>{{ tab.label }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
 
-    <!-- Tabs Standalone (IA, CNS, Concluir) -->
-    <div class="nav-standalone" *ngIf="getStandaloneGroup() as standaloneGroup">
-      <button 
-        *ngFor="let tab of standaloneGroup.tabs" 
-        class="standalone-btn" 
-        [class.active]="isTabActive(tab.label)"
-        (click)="onTabChange(tab.label)">
-        <app-icon [name]="tab.icon" [size]="18" />
-        <span>{{ tab.label }}</span>
-      </button>
-    </div>
-  </div>
+    <!-- Ferramentas (Análise IA, CADSUS) -->
+    @if (getStandaloneGroup(); as standaloneGroup) {
+      <div class="nav-tools">
+        @for (tab of standaloneGroup.tabs; track tab.id) {
+          @if (tab.id !== 'conclusion') {
+            <button 
+              class="tool-btn" 
+              [class.active]="isTabActive(tab.label)"
+              (click)="onTabChange(tab.label)">
+              <app-icon [name]="tab.icon" [size]="16" />
+              <span>{{ tab.label }}</span>
+            </button>
+          }
+        }
+      </div>
+    }
 
-  <!-- SUB-TABS DO GRUPO ATIVO -->
-  <div class="sub-tabs" *ngIf="activeGroup">
-    <div class="sub-tabs-container">
-      <button 
-        *ngFor="let tab of getActiveGroupTabs()" 
-        class="sub-tab-btn" 
-        [class.active]="isTabActive(tab.label)"
-        (click)="onTabChange(tab.label)">
-        <app-icon [name]="tab.icon" [size]="16" />
-        <span>{{ tab.label }}</span>
-      </button>
-    </div>
+    <!-- Botão Finalizar Consulta (destacado) -->
+    @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
+      <div class="nav-finish">
+        <button 
+          class="finish-btn" 
+          [class.active]="isTabActive('Finalizar Consulta')"
+          (click)="onTabChange('Finalizar Consulta')">
+          <app-icon name="check-circle" [size]="18" />
+          <span>Finalizar Consulta</span>
+        </button>
+      </div>
+    }
   </div>
 
   <div class="sidebar-content">
+    <!-- Sinais Vitais (antigo Dispositivos Médicos) -->
+    <div class="tab-content" *ngIf="activeTab === 'Sinais Vitais'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-medical-devices-tab>
+    </div>
+
     <!-- Dados do Paciente -->
     <div class="tab-content" *ngIf="activeTab === 'Dados do Paciente'">
       <app-patient-data-tab
@@ -81,14 +107,6 @@
         [appointment]="appointment">
       </app-patient-data-tab>
     </div>
-
-    <!-- Dados da Pré Consulta - Temporariamente desativado
-    <div class="tab-content" *ngIf="activeTab === 'Dados da Pré Consulta'">
-      <app-pre-consultation-data-tab
-        [appointment]="appointment">
-      </app-pre-consultation-data-tab>
-    </div>
-    -->
 
     <!-- Anamnese -->
     <div class="tab-content" *ngIf="activeTab === 'Anamnese'">
@@ -116,7 +134,7 @@
       </app-iot-tab>
     </div>
 
-    <!-- Dispositivos Médicos IoMT -->
+    <!-- Dispositivos Médicos (compatibilidade) -->
     <div class="tab-content" *ngIf="activeTab === 'Dispositivos Médicos'" style="height: 100%">
       <app-medical-devices-tab
         [appointmentId]="appointmentId"
@@ -157,8 +175,8 @@
       </app-soap-tab>
     </div>
 
-    <!-- IA -->
-    <div class="tab-content" *ngIf="activeTab === 'IA'" style="height: 100%">
+    <!-- Análise Diagnóstica (antigo IA) -->
+    <div class="tab-content" *ngIf="activeTab === 'Análise Diagnóstica' || activeTab === 'IA'" style="height: 100%">
       <app-ai-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment"
@@ -172,16 +190,16 @@
       </app-ai-tab>
     </div>
 
-    <!-- CNS / CADSUS -->
-    <div class="tab-content" *ngIf="activeTab === 'CNS'" style="height: 100%">
+    <!-- Consulta CADSUS (antigo CNS) -->
+    <div class="tab-content" *ngIf="activeTab === 'Consulta CADSUS' || activeTab === 'CNS'" style="height: 100%">
       <app-cns-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment">
       </app-cns-tab>
     </div>
 
-    <!-- Receita -->
-    <div class="tab-content" *ngIf="activeTab === 'Receita'" style="height: 100%">
+    <!-- Receituário -->
+    <div class="tab-content" *ngIf="activeTab === 'Receituário' || activeTab === 'Receita'" style="height: 100%">
       <app-receita-tab
         [appointmentId]="appointmentId"
         [userrole]="userrole"
@@ -198,8 +216,8 @@
       </app-atestado-tab>
     </div>
 
-    <!-- Retorno -->
-    <div class="tab-content" *ngIf="activeTab === 'Retorno'" style="height: 100%">
+    <!-- Agendar Retorno -->
+    <div class="tab-content" *ngIf="activeTab === 'Agendar Retorno' || activeTab === 'Retorno'" style="height: 100%">
       <app-return-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment"
@@ -217,8 +235,8 @@
       </app-referral-tab>
     </div>
 
-    <!-- Concluir -->
-    <div class="tab-content" *ngIf="activeTab === 'Concluir'" style="height: 100%">
+    <!-- Finalizar Consulta -->
+    <div class="tab-content" *ngIf="activeTab === 'Finalizar Consulta' || activeTab === 'Concluir'" style="height: 100%">
       <app-conclusion-tab
         [appointment]="appointment"
         (finish)="onFinishConsultation($event)">

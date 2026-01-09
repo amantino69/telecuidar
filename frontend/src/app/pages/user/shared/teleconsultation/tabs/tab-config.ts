@@ -105,12 +105,12 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'medical-devices',
-    label: 'Dispositivos Médicos',
-    icon: 'smartphone',
+    label: 'Sinais Vitais',
+    icon: 'activity',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: false,
-    order: 4,
+    order: 0,
     group: 'exame-fisico'
   },
   {
@@ -145,7 +145,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'receita',
-    label: 'Receita',
+    label: 'Receituário',
     icon: 'file',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
@@ -165,7 +165,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'return',
-    label: 'Retorno',
+    label: 'Agendar Retorno',
     icon: 'calendar',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
@@ -185,7 +185,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'ai',
-    label: 'IA',
+    label: 'Análise Diagnóstica',
     icon: 'activity',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
@@ -195,7 +195,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'cns',
-    label: 'CNS',
+    label: 'Consulta CADSUS',
     icon: 'user',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
@@ -205,8 +205,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'conclusion',
-    label: 'Concluir',
-    icon: 'check',
+    label: 'Finalizar Consulta',
+    icon: 'check-circle',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -234,19 +234,19 @@ export function getTeleconsultationTabGroups(role: 'PATIENT' | 'PROFESSIONAL' | 
   const groups: TabGroup[] = [
     {
       id: 'exame-fisico',
-      label: 'Exame Físico',
+      label: 'Avaliação Clínica',
       icon: 'stethoscope',
       tabs: tabs.filter(t => t.group === 'exame-fisico').sort((a, b) => a.order - b.order)
     },
     {
       id: 'documentos',
-      label: 'Documentos',
+      label: 'Prescrições e Documentos',
       icon: 'file',
       tabs: tabs.filter(t => t.group === 'documentos').sort((a, b) => a.order - b.order)
     },
     {
       id: 'standalone',
-      label: 'Outras',
+      label: 'Ferramentas',
       icon: 'settings',
       tabs: tabs.filter(t => t.group === 'standalone').sort((a, b) => a.order - b.order)
     }
@@ -276,23 +276,23 @@ export function getAllDetailsTabs(): TabConfig[] {
 }
 
 /**
- * Mapeamento de id da tab para o nome usado na teleconsulta antiga
+ * Mapeamento de id da tab para o nome usado na teleconsulta
  */
 export const TAB_ID_TO_LEGACY_NAME: Record<string, string> = {
-  'medical-devices': 'Dispositivos Médicos',
+  'medical-devices': 'Sinais Vitais',
   'patient-data': 'Dados do Paciente',
   'pre-consultation': 'Dados da Pré Consulta',
   'anamnesis': 'Anamnese',
   'specialty': 'Campos da Especialidade',
   'biometrics': 'Biométricos',
   'attachments': 'Chat Anexos',
-  'receita': 'Receita',
+  'receita': 'Receituário',
   'atestado': 'Atestado',
-  'ai': 'IA',
-  'cns': 'CNS',
-  'return': 'Retorno',
+  'ai': 'Análise Diagnóstica',
+  'cns': 'Consulta CADSUS',
+  'return': 'Agendar Retorno',
   'referral': 'Encaminhamento',
-  'conclusion': 'Concluir'
+  'conclusion': 'Finalizar Consulta'
 };
 
 /**
