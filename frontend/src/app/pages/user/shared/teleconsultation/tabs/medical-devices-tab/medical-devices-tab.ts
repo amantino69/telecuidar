@@ -30,105 +30,151 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
   ],
   template: `
     <div class="medical-devices-tab">
-      <!-- Header compacto -->
-      <div class="tab-header">
-        <div class="header-title">
-          <app-icon name="activity" [size]="18" />
-          <span>Dispositivos IoMT</span>
-        </div>
-        <div class="connection-badge" [class.connected]="isConnected">
-          <span class="dot"></span>
-          {{ isConnected ? 'Sincronizado' : 'Conectando...' }}
-        </div>
-      </div>
-
-      <!-- Navegação Accordion -->
-      <div class="accordion-nav">
-        <!-- Sinais Vitais -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'vitals'">
-          <button class="accordion-header" (click)="setActiveSubTab('vitals')">
-            <div class="accordion-title">
-              <app-icon name="heart" [size]="16" />
-              <span>Sinais Vitais</span>
-            </div>
-            <app-icon name="chevron-down" [size]="16" class="chevron" />
-          </button>
-        </div>
-
-        <!-- Ausculta -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'auscultation'">
-          <button class="accordion-header" (click)="setActiveSubTab('auscultation')">
-            <div class="accordion-title">
-              <app-icon name="mic" [size]="16" />
-              <span>Ausculta</span>
-            </div>
-            <app-icon name="chevron-down" [size]="16" class="chevron" />
-          </button>
-        </div>
-
-        <!-- Câmera de Exame -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'exam'">
-          <button class="accordion-header" (click)="setActiveSubTab('exam')">
-            <div class="accordion-title">
-              <app-icon name="video" [size]="16" />
-              <span>Câmera de Exame</span>
-            </div>
-            <div class="accordion-status">
-              @if (activeSubTab === 'exam') {
-                <span class="status-badge">Transmitindo</span>
-              }
-              <app-icon name="chevron-down" [size]="16" class="chevron" />
-            </div>
-          </button>
-        </div>
+      <!-- Header com status de conexão -->
+      <div class="sync-status" [class.connected]="isConnected">
+        <span class="sync-dot"></span>
+        <span class="sync-text">{{ isConnected ? 'Sincronizado' : 'Conectando...' }}</span>
       </div>
 
       <!-- Conteúdo baseado no papel do usuário -->
-      <div class="tab-content">
+      <div class="sections-container">
         @if (isOperator) {
-          <!-- Interface do Paciente/Assistente/Admin (quem opera os dispositivos) -->
-          @switch (activeSubTab) {
-            @case ('vitals') {
-              <app-device-connection-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-device-connection-panel>
+          <!-- ========== INTERFACE DO PACIENTE/ASSISTENTE ========== -->
+          
+          <!-- Seção: Sinais Vitais -->
+          <section class="content-section" [class.active]="activeSubTab === 'vitals'">
+            <button class="section-header" (click)="setActiveSubTab('vitals')">
+              <div class="section-info">
+                <app-icon name="heart" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Sinais Vitais</h3>
+                  <p class="section-desc">Oximetria, pressão arterial e frequência</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'vitals') {
+              <div class="section-content">
+                <app-device-connection-panel
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-device-connection-panel>
+              </div>
             }
-            @case ('auscultation') {
-              <app-auscultation-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-auscultation-panel>
+          </section>
+
+          <!-- Seção: Ausculta -->
+          <section class="content-section" [class.active]="activeSubTab === 'auscultation'">
+            <button class="section-header" (click)="setActiveSubTab('auscultation')">
+              <div class="section-info">
+                <app-icon name="mic" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Ausculta</h3>
+                  <p class="section-desc">Estetoscópio digital para sons cardíacos</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'auscultation') {
+              <div class="section-content">
+                <app-auscultation-panel
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-auscultation-panel>
+              </div>
             }
-            @case ('exam') {
-              <app-exam-camera-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-exam-camera-panel>
+          </section>
+
+          <!-- Seção: Câmera de Exame -->
+          <section class="content-section" [class.active]="activeSubTab === 'exam'">
+            <button class="section-header" (click)="setActiveSubTab('exam')">
+              <div class="section-info">
+                <app-icon name="video" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Câmera de Exame</h3>
+                  <p class="section-desc">Otoscópio, dermatoscópio e outras câmeras</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'exam') {
+              <div class="section-content">
+                <app-exam-camera-panel
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-exam-camera-panel>
+              </div>
             }
-          }
+          </section>
+
         } @else {
-          <!-- Interface do Médico (quem recebe os dados) -->
-          @switch (activeSubTab) {
-            @case ('vitals') {
-              <app-vital-signs-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-vital-signs-panel>
+          <!-- ========== INTERFACE DO MÉDICO ========== -->
+          
+          <!-- Seção: Sinais Vitais -->
+          <section class="content-section" [class.active]="activeSubTab === 'vitals'">
+            <button class="section-header" (click)="setActiveSubTab('vitals')">
+              <div class="section-info">
+                <app-icon name="heart" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Sinais Vitais</h3>
+                  <p class="section-desc">Dados recebidos do paciente</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'vitals') {
+              <div class="section-content">
+                <app-vital-signs-panel
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-vital-signs-panel>
+              </div>
             }
-            @case ('auscultation') {
-              <app-doctor-stream-receiver
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-doctor-stream-receiver>
+          </section>
+
+          <!-- Seção: Ausculta -->
+          <section class="content-section" [class.active]="activeSubTab === 'auscultation'">
+            <button class="section-header" (click)="setActiveSubTab('auscultation')">
+              <div class="section-info">
+                <app-icon name="mic" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Ausculta</h3>
+                  <p class="section-desc">Stream de áudio do estetoscópio</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'auscultation') {
+              <div class="section-content">
+                <app-doctor-stream-receiver
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-doctor-stream-receiver>
+              </div>
             }
-            @case ('exam') {
-              <app-doctor-stream-receiver
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-doctor-stream-receiver>
+          </section>
+
+          <!-- Seção: Câmera de Exame -->
+          <section class="content-section" [class.active]="activeSubTab === 'exam'">
+            <button class="section-header" (click)="setActiveSubTab('exam')">
+              <div class="section-info">
+                <app-icon name="video" [size]="20" class="section-icon" />
+                <div class="section-text">
+                  <h3 class="section-title">Câmera de Exame</h3>
+                  <p class="section-desc">Stream de vídeo do dispositivo</p>
+                </div>
+              </div>
+              <app-icon name="chevron-down" [size]="18" class="section-arrow" />
+            </button>
+            @if (activeSubTab === 'exam') {
+              <div class="section-content">
+                <app-doctor-stream-receiver
+                  [appointmentId]="appointmentId"
+                  [userrole]="userrole">
+                </app-doctor-stream-receiver>
+              </div>
             }
-          }
+          </section>
         }
       </div>
     </div>
@@ -141,140 +187,146 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
       background: var(--bg-primary);
     }
 
-    .tab-header {
+    /* Status de sincronização */
+    .sync-status {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border-color);
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
       background: var(--bg-secondary);
-
-      .header-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        span {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-      }
-
-      .connection-badge {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-
-        .dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--color-secondary);
-        }
-
-        &.connected {
-          background: var(--bg-success-subtle);
-          color: var(--color-success);
-
-          .dot {
-            background: var(--color-success);
-          }
-        }
-      }
-    }
-
-    .accordion-nav {
-      display: flex;
-      flex-direction: column;
       border-bottom: 1px solid var(--border-color);
-    }
+      font-size: 12px;
+      color: var(--text-muted);
 
-    .accordion-item {
-      border-bottom: 1px solid var(--border-color);
-
-      &:last-child {
-        border-bottom: none;
+      .sync-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-warning);
+        animation: pulse 1.5s infinite;
       }
 
-      .accordion-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 12px 16px;
-        border: none;
-        background: var(--bg-primary);
-        color: var(--text-secondary);
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        .accordion-title {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .accordion-status {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          .status-badge {
-            font-size: 11px;
-            color: var(--color-primary);
-            padding: 2px 8px;
-            background: var(--bg-success-subtle);
-            border-radius: 10px;
-          }
-        }
-
-        .chevron {
-          transition: transform 0.2s ease;
-          opacity: 0.5;
-        }
-
-        &:hover {
-          background: var(--bg-tertiary);
-          color: var(--text-primary);
-        }
-      }
-
-      &.expanded {
-        .accordion-header {
-          background: var(--color-primary);
-          color: white;
-
-          .accordion-status .status-badge {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-          }
-
-          .chevron {
-            transform: rotate(180deg);
-            opacity: 1;
-          }
+      &.connected {
+        color: var(--color-success);
+        
+        .sync-dot {
+          background: var(--color-success);
+          animation: none;
         }
       }
     }
 
-    .tab-content {
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Container das seções */
+    .sections-container {
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
+      padding: 12px;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+    }
 
-      > * {
-        flex: 1;
-        overflow-y: auto;
+    /* Seção individual */
+    .content-section {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      transition: all 0.2s ease;
+
+      &.active {
+        border-color: var(--color-primary);
+        box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.15);
+      }
+    }
+
+    /* Header da seção (clicável) */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 14px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .content-section.active & {
+        background: var(--color-primary);
+        
+        .section-icon, .section-title, .section-desc, .section-arrow {
+          color: white !important;
+        }
+      }
+    }
+
+    .section-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-icon {
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .section-text {
+      text-align: left;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .section-desc {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .section-arrow {
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+
+      .content-section.active & {
+        transform: rotate(90deg);
+      }
+    }
+
+    /* Conteúdo expandido */
+    .section-content {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      animation: slideDown 0.2s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   `]
@@ -282,6 +334,7 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
 export class MedicalDevicesTabComponent implements OnInit, OnDestroy {
   @Input() appointmentId: string | null = null;
   @Input() userrole: string = '';
+  @Input() initialSubTab: SubTab = 'vitals';
 
   activeSubTab: SubTab = 'vitals';
   isConnected = false;
@@ -301,6 +354,11 @@ export class MedicalDevicesTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Define a sub-tab inicial se fornecida
+    if (this.initialSubTab) {
+      this.activeSubTab = this.initialSubTab;
+    }
+    
     // Conecta ao hub de dispositivos
     if (this.appointmentId) {
       this.syncService.connect(this.appointmentId);

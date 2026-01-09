@@ -83,6 +83,9 @@ export class TeleconsultationSidebarComponent implements OnInit, OnDestroy, OnCh
   activeGroup: 'exame-fisico' | 'documentos' | 'standalone' | null = null;
   standaloneTabsVisible: { [key: string]: boolean } = {};
 
+  // Nova navegação com abas principais
+  activeMainTab: 'avaliacao' | 'documentos' = 'avaliacao';
+
   constructor(private dictationService: DictationService, private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -140,6 +143,17 @@ export class TeleconsultationSidebarComponent implements OnInit, OnDestroy, OnCh
       if (group && group.tabs.length > 0) {
         this.onTabChange(group.tabs[0].label);
       }
+    }
+  }
+
+  setActiveMainTab(tab: 'avaliacao' | 'documentos') {
+    this.activeMainTab = tab;
+    
+    // Ativa a primeira tab da aba selecionada
+    if (tab === 'avaliacao') {
+      this.onTabChange('Sinais Vitais');
+    } else {
+      this.onTabChange('Receituário');
     }
   }
 

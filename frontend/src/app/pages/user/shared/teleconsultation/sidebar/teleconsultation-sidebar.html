@@ -31,72 +31,145 @@
     </div>
   </div>
 
-  <!-- NOVA NAVEGAÇÃO COMPACTA -->
-  <div class="compact-nav">
-    <!-- Grupos principais (Avaliação Clínica, Prescrições) -->
-    @for (group of getGroupedTabs(); track group.id) {
-      <div class="nav-section" [class.expanded]="activeGroup === group.id">
-        <button class="section-header" (click)="setActiveGroup(group.id)">
-          <div class="section-title">
-            <app-icon [name]="group.icon" [size]="18" />
-            <span>{{ group.label }}</span>
-          </div>
-          <app-icon name="chevron-down" [size]="16" class="chevron" />
-        </button>
-        
-        @if (activeGroup === group.id) {
-          <div class="section-items">
-            @for (tab of group.tabs; track tab.id) {
-              <button 
-                class="nav-item" 
-                [class.active]="isTabActive(tab.label)"
-                (click)="onTabChange(tab.label)">
-                <app-icon [name]="tab.icon" [size]="16" />
-                <span>{{ tab.label }}</span>
-              </button>
-            }
-          </div>
-        }
-      </div>
+  <!-- NAVEGAÇÃO POR ABAS PRINCIPAIS -->
+  <div class="main-tabs">
+    <button 
+      class="main-tab" 
+      [class.active]="activeMainTab === 'avaliacao'"
+      (click)="setActiveMainTab('avaliacao')">
+      <app-icon name="stethoscope" [size]="16" />
+      <span>Avaliação Clínica</span>
+    </button>
+    <button 
+      class="main-tab" 
+      [class.active]="activeMainTab === 'documentos'"
+      (click)="setActiveMainTab('documentos')">
+      <app-icon name="file" [size]="16" />
+      <span>Prescrições e Documentos</span>
+    </button>
+  </div>
+
+  <!-- BOTÕES HORIZONTAIS DA ABA SELECIONADA -->
+  <div class="tab-buttons">
+    @if (activeMainTab === 'avaliacao') {
+      <!-- Botões de Avaliação Clínica -->
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Sinais Vitais'"
+        (click)="onTabChange('Sinais Vitais')">
+        <app-icon name="heart" [size]="18" />
+        <span>Sinais Vitais</span>
+      </button>
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Ausculta'"
+        (click)="onTabChange('Ausculta')">
+        <app-icon name="mic" [size]="18" />
+        <span>Ausculta</span>
+      </button>
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Câmera de Exame'"
+        (click)="onTabChange('Câmera de Exame')">
+        <app-icon name="video" [size]="18" />
+        <span>Câmera de Exame</span>
+      </button>
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Chat Anexos'"
+        (click)="onTabChange('Chat Anexos')">
+        <app-icon name="image" [size]="18" />
+        <span>Chat Anexos</span>
+      </button>
     }
 
-    <!-- Ferramentas (Análise IA, CADSUS) -->
-    @if (getStandaloneGroup(); as standaloneGroup) {
-      <div class="nav-tools">
-        @for (tab of standaloneGroup.tabs; track tab.id) {
-          @if (tab.id !== 'conclusion') {
-            <button 
-              class="tool-btn" 
-              [class.active]="isTabActive(tab.label)"
-              (click)="onTabChange(tab.label)">
-              <app-icon [name]="tab.icon" [size]="16" />
-              <span>{{ tab.label }}</span>
-            </button>
-          }
-        }
-      </div>
-    }
-
-    <!-- Botão Finalizar Consulta (destacado) -->
-    @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
-      <div class="nav-finish">
+    @if (activeMainTab === 'documentos') {
+      <!-- Botões de Prescrições e Documentos -->
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Receituário'"
+        (click)="onTabChange('Receituário')">
+        <app-icon name="file" [size]="18" />
+        <span>Receituário</span>
+      </button>
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Atestado'"
+        (click)="onTabChange('Atestado')">
+        <app-icon name="file" [size]="18" />
+        <span>Atestados</span>
+      </button>
+      <button 
+        class="action-btn" 
+        [class.active]="activeTab === 'Encaminhamento'"
+        (click)="onTabChange('Encaminhamento')">
+        <app-icon name="arrow-right" [size]="18" />
+        <span>Encaminhamentos</span>
+      </button>
+      @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
         <button 
-          class="finish-btn" 
-          [class.active]="isTabActive('Finalizar Consulta')"
-          (click)="onTabChange('Finalizar Consulta')">
-          <app-icon name="check-circle" [size]="18" />
-          <span>Finalizar Consulta</span>
+          class="action-btn" 
+          [class.active]="activeTab === 'Agendar Retorno'"
+          (click)="onTabChange('Agendar Retorno')">
+          <app-icon name="calendar" [size]="18" />
+          <span>Retorno</span>
         </button>
-      </div>
+      }
     }
   </div>
+
+  <!-- Ferramentas extras (para profissionais) -->
+  @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
+    <div class="tools-bar">
+      <button 
+        class="tool-btn" 
+        [class.active]="activeTab === 'Análise Diagnóstica'"
+        (click)="onTabChange('Análise Diagnóstica')">
+        <app-icon name="activity" [size]="16" />
+        <span>IA</span>
+      </button>
+      <button 
+        class="tool-btn" 
+        [class.active]="activeTab === 'Consulta CADSUS'"
+        (click)="onTabChange('Consulta CADSUS')">
+        <app-icon name="user" [size]="16" />
+        <span>CADSUS</span>
+      </button>
+      <button 
+        class="finish-btn" 
+        [class.active]="activeTab === 'Finalizar Consulta'"
+        (click)="onTabChange('Finalizar Consulta')">
+        <app-icon name="check-circle" [size]="16" />
+        <span>Finalizar</span>
+      </button>
+    </div>
+  }
 
   <div class="sidebar-content">
     <!-- Sinais Vitais (antigo Dispositivos Médicos) -->
     <div class="tab-content" *ngIf="activeTab === 'Sinais Vitais'" style="height: 100%">
       <app-medical-devices-tab
         [appointmentId]="appointmentId"
-        [userrole]="userrole">
+        [userrole]="userrole"
+        [initialSubTab]="'vitals'">
+      </app-medical-devices-tab>
+    </div>
+
+    <!-- Ausculta -->
+    <div class="tab-content" *ngIf="activeTab === 'Ausculta'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole"
+        [initialSubTab]="'auscultation'">
+      </app-medical-devices-tab>
+    </div>
+
+    <!-- Câmera de Exame -->
+    <div class="tab-content" *ngIf="activeTab === 'Câmera de Exame'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole"
+        [initialSubTab]="'exam'">
       </app-medical-devices-tab>
     </div>
 
