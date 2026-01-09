@@ -42,36 +42,45 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
         </div>
       </div>
 
-      <!-- Sub-tabs compactas -->
-      <div class="sub-tabs">
-        <button 
-          class="sub-tab-btn"
-          [class.active]="activeSubTab === 'vitals'"
-          (click)="setActiveSubTab('vitals')">
-          <app-icon name="heart" [size]="16" />
-          <span>Sinais Vitais</span>
-        </button>
-        <button 
-          class="sub-tab-btn"
-          [class.active]="activeSubTab === 'auscultation'"
-          (click)="setActiveSubTab('auscultation')">
-          <app-icon name="mic" [size]="16" />
-          <span>Ausculta</span>
-        </button>
-      </div>
-
-      <!-- Seção Câmera de Exame (accordion) -->
-      <div class="exam-section" [class.expanded]="activeSubTab === 'exam'">
-        <button class="section-header" (click)="setActiveSubTab(activeSubTab === 'exam' ? 'vitals' : 'exam')">
-          <div class="section-title">
-            <app-icon name="video" [size]="16" />
-            <span>Câmera de Exame</span>
-          </div>
-          <div class="section-status">
-            <span class="status-text">{{ activeSubTab === 'exam' ? 'Transmitindo' : '' }}</span>
+      <!-- Navegação Accordion -->
+      <div class="accordion-nav">
+        <!-- Sinais Vitais -->
+        <div class="accordion-item" [class.expanded]="activeSubTab === 'vitals'">
+          <button class="accordion-header" (click)="setActiveSubTab('vitals')">
+            <div class="accordion-title">
+              <app-icon name="heart" [size]="16" />
+              <span>Sinais Vitais</span>
+            </div>
             <app-icon name="chevron-down" [size]="16" class="chevron" />
-          </div>
-        </button>
+          </button>
+        </div>
+
+        <!-- Ausculta -->
+        <div class="accordion-item" [class.expanded]="activeSubTab === 'auscultation'">
+          <button class="accordion-header" (click)="setActiveSubTab('auscultation')">
+            <div class="accordion-title">
+              <app-icon name="mic" [size]="16" />
+              <span>Ausculta</span>
+            </div>
+            <app-icon name="chevron-down" [size]="16" class="chevron" />
+          </button>
+        </div>
+
+        <!-- Câmera de Exame -->
+        <div class="accordion-item" [class.expanded]="activeSubTab === 'exam'">
+          <button class="accordion-header" (click)="setActiveSubTab('exam')">
+            <div class="accordion-title">
+              <app-icon name="video" [size]="16" />
+              <span>Câmera de Exame</span>
+            </div>
+            <div class="accordion-status">
+              @if (activeSubTab === 'exam') {
+                <span class="status-badge">Transmitindo</span>
+              }
+              <app-icon name="chevron-down" [size]="16" class="chevron" />
+            </div>
+          </button>
+        </div>
       </div>
 
       <!-- Conteúdo baseado no papel do usuário -->
@@ -181,77 +190,56 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
       }
     }
 
-    .sub-tabs {
+    .accordion-nav {
       display: flex;
-      padding: 8px 12px;
-      gap: 6px;
+      flex-direction: column;
       border-bottom: 1px solid var(--border-color);
-      background: var(--bg-primary);
-
-      .sub-tab-btn {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: var(--bg-tertiary);
-          color: var(--text-primary);
-        }
-
-        &.active {
-          background: var(--color-primary);
-          color: white;
-          border-color: var(--color-primary);
-        }
-      }
     }
 
-    .exam-section {
+    .accordion-item {
       border-bottom: 1px solid var(--border-color);
 
-      .section-header {
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .accordion-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        padding: 10px 16px;
+        padding: 12px 16px;
         border: none;
-        background: var(--bg-secondary);
+        background: var(--bg-primary);
         color: var(--text-secondary);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
 
-        .section-title {
+        .accordion-title {
           display: flex;
           align-items: center;
           gap: 8px;
         }
 
-        .section-status {
+        .accordion-status {
           display: flex;
           align-items: center;
           gap: 8px;
 
-          .status-text {
+          .status-badge {
             font-size: 11px;
             color: var(--color-primary);
+            padding: 2px 8px;
+            background: var(--bg-success-subtle);
+            border-radius: 10px;
           }
+        }
 
-          .chevron {
-            transition: transform 0.2s ease;
-            opacity: 0.5;
-          }
+        .chevron {
+          transition: transform 0.2s ease;
+          opacity: 0.5;
         }
 
         &:hover {
@@ -261,12 +249,13 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
       }
 
       &.expanded {
-        .section-header {
+        .accordion-header {
           background: var(--color-primary);
           color: white;
 
-          .section-status .status-text {
-            color: rgba(255, 255, 255, 0.8);
+          .accordion-status .status-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
           }
 
           .chevron {
