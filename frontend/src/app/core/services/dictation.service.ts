@@ -2,6 +2,7 @@ import { Injectable, NgZone, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import { ModalService } from './modal.service';
+import { JitsiService } from './jitsi.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,7 @@ export class DictationService {
   constructor(
     private zone: NgZone, 
     private modalService: ModalService,
+    private jitsiService: JitsiService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -187,6 +189,10 @@ export class DictationService {
     
     console.log('[Dictation] Ativando modo ditado...');
     this.isDictationActive$.next(true);
+    
+    // Muta o microfone do Jitsi para o paciente não ouvir o médico ditando
+    this.jitsiService.setLocalAudioMuted(true);
+    
     this.startListening();
   }
 
@@ -195,6 +201,9 @@ export class DictationService {
     this.stopListening();
     this.activeElement = null;
     this.lastInterim = '';
+    
+    // Desmuta o microfone do Jitsi quando parar de ditar
+    this.jitsiService.setLocalAudioMuted(false);
   }
 
   private startListening() {

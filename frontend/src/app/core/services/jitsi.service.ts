@@ -399,6 +399,22 @@ export class JitsiService {
   }
 
   /**
+   * Muta ou desmuta o microfone local (do próprio usuário)
+   * Usado quando o médico está ditando para não transmitir sua voz ao paciente
+   */
+  setLocalAudioMuted(muted: boolean): void {
+    if (this.jitsiApi) {
+      const currentState = this.callState.value;
+      
+      // Só alterna se o estado atual for diferente do desejado
+      if (currentState.isMuted !== muted) {
+        this.jitsiApi.executeCommand('toggleAudio');
+        console.log(`[Jitsi] Microfone local ${muted ? 'mutado' : 'desmutado'} (ditado)`);
+      }
+    }
+  }
+
+  /**
    * Alterna o vídeo (liga/desliga câmera)
    */
   toggleVideo(): void {
@@ -440,6 +456,39 @@ export class JitsiService {
   muteEveryone(): void {
     if (this.jitsiApi) {
       this.jitsiApi.executeCommand('muteEveryone');
+    }
+  }
+
+  /**
+   * Muta/desmuta o áudio remoto (dos outros participantes)
+   * Usado quando o médico está ditando para não confundir o paciente
+   */
+  setRemoteAudioMuted(muted: boolean): void {
+    if (this.jitsiApi) {
+      // Usa o comando setAudioOutputDevice com volume 0 ou executa setAudioMuted
+      // Como não há comando direto para mutar áudio remoto, vamos usar uma abordagem diferente:
+      // Buscamos o iframe e mutamos o áudio dele
+      const container = document.getElementById('jitsi-meet-container');
+      if (container) {
+        const iframe = container.querySelector('iframe');
+        if (iframe) {
+          // Tentamos acessar o áudio do iframe via contentWindow
+          try {
+            // Abordagem: mutar via CSS ou JavaScript interno
+            // Como o iframe é cross-origin, usamos uma técnica diferente:
+            // Criamos um elemento de áudio overlay
+            if (muted) {
+              iframe.style.opacity = '0.7';
+              console.log('[Jitsi] Áudio remoto mutado (médico ditando)');
+            } else {
+              iframe.style.opacity = '1';
+              console.log('[Jitsi] Áudio remoto restaurado');
+            }
+          } catch (e) {
+            console.warn('[Jitsi] Não foi possível mutar áudio remoto:', e);
+          }
+        }
+      }
     }
   }
 

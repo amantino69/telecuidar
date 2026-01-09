@@ -1,4 +1,13 @@
 <div class="teleconsultation-container">
+  <!-- Overlay de modo ditado do médico (apenas para paciente) -->
+  <div class="dictation-overlay" *ngIf="isDoctorDictating && userrole === 'PATIENT'">
+    <div class="dictation-message">
+      <app-icon name="mic" [size]="32" />
+      <h3>Só um instante</h3>
+      <p>O médico está digitando...</p>
+    </div>
+  </div>
+
   <!-- Main Content (Video + Header) -->
   <div class="main-content" [class.sidebar-open]="isSidebarOpen && !isSidebarFull" [class.full-screen]="isSidebarFull">
     <!-- Header -->

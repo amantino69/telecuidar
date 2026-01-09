@@ -75,6 +75,10 @@ export class MedicalDevicesSyncService implements OnDestroy {
   private _connectionError$ = new Subject<string>();
   public connectionError$ = this._connectionError$.asObservable();
 
+  // Estado do modo ditado do profissional
+  private _dictationModeActive$ = new BehaviorSubject<boolean>(false);
+  public dictationModeActive$ = this._dictationModeActive$.asObservable();
+
   // ICE Servers para WebRTC
   private iceServers: RTCIceServer[] = [
     { urls: 'stun:stun.l.google.com:19302' },
@@ -242,6 +246,14 @@ export class MedicalDevicesSyncService implements OnDestroy {
       });
     });
 
+    // Modo ditado do profissional mudou
+    this.hubConnection.on('DictationModeChanged', (data: { isActive: boolean; userId: string; userRole: string }) => {
+      this.ngZone.run(() => {
+        console.log('[MedicalDevicesSync] Modo ditado do profissional:', data.isActive ? 'ATIVO' : 'INATIVO');
+        this._dictationModeActive$.next(data.isActive);
+      });
+    });
+
     // Handlers de reconexão
     this.hubConnection.onreconnecting((error: any) => {
       console.warn('[MedicalDevicesSync] Reconectando...', error);
@@ -306,6 +318,30 @@ export class MedicalDevicesSyncService implements OnDestroy {
       console.log('[MedicalDevicesSync] Sinais vitais enviados:', data.vitals);
     } catch (error) {
       console.error('[MedicalDevicesSync] Erro ao enviar sinais vitais:', error);
+    }
+  }
+
+  /**
+   * Notifica os outros participantes sobre o estado do modo ditado
+   */
+  async notifyDictationMode(isActive: boolean): Promise<void> {
+    console.log('[MedicalDevicesSync] notifyDictationMode chamado:', {
+      isActive,
+      hasHubConnection: !!this.hubConnection,
+      currentAppointmentId: this.currentAppointmentId,
+      hubState: this.hubConnection?.state
+    });
+
+    if (!this.hubConnection || !this.currentAppointmentId) {
+      console.warn('[MedicalDevicesSync] Não conectado ao hub! Não pode notificar modo ditado');
+      return;
+    }
+
+    try {
+      await this.hubConnection.invoke('NotifyDictationMode', this.currentAppointmentId, isActive);
+      console.log('[MedicalDevicesSync] ✓ Notificação de modo ditado enviada:', isActive);
+    } catch (error) {
+      console.error('[MedicalDevicesSync] Erro ao notificar modo ditado:', error);
     }
   }
 

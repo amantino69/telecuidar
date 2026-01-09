@@ -980,8 +980,8 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   frequency = 0;
   estimatedBPM = 0;
   
-  // Controle de áudio local
-  isLocalAudioEnabled = true;
+  // Controle de áudio local (desabilitado por padrão para evitar feedback)
+  isLocalAudioEnabled = false;
   localVolume = 0.5;
   private localAudioElement: HTMLAudioElement | null = null;
 
@@ -1134,28 +1134,15 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
     this.waveformHistory = []; // Limpa histórico do waveform
 
     try {
-      const constraints: MediaStreamConstraints = {
-        audio: {
-          deviceId: this.selectedDeviceId ? { exact: this.selectedDeviceId } : undefined,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          sampleRate: 44100,
-          channelCount: 1
-        },
-        video: false
-      };
-
-      this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('[Auscultation] Stream local obtido');
-
-      // Inicia análise de áudio usando o serviço
+      // Usa apenas o serviço para criar o stream (evita duplicação)
       const session = await this.streamingService.startAuscultation(
         this.selectedDeviceId, 
         this.selectedArea
       );
 
       if (session) {
+        // Guarda referência ao stream do serviço
+        this.localStream = session.stream;
         this.isAuscultationActive = true;
         
         // Cria elemento de áudio para ouvir localmente

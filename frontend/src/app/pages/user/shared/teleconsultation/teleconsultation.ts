@@ -12,6 +12,7 @@ import { AuthService } from '@core/services/auth.service';
 import { DeviceDetectorService } from '@core/services/device-detector.service';
 import { TeleconsultationRealTimeService, StatusChangedEvent, DataUpdatedEvent } from '@core/services/teleconsultation-realtime.service';
 import { TeleconsultationDataCollectorService } from '@core/services/teleconsultation-data-collector.service';
+import { MedicalDevicesSyncService } from '@core/services/medical-devices-sync.service';
 import { TeleconsultationSidebarComponent } from './sidebar/teleconsultation-sidebar';
 import { getTeleconsultationTabs, TAB_ID_TO_LEGACY_NAME, TabConfig } from './tabs/tab-config';
 import { Subscription } from 'rxjs';
@@ -48,6 +49,9 @@ export class TeleconsultationComponent implements OnInit, OnDestroy {
   jitsiError: string | null = null;
   isCallConnected = false;
 
+  // Estado do modo ditado do médico (para paciente)
+  isDoctorDictating = false;
+
   // Tabs configuration - usando configuração centralizada
   currentTabs: string[] = [];
   private tabConfigs: TabConfig[] = [];
@@ -73,6 +77,7 @@ export class TeleconsultationComponent implements OnInit, OnDestroy {
     private deviceDetector: DeviceDetectorService,
     private teleconsultationRealTime: TeleconsultationRealTimeService,
     private dataCollector: TeleconsultationDataCollectorService,
+    private medicalDevicesSync: MedicalDevicesSyncService,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
@@ -113,6 +118,33 @@ export class TeleconsultationComponent implements OnInit, OnDestroy {
     this.teleconsultationRealTime.joinConsultation(this.appointmentId).catch(error => {
       console.error('[Teleconsultation] Erro ao conectar tempo real:', error);
     });
+    
+    // Conecta ao hub de dispositivos médicos
+    // - Médico: para ENVIAR notificação de ditado
+    // - Paciente: para RECEBER notificação de ditado
+    this.medicalDevicesSync.connect(this.appointmentId).catch(error => {
+      console.error('[Teleconsultation] Erro ao conectar dispositivos médicos:', error);
+    });
+    
+    // Paciente: escuta mudanças no modo ditado do médico
+    if (this.userrole === 'PATIENT') {
+      const dictationSub = this.medicalDevicesSync.dictationModeActive$.subscribe(
+        (isActive: boolean) => {
+          console.log('[Teleconsultation] Modo ditado do médico:', isActive);
+          this.isDoctorDictating = isActive;
+          
+          // Muta/desmuta o áudio do Jitsi
+          if (isActive) {
+            this.jitsiService.setRemoteAudioMuted(true);
+          } else {
+            this.jitsiService.setRemoteAudioMuted(false);
+          }
+          
+          this.cdr.detectChanges();
+        }
+      );
+      this.subscriptions.push(dictationSub);
+    }
     
     // Subscribe to status changes
     const statusSub = this.teleconsultationRealTime.statusChanged$.subscribe(

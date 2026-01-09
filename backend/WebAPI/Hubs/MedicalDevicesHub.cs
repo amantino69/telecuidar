@@ -309,4 +309,28 @@ public class MedicalDevicesHub : Hub
                 timestamp = DateTime.UtcNow
             });
     }
+
+    /// <summary>
+    /// Notifica que o profissional está usando o modo ditado
+    /// Quando ativo, o paciente recebe uma mensagem e o áudio é pausado
+    /// </summary>
+    public async Task NotifyDictationMode(string appointmentId, bool isActive)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userRole = Context.User?.FindFirst(ClaimTypes.Role)?.Value 
+                    ?? Context.User?.FindFirst("role")?.Value;
+        
+        _logger.LogInformation(
+            "MedicalDevicesHub: Modo ditado {Status} por {UserId} ({Role}) na sala {AppointmentId}",
+            isActive ? "ATIVADO" : "DESATIVADO", userId ?? "unknown", userRole ?? "unknown", appointmentId);
+        
+        await Clients.OthersInGroup($"appointment_{appointmentId}")
+            .SendAsync("DictationModeChanged", new
+            {
+                isActive,
+                userId,
+                userRole,
+                timestamp = DateTime.UtcNow
+            });
+    }
 }
