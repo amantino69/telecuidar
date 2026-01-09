@@ -8,7 +8,22 @@
   </header>
 
   <main class="content">
-    <div class="upload-card">
+    <!-- Camera View -->
+    <div class="camera-view" *ngIf="isCameraActive">
+      <video #videoElement autoplay playsinline></video>
+      <canvas #canvasElement style="display: none;"></canvas>
+      <div class="camera-controls">
+        <button class="btn-cancel" (click)="closeCamera()">
+          <app-icon name="x" [size]="24" />
+        </button>
+        <button class="btn-capture" (click)="capturePhoto()">
+          <app-icon name="camera" [size]="32" />
+        </button>
+        <div style="width: 48px;"></div>
+      </div>
+    </div>
+
+    <div class="upload-card" *ngIf="!isCameraActive">
       <!-- Success Message -->
       <div class="status-message success" *ngIf="uploadSuccess">
         <app-icon name="check-circle" [size]="48" />
@@ -19,30 +34,33 @@
       </div>
 
       <div class="upload-form" *ngIf="!uploadSuccess">
-        <!-- Action Buttons (Always visible to add more files) -->
+        <!-- Action Buttons -->
         <div class="action-buttons">
           <div class="instruction-header">
             <h2>Enviar Anexos</h2>
-            <p *ngIf="selectedFiles.length === 0">Selecione um ou mais arquivos</p>
+            <p *ngIf="selectedFiles.length === 0">Selecione uma opção para enviar</p>
             <p *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} arquivo(s) selecionado(s)</p>
           </div>
 
           <div class="action-buttons-row">
-            <label class="action-btn compact" for="camera-input">
+            <!-- CÂMERA - usa API MediaDevices (abre câmera diretamente) -->
+            <button class="action-btn compact" (click)="openCamera()">
               <div class="icon-circle camera">
                 <app-icon name="camera" [size]="24" />
               </div>
               <span>Câmera</span>
-            </label>
+            </button>
 
-            <label class="action-btn compact" for="gallery-input">
+            <!-- GALERIA - usa input file tradicional -->
+            <label class="action-btn compact" for="input-gallery">
               <div class="icon-circle gallery">
                 <app-icon name="image" [size]="24" />
               </div>
               <span>Galeria</span>
             </label>
 
-            <label class="action-btn compact" for="file-input">
+            <!-- ARQUIVOS - usa input file tradicional -->
+            <label class="action-btn compact" for="input-files">
               <div class="icon-circle files">
                 <app-icon name="folder" [size]="24" />
               </div>
@@ -88,30 +106,32 @@
       </div>
     </div>
 
-    <!-- Hidden Inputs (with multiple support) -->
+    <!-- Hidden Input - Câmera (fallback) -->
     <input 
       type="file" 
-      id="camera-input"
+      id="input-camera"
       #cameraInput
       accept="image/*"
       capture="environment"
       (change)="onFileSelected($event)" 
       hidden>
 
+    <!-- Hidden Input - Galeria -->
     <input 
       type="file" 
-      id="gallery-input"
+      id="input-gallery"
       #galleryInput
       accept="image/*,video/*"
       multiple
       (change)="onFileSelected($event)" 
       hidden>
 
+    <!-- Hidden Input - Arquivos -->
     <input 
       type="file" 
-      id="file-input"
+      id="input-files"
       #fileInput
-      accept="*/*" 
+      accept="*/*"
       multiple
       (change)="onFileSelected($event)" 
       hidden>

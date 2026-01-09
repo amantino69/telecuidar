@@ -27,8 +27,12 @@ export class MobileUploadComponent implements OnInit {
   token: string | null = null;
   
   @ViewChild('cameraInput') cameraInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('galleryInput') galleryInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
+  
+  // Camera mode
+  isCameraActive = false;
+  private mediaStream: MediaStream | null = null;
   
   // Multiple files support
   selectedFiles: SelectedFileItem[] = [];
@@ -53,16 +57,76 @@ export class MobileUploadComponent implements OnInit {
     });
   }
 
+  // Abre a câmera diretamente usando MediaDevices API
+  async openCamera() {
+    try {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+      
+      this.isCameraActive = true;
+      this.cdr.detectChanges();
+      
+      // Aguarda o DOM atualizar
+      setTimeout(() => {
+        if (this.videoElement?.nativeElement) {
+          this.videoElement.nativeElement.srcObject = this.mediaStream;
+          this.videoElement.nativeElement.play();
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('Erro ao acessar câmera:', error);
+      // Fallback para input file
+      this.cameraInput?.nativeElement?.click();
+    }
+  }
+
+  // Captura foto da câmera
+  async capturePhoto() {
+    if (!this.videoElement?.nativeElement || !this.canvasElement?.nativeElement) return;
+    
+    const video = this.videoElement.nativeElement;
+    const canvas = this.canvasElement.nativeElement;
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0);
+      
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          const file = new File([blob], `foto_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const previewUrl = await this.createPreview(file);
+          
+          this.selectedFiles.push({
+            file,
+            title: `Foto ${this.selectedFiles.length + 1}`,
+            previewUrl
+          });
+          
+          this.closeCamera();
+          this.cdr.detectChanges();
+        }
+      }, 'image/jpeg', 0.9);
+    }
+  }
+
+  // Fecha a câmera
+  closeCamera() {
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+    this.isCameraActive = false;
+    this.cdr.detectChanges();
+  }
+
   triggerCamera() {
     this.cameraInput.nativeElement.click();
-  }
-
-  triggerGallery() {
-    this.galleryInput.nativeElement.click();
-  }
-
-  triggerFiles() {
-    this.fileInput.nativeElement.click();
   }
 
   async onFileSelected(event: Event) {
