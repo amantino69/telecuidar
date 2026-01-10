@@ -1,0 +1,138 @@
+<div class="profile">
+  <div class="profile__header">
+    <div class="profile__header-content">
+      <app-icon name="user" [size]="32" />
+      <div>
+        <h1 class="profile__title">Meu Perfil</h1>
+        <p class="profile__subtitle">Visualize e edite suas informações pessoais</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="profile__edit-btn"
+      (click)="openEditModal()"
+    >
+      <app-icon name="edit" [size]="20" />
+      Editar Perfil
+    </button>
+  </div>
+
+  @if (user) {
+    <div class="profile__content">
+      <div class="profile__card profile__card--main">
+        <div class="profile__avatar-section">
+          <app-avatar 
+            [name]="user.name + ' ' + user.lastName" 
+            [imageUrl]="user.avatar"
+            size="2xl"
+          />
+          <div class="profile__avatar-info">
+            <h2 class="profile__name">{{ user.name }} {{ user.lastName }}</h2>
+            <p class="profile__email">{{ user.email }}</p>
+            <span 
+              class="profile__badge"
+              [class.profile__badge--active]="user.status === 'Active'"
+              [class.profile__badge--inactive]="user.status === 'Inactive'"
+            >
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile__grid">
+        <div class="profile__card">
+          <div class="profile__card-header">
+            <app-icon name="user" [size]="20" />
+            <h3 class="profile__card-title">Informações Pessoais</h3>
+          </div>
+          <div class="profile__card-content">
+            <div class="profile__field">
+              <span class="profile__field-label">Nome Completo</span>
+              <span class="profile__field-value">{{ user.name }}</span>
+            </div>
+            <div class="profile__field">
+              <span class="profile__field-label">CPF</span>
+              <span class="profile__field-value">{{ user.cpf }}</span>
+            </div>
+            <div class="profile__field">
+              <span class="profile__field-label">Telefone</span>
+              <span class="profile__field-value">{{ user.phone }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile__card">
+          <div class="profile__card-header">
+            <app-icon name="shield" [size]="20" />
+            <h3 class="profile__card-title">Informações da Conta</h3>
+          </div>
+          <div class="profile__card-content">
+            <div class="profile__field profile__field--email-row">
+              <span class="profile__field-label">E-mail</span>
+              <span class="profile__field-value profile__email-row">
+                {{ user.email }}
+                <app-badge
+                  [variant]="getEmailVerificationVariant()"
+                  [label]="getEmailVerificationLabel()"
+                  size="sm"
+                  class="profile__email-badge"
+                />
+                @if (!emailVerified) {
+                  <app-button
+                    [variant]="'outline'"
+                    [size]="'sm'"
+                    [loading]="isSendingVerification"
+                    (click)="resendVerificationEmail()"
+                    class="profile__email-verify-btn"
+                  >
+                    <app-icon name="mail" [size]="16" />
+                    Reenviar verificação
+                  </app-button>
+                }
+              </span>
+            </div>
+            <div class="profile__field">
+              <span class="profile__field-label">Perfil</span>
+              <app-badge
+                [variant]="user.role === 'PROFESSIONAL' ? 'info' : user.role === 'PATIENT' ? 'success' : 'primary'"
+                [label]="getRoleLabel(user.role)"
+                size="sm"
+              />
+            </div>
+            <div class="profile__field">
+              <span class="profile__field-label">Membro desde</span>
+              <span class="profile__field-value">{{ user.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal de Edição -->
+<app-profile-edit-modal
+  [isOpen]="isEditModalOpen"
+  [user]="user"
+  (close)="onEditModalClose()"
+  (save)="onProfileUpdated($event)"
+  (changePassword)="onChangePassword()"
+  (changeEmail)="onChangeEmail()"
+/>
+
+<!-- Modal de Trocar Senha -->
+<app-change-password-modal
+  [isOpen]="isChangePasswordModalOpen"
+  (close)="onChangePasswordModalClose()"
+  (save)="onPasswordChanged($event)"
+/>
+
+<!-- Modal de Alterar E-mail -->
+<app-change-email-modal
+  [isOpen]="isChangeEmailModalOpen"
+  [currentEmail]="user?.email || ''"
+  [isLoading]="isRequestingEmailChange"
+  (close)="onChangeEmailModalClose()"
+  (save)="onEmailChangeRequested($event)"
+/>

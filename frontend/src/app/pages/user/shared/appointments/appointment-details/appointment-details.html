@@ -1,0 +1,308 @@
+<div class="appointment-details" [class.details-view]="isDetailsView">
+  <!-- Header -->
+  <div class="appointment-details__header">
+    <div class="appointment-details__header-actions">
+      <app-button
+        variant="ghost"
+        size="sm"
+        (click)="goBack()"
+      >
+        <app-icon name="arrow-left" [size]="20" />
+        Voltar
+      </app-button>
+    </div>
+    <div class="appointment-details__header-title">
+      <app-icon name="file" [size]="28" />
+      <h1>Detalhes da Consulta</h1>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="appointment-details__loading">
+      <p>Carregando...</p>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (!loading && appointment) {
+    <div class="appointment-details__content">
+      <!-- Tabs Navigation -->
+      <div class="appointment-details__tabs">
+        <div class="tabs-nav">
+          @for (tab of visibleTabs; track tab.id) {
+            <button
+              class="tabs-nav__item"
+              [class.tabs-nav__item--active]="activeTab === tab.id"
+              (click)="changeTab(tab.id)"
+            >
+              <app-icon [name]="tab.icon" [size]="20" />
+              <span>{{ tab.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="appointment-details__tab-content">
+        <!-- Basic Information Tab -->
+        @if (activeTab === 'basic') {
+          <div class="tab-panel">
+            <div class="info-section">
+              <h2 class="section-title">
+                <app-icon name="file" [size]="24" />
+                Informações Básicas
+              </h2>
+
+              <div class="status-banner">
+                <app-badge [variant]="getStatusBadgeVariant(appointment.status)">
+                  {{ getStatusLabel(appointment.status) }}
+                </app-badge>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-group">
+                  <label>Paciente</label>
+                  <p>{{ appointment.patientName }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label>Profissional</label>
+                  <p>{{ appointment.professionalName }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label>Especialidade</label>
+                  <p>{{ appointment.specialtyName }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label>Tipo</label>
+                  <p>{{ getAppointmentTypeLabel(appointment) }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label>Data</label>
+                  <p>{{ appointment.date | date:'fullDate':'':'pt-BR' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label>Horário</label>
+                  <p>{{ appointment.time }}</p>
+                </div>
+
+                @if (appointment.meetLink) {
+                  <div class="info-group info-group--full">
+                    <label>Link da Consulta</label>
+                    <a [href]="appointment.meetLink" target="_blank" class="meet-link">
+                      <app-icon name="arrow-right" [size]="16" />
+                      {{ appointment.meetLink }}
+                    </a>
+                  </div>
+                }
+
+                @if (appointment.observation) {
+                  <div class="info-group info-group--full">
+                    <label>Observações</label>
+                    <p class="observation">{{ appointment.observation }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Patient Data Tab -->
+        @if (activeTab === 'patient-data') {
+          <div class="tab-panel">
+            <app-patient-data-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+            />
+          </div>
+        }
+
+        <!-- Pre-Consultation Data Tab - Temporariamente desativado
+        @if (activeTab === 'pre-consultation') {
+          <div class="tab-panel">
+            <app-pre-consultation-data-tab
+              [appointment]="appointment"
+            />
+          </div>
+        }
+        -->
+
+        <!-- Anamnesis Tab -->
+        @if (activeTab === 'anamnesis') {
+          <div class="tab-panel">
+            <app-anamnesis-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Specialty Fields Tab -->
+        @if (activeTab === 'specialty') {
+          <div class="tab-panel">
+            <app-specialty-fields-tab
+              [appointment]="appointment"
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- IOT Tab -->
+        @if (activeTab === 'iot') {
+          <div class="tab-panel">
+            <app-iot-tab
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Biometrics Tab -->
+        @if (activeTab === 'biometrics') {
+          <div class="tab-panel">
+            <app-biometrics-tab 
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Attachments Chat Tab -->
+        @if (activeTab === 'attachments') {
+          <div class="tab-panel">
+            <app-attachments-chat-tab 
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- SOAP Tab -->
+        @if (activeTab === 'soap') {
+          <div class="tab-panel">
+            <app-soap-tab 
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Receita Tab -->
+        @if (activeTab === 'receita') {
+          <div class="tab-panel">
+            <app-receita-tab
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Atestado Tab -->
+        @if (activeTab === 'atestado') {
+          <div class="tab-panel">
+            <app-atestado-tab
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Exame Tab -->
+        @if (activeTab === 'exame') {
+          <div class="tab-panel">
+            <app-exame-tab
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Laudo Tab -->
+        @if (activeTab === 'laudo') {
+          <div class="tab-panel">
+            <app-laudo-tab
+              [appointmentId]="appointmentId"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Encaminhamento Tab -->
+        @if (activeTab === 'referral') {
+          <div class="tab-panel">
+            <app-referral-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [userrole]="userrole"
+              [readonly]="isDetailsView"
+            />
+          </div>
+        }
+
+        <!-- Retorno Tab -->
+        @if (activeTab === 'return') {
+          <div class="tab-panel">
+            <app-return-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [userrole]="userrole"
+              [readonly]="isDetailsView"
+            />
+          </div>
+        }
+
+        <!-- AI Tab -->
+        @if (activeTab === 'ai') {
+          <div class="tab-panel">
+            <app-ai-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [userrole]="userrole"
+              [readonly]="true"
+            />
+          </div>
+        }
+
+        <!-- Conclusion Tab -->
+        @if (activeTab === 'conclusion') {
+          <div class="tab-panel">
+            <app-conclusion-tab 
+              [appointment]="appointment"
+              [readonly]="true"
+              (finish)="onFinish($event)"
+            />
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (!loading && !appointment) {
+    <div class="appointment-details__error">
+      <app-icon name="alert-circle" [size]="48" />
+      <p>Consulta não encontrada</p>
+      <app-button (click)="goBack()">
+        Voltar para Consultas
+      </app-button>
+    </div>
+  }
+</div>

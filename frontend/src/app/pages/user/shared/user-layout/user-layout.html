@@ -1,0 +1,225 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar" [class.admin-sidebar--open]="isSidebarOpen">
+    <div class="admin-sidebar__header">
+      <app-logo size="md" />
+    </div>
+    <nav class="admin-sidebar__nav">
+      <a routerLink="/painel" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+        <app-icon name="home" [size]="20" />
+        <span>Painel</span>
+      </a>
+      <a routerLink="/notificacoes" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+        <app-icon name="bell" [size]="20" />
+        <span>Notificações</span>
+        @if (unreadNotifications > 0) {
+          <span class="admin-sidebar__badge">{{ unreadNotifications }}</span>
+        }
+      </a>
+      @if (user?.role === 'ADMIN') {
+        <a routerLink="/usuarios" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="users" [size]="20" />
+          <span>Usuários</span>
+        </a>
+        <a routerLink="/convites" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="mail" [size]="20" />
+          <span>Convites</span>
+        </a>
+        <a routerLink="/especialidades" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="book" [size]="20" />
+          <span>Especialidades</span>
+        </a>
+        <a routerLink="/agendas" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="calendar" [size]="20" />
+          <span>Agendas</span>
+        </a>
+        <a routerLink="/solicitacoes-bloqueio" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="clock" [size]="20" />
+          <span>Solicitações de Bloqueio</span>
+        </a>
+        <a routerLink="/relatorios" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="bar-chart" [size]="20" />
+          <span>Relatórios</span>
+        </a>
+        <a routerLink="/logs-auditoria" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="activity" [size]="20" />
+          <span>Logs de Auditoria</span>
+        </a>
+      }
+      @if (user?.role === 'PATIENT' || user?.role === 'PROFESSIONAL') {
+        <a routerLink="/consultas" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="calendar" [size]="20" />
+          <span>Minhas Consultas</span>
+        </a>
+      }
+      @if (user?.role === 'PROFESSIONAL') {
+        <a routerLink="/minha-agenda" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="clock" [size]="20" />
+          <span>Minha Agenda</span>
+        </a>
+        <a routerLink="/bloqueios-agenda" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="slash" [size]="20" />
+          <span>Bloqueios de Agenda</span>
+        </a>
+        <a routerLink="/certificados" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="shield" [size]="20" />
+          <span>Certificados Digitais</span>
+        </a>
+      }
+      @if (user?.role === 'PATIENT') {
+        <a routerLink="/agendar" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="plus" [size]="20" />
+          <span>Agendar Consulta</span>
+        </a>
+      }
+      @if (user?.role === 'ASSISTANT') {
+        <a routerLink="/consultorio-digital" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+          <app-icon name="monitor" [size]="20" />
+          <span>Consultório Digital</span>
+        </a>
+      }
+      <a routerLink="/perfil" routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link" (click)="closeSidebarOnMobile()">
+        <app-icon name="user" [size]="20" />
+        <span>Meu Perfil</span>
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+      <button 
+        type="button"
+        class="admin-sidebar__logout"
+        (click)="logout()"
+      >
+        <app-icon name="arrow-left" [size]="20" />
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="admin-content">
+    <header class="admin-header" [class.admin-header--hidden]="!isHeaderVisible">
+      <div class="admin-header__left">
+        <button 
+          type="button"
+          class="admin-header__menu-btn"
+          (click)="toggleSidebar()"
+          aria-label="Abrir menu"
+        >
+          <app-icon name="menu" [size]="24" />
+        </button>
+      </div>
+
+      <div class="admin-header__center">
+        <a 
+          routerLink="/perfil"
+          class="admin-header__user"
+        >
+          <app-avatar 
+            [name]="(user?.name || '') + ' ' + (user?.lastName || '')" 
+            [imageUrl]="user?.avatar"
+            size="md"
+          />
+          <div class="admin-header__user-info">
+            <span class="admin-header__user-name">{{ user?.name }}</span>
+            <span class="admin-header__user-role">{{ getRoleLabel(user?.role) }}</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="admin-header__right">
+        <div class="admin-header__notifications-container">
+          <button
+            type="button"
+            class="admin-header__notifications-btn"
+            (click)="toggleNotificationDropdown()"
+            [class.admin-header__notifications-btn--active]="isNotificationDropdownOpen"
+            aria-label="Notificações"
+          >
+            <app-icon name="bell" [size]="20" />
+            @if (unreadNotifications > 0) {
+              <span class="admin-header__notification-badge">{{ unreadNotifications }}</span>
+            }
+          </button>
+
+          @if (isNotificationDropdownOpen) {
+            <div class="admin-header__notifications-dropdown" (click)="$event.stopPropagation()">
+              <div class="admin-header__notifications-header">
+                <h3>Notificações</h3>
+                <div class="admin-header__notifications-header-actions">
+                  @if (unreadNotifications > 0) {
+                    <button
+                      type="button"
+                      class="admin-header__notifications-mark-all-btn"
+                      (click)="markAllAsRead()"
+                      title="Marcar todas como lida"
+                      aria-label="Marcar todas como lida"
+                    >
+                      <app-icon name="check-circle" [size]="16" />
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="admin-header__notifications-close"
+                    (click)="toggleNotificationDropdown()"
+                    aria-label="Fechar"
+                  >
+                    <app-icon name="close" [size]="16" />
+                  </button>
+                </div>
+              </div>
+
+              <div class="admin-header__notifications-list">
+                @if (notifications && notifications.length > 0) {
+                  @for (notification of notifications.slice(0, 5); track notification.id) {
+                    <a 
+                      [routerLink]="['/notificacoes']"
+                      class="admin-header__notification-item"
+                      [class.admin-header__notification-item--unread]="!notification.isRead"
+                      (click)="toggleNotificationDropdown()"
+                    >
+                      <div class="admin-header__notification-content">
+                        <p class="admin-header__notification-title">{{ notification.title }}</p>
+                        <p class="admin-header__notification-message">{{ notification.message }}</p>
+                        <span class="admin-header__notification-time">{{ formatNotificationTime(notification.createdAt) }}</span>
+                      </div>
+                      @if (!notification.isRead) {
+                        <div class="admin-header__notification-dot"></div>
+                      }
+                    </a>
+                  }
+                } @else {
+                  <div class="admin-header__notifications-empty">
+                    <app-icon name="bell" [size]="24" />
+                    <p>Nenhuma notificação</p>
+                  </div>
+                }
+              </div>
+
+              @if (notifications && notifications.length > 0) {
+                <a
+                  [routerLink]="['/' + basePath, 'notifications']"
+                  class="admin-header__notifications-footer"
+                  (click)="toggleNotificationDropdown()"
+                >
+                  Ver todas as notificações
+                </a>
+              }
+            </div>
+          }
+        </div>
+
+        <app-theme-toggle />
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  @if (isSidebarOpen) {
+    <div 
+      class="admin-overlay"
+      (click)="closeSidebar()"
+    ></div>
+  }
+</div>

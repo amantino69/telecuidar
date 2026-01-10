@@ -1,0 +1,316 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.digital-office {
+  width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+
+  &__header {
+    @include flex-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-2xl;
+    gap: $spacing-xl;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+
+    app-icon {
+      color: var(--primary-500);
+      flex-shrink: 0;
+    }
+  }
+
+  &__title {
+    @include heading-1;
+    margin: 0 0 $spacing-xs 0;
+  }
+
+  &__subtitle {
+    color: var(--text-secondary);
+    font-size: $font-size-lg;
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+  }
+
+  &__filter-tab {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--text-secondary);
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      border-color: var(--primary-300);
+      color: var(--primary-600);
+    }
+
+    &--active {
+      background: var(--primary-50);
+      border-color: var(--primary-500);
+      color: var(--primary-600);
+    }
+  }
+
+  &__filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    align-items: flex-end;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    app-filter-select {
+      min-width: 180px;
+    }
+  }
+
+  &__date-range {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__date-group,
+  &__cpf-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    label {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: var(--text-secondary);
+    }
+  }
+
+  &__date-input,
+  &__cpf-input {
+    padding: $spacing-md $spacing-lg;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    color: var(--text-primary);
+    font-size: $font-size-base;
+    @include transition(all);
+    min-width: 160px;
+
+    &:hover {
+      border-color: var(--neutral-300);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+  }
+
+  &__cpf-wrapper {
+    display: flex;
+
+    .digital-office__cpf-input {
+      border-radius: $radius-lg 0 0 $radius-lg;
+      border-right: none;
+    }
+  }
+
+  &__search-btn {
+    padding: $spacing-md $spacing-lg;
+    background: var(--primary-600);
+    color: white;
+    border: none;
+    border-radius: 0 $radius-lg $radius-lg 0;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      background: var(--primary-700);
+    }
+  }
+
+  &__table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-xl;
+    overflow: hidden;
+    margin-bottom: $spacing-xl;
+    max-width: 100%;
+
+    @include mobile {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &__loading,
+  &__empty {
+    @include flex-center;
+    @include flex-column;
+    gap: $spacing-lg;
+    padding: $spacing-4xl;
+    color: var(--text-secondary);
+  }
+}
+
+.digital-office-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  @include mobile {
+    min-width: 900px;
+  }
+
+  &__head {
+    background: var(--background);
+    border-bottom: 2px solid var(--border);
+  }
+
+  &__header {
+    padding: $spacing-lg $spacing-xl;
+    text-align: left;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @include mobile {
+      padding: $spacing-md;
+      font-size: 10px;
+    }
+
+    &--actions {
+      text-align: center;
+      width: 120px;
+    }
+  }
+
+  &__row {
+    border-bottom: 1px solid var(--border);
+    @include transition(background);
+
+    &:hover {
+      background: var(--neutral-50);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__cell {
+    padding: $spacing-lg $spacing-xl;
+    font-size: $font-size-sm;
+    color: var(--text-primary);
+
+    @include mobile {
+      padding: $spacing-md;
+      font-size: $font-size-xs;
+    }
+
+    &--actions {
+      text-align: center;
+    }
+  }
+
+  &__id {
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+  }
+
+  &__datetime {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__date {
+    font-weight: $font-weight-medium;
+  }
+
+  &__time {
+    font-size: $font-size-xs;
+    color: var(--text-secondary);
+  }
+
+  &__patient {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__patient-name {
+    font-weight: $font-weight-medium;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  &__action-btn {
+    padding: $spacing-xs;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    color: var(--text-secondary);
+    cursor: pointer;
+    @include transition(all);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: var(--neutral-100);
+      border-color: var(--neutral-300);
+      color: var(--text-primary);
+    }
+
+    &--enter {
+      background: var(--primary-50);
+      border-color: var(--primary-200);
+      color: var(--primary-600);
+
+      &:hover {
+        background: var(--primary-100);
+        border-color: var(--primary-300);
+        color: var(--primary-700);
+      }
+    }
+  }
+}

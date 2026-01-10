@@ -1,0 +1,227 @@
+<div class="reports">
+  <div class="reports__header">
+    <div class="reports__header-content">
+      <app-icon name="bar-chart" [size]="32" />
+      <div>
+        <h1 class="reports__title">Relatórios</h1>
+        <p class="reports__subtitle">Visualize estatísticas e exporte relatórios detalhados</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports__filters">
+    <div class="reports__filter-group">
+      <div class="reports__filter-item">
+        <label class="reports__filter-label">Data Inicial</label>
+        <input
+          type="date"
+          class="reports__date-input"
+          [(ngModel)]="startDate"
+          (change)="onFilterChange()"
+        />
+      </div>
+
+      <div class="reports__filter-item">
+        <label class="reports__filter-label">Data Final</label>
+        <input
+          type="date"
+          class="reports__date-input"
+          [(ngModel)]="endDate"
+          (change)="onFilterChange()"
+        />
+      </div>
+    </div>
+
+    <div class="reports__export">
+      <div class="reports__dropdown">
+        <button
+          type="button"
+          class="reports__export-btn"
+          (click)="isExportDropdownOpen = !isExportDropdownOpen"
+          [disabled]="isExporting || isLoading"
+        >
+          <app-icon name="download" [size]="20" />
+          Exportar Relatório
+          <app-icon name="chevron-down" [size]="16" />
+        </button>
+        @if (isExportDropdownOpen) {
+          <div class="reports__dropdown-menu">
+            <button
+              type="button"
+              class="reports__dropdown-item"
+              (click)="onExport('pdf')"
+            >
+              <app-icon name="file" [size]="20" />
+              Exportar PDF
+            </button>
+            <button
+              type="button"
+              class="reports__dropdown-item"
+              (click)="onExport('excel')"
+            >
+              <app-icon name="download" [size]="20" />
+              Exportar Excel
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (reportData) {
+    <div class="reports__content">
+      <!-- Estatísticas Principais -->
+      <section class="reports__section">
+        <h2 class="reports__section-title">Visão Geral</h2>
+        <div class="reports__stats-grid">
+          <app-stat-card
+            title="Total de Usuários"
+            [value]="reportData.statistics.totalUsers"
+            format="number"
+            icon="users"
+            variant="primary"
+            [description]="reportData.statistics.activeUsers + ' ativos'"
+            [loading]="isLoading"
+          />
+          <app-stat-card
+            title="Consultas Realizadas"
+            [value]="reportData.statistics.completedAppointments"
+            format="number"
+            icon="check-circle"
+            variant="success"
+            [description]="reportData.statistics.totalAppointments + ' totais'"
+            [loading]="isLoading"
+          />
+          <app-stat-card
+            title="Receita Total"
+            [value]="reportData.statistics.totalRevenue"
+            format="currency"
+            icon="activity"
+            variant="warning"
+            [description]="'R$ ' + (reportData.statistics.revenueThisMonth | number:'1.2-2') + ' este mês'"
+            [loading]="isLoading"
+          />
+          <app-stat-card
+            title="Avaliação Média"
+            [value]="reportData.statistics.averageRating"
+            format="number"
+            icon="heart"
+            variant="danger"
+            [description]="'De ' + reportData.statistics.totalAppointments + ' avaliações'"
+            [loading]="isLoading"
+          />
+        </div>
+      </section>
+
+      <!-- Usuários por Papel -->
+      <section class="reports__section">
+        <h2 class="reports__section-title">Usuários por Papel</h2>
+        <div class="reports__card">
+          <div class="reports__chart-container">
+            @for (item of reportData.usersByRole; track item.role) {
+              <div class="reports__bar-item">
+                <div class="reports__bar-info">
+                  <span class="reports__bar-label">{{ item.role }}</span>
+                  <span class="reports__bar-value">{{ item.count }} ({{ item.percentage }}%)</span>
+                </div>
+                <div class="reports__bar-track">
+                  <div 
+                    class="reports__bar-fill"
+                    [style.width.%]="item.percentage"
+                  ></div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Consultas por Status -->
+      <section class="reports__section">
+        <h2 class="reports__section-title">Consultas por Status</h2>
+        <div class="reports__card">
+          <div class="reports__status-grid">
+            @for (item of reportData.appointmentsByStatus; track item.status) {
+              <div class="reports__status-item">
+                <div 
+                  class="reports__status-indicator"
+                  [style.background-color]="item.color"
+                ></div>
+                <div class="reports__status-info">
+                  <span class="reports__status-label">{{ item.status }}</span>
+                  <span class="reports__status-value">{{ item.count }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Consultas por Mês -->
+      <section class="reports__section">
+        <h2 class="reports__section-title">Consultas por Mês</h2>
+        <div class="reports__card">
+          <div class="reports__table-container">
+            <table class="reports__table">
+              <thead>
+                <tr>
+                  <th>Mês</th>
+                  <th>Total</th>
+                  <th>Concluídas</th>
+                  <th>Canceladas</th>
+                  <th>Taxa de Sucesso</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of reportData.appointmentsByMonth; track item.month) {
+                  <tr>
+                    <td><strong>{{ item.month }}</strong></td>
+                    <td>{{ item.appointments }}</td>
+                    <td class="reports__table-success">{{ item.completed }}</td>
+                    <td class="reports__table-danger">{{ item.canceled }}</td>
+                    <td>
+                      <span class="reports__badge reports__badge--success">
+                        {{ (item.completed / item.appointments * 100) | number:'1.1-1' }}%
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ranking de Especialidades -->
+      <section class="reports__section">
+        <h2 class="reports__section-title">Ranking de Especialidades</h2>
+        <div class="reports__card">
+          <div class="reports__table-container">
+            <table class="reports__table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Especialidade</th>
+                  <th>Consultas</th>
+                  <th>Receita</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of reportData.specialtiesRanking; track item.specialty; let idx = $index) {
+                  <tr>
+                    <td>
+                      <span class="reports__rank">{{ idx + 1 }}</span>
+                    </td>
+                    <td><strong>{{ item.specialty }}</strong></td>
+                    <td>{{ item.appointments }}</td>
+                    <td>{{ item.revenue | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</div>

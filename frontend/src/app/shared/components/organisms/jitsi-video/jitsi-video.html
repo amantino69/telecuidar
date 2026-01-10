@@ -1,0 +1,48 @@
+<div class="jitsi-video-wrapper" [class.dark-theme]="isDarkTheme">
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Conectando à videochamada...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-overlay" *ngIf="errorMessage && !isLoading">
+    <div class="error-content">
+      <app-icon name="alert-circle" [size]="48" />
+      <h3>Erro na Videochamada</h3>
+      <p>{{ errorMessage }}</p>
+      <app-button variant="primary" (click)="retry()">
+        <app-icon name="refresh-cw" [size]="18" />
+        Tentar Novamente
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Jitsi Container -->
+  <div 
+    #jitsiContainer
+    id="jitsi-meet-container"
+    class="jitsi-container"
+    [class.hidden]="isLoading || errorMessage">
+  </div>
+
+  <!-- Status Bar Only (controles usam a toolbar nativa do Jitsi) -->
+  <div class="status-overlay" *ngIf="showControls && isConnected && !errorMessage">
+    <div class="status-bar">
+      <div class="connection-status" [class.connected]="isConnected">
+        <span class="status-dot"></span>
+        <span>{{ isConnected ? 'Conectado' : 'Desconectado' }}</span>
+      </div>
+      <div class="participant-count" *ngIf="participantCount > 0">
+        <app-icon name="users" [size]="14" />
+        <span>{{ participantCount }} participante{{ participantCount !== 1 ? 's' : '' }}</span>
+      </div>
+      <div class="moderator-badge" *ngIf="isModerator">
+        <app-icon name="shield" [size]="14" />
+        <span>Moderador</span>
+      </div>
+    </div>
+  </div>
+</div>

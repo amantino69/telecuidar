@@ -1,0 +1,164 @@
+<div class="legal-page">
+  <app-header></app-header>
+  
+  <main class="legal-content">
+    <!-- Hero Section -->
+    <section class="legal-hero lgpd-hero">
+      <div class="container">
+        <div class="legal-hero__content">
+          <div class="legal-hero__badge">
+            <span class="legal-hero__badge-icon">🇧🇷</span>
+            <span class="legal-hero__badge-text">Lei 13.709/2018</span>
+          </div>
+          <h1 class="legal-hero__title">Conformidade LGPD</h1>
+          <p class="legal-hero__subtitle">
+            Nosso compromisso com a Lei Geral de Proteção de Dados Pessoais
+          </p>
+          <div class="legal-hero__meta">
+            <span class="legal-hero__date">
+              <span class="icon">📅</span>
+              Última atualização: {{ lastUpdated }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="legal-hero__decoration"></div>
+    </section>
+
+    <!-- Highlights Section -->
+    <section class="highlights">
+      <div class="container">
+        <div class="highlights__grid">
+          @for (highlight of highlights; track highlight.title) {
+            <div class="highlight-card">
+              <div class="highlight-card__icon">{{ highlight.icon }}</div>
+              <h3 class="highlight-card__title">{{ highlight.title }}</h3>
+              <p class="highlight-card__description">{{ highlight.description }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- LGPD Principles Section -->
+    <section class="principles-section">
+      <div class="container">
+        <h2 class="principles-section__title">Princípios da LGPD que Seguimos</h2>
+        <p class="principles-section__subtitle">
+          A TeleCuidar segue rigorosamente os 10 princípios estabelecidos no Art. 6º da LGPD
+        </p>
+        <div class="principles-grid">
+          @for (principle of principles; track principle.name) {
+            <div class="principle-card">
+              <span class="principle-card__icon">{{ principle.icon }}</span>
+              <h4 class="principle-card__name">{{ principle.name }}</h4>
+              <p class="principle-card__description">{{ principle.description }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Navigation -->
+    <section class="quick-nav">
+      <div class="container">
+        <div class="quick-nav__content">
+          <h2 class="quick-nav__title">Navegação Rápida</h2>
+          <div class="quick-nav__grid">
+            @for (section of sections; track section.id) {
+              <a href="javascript:void(0)" (click)="scrollToSection(section.id, $event)" class="quick-nav__item">
+                <span class="quick-nav__icon">{{ section.icon }}</span>
+                <span class="quick-nav__text">{{ section.title }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LGPD Sections -->
+    <section class="lgpd-sections">
+      <div class="container">
+        @for (section of sections; track section.id) {
+          <article class="lgpd-section" [id]="section.id">
+            <div class="lgpd-section__header">
+              <span class="lgpd-section__icon">{{ section.icon }}</span>
+              <h2 class="lgpd-section__title">{{ section.title }}</h2>
+            </div>
+            <div class="lgpd-section__content" [innerHTML]="section.content"></div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- Rights Summary -->
+    <section class="rights-summary">
+      <div class="container">
+        <div class="rights-summary__content">
+          <h2 class="rights-summary__title">Seus Direitos Garantidos</h2>
+          <div class="rights-grid">
+            <div class="right-item">
+              <span class="right-item__icon">👁️</span>
+              <span class="right-item__text">Acesso</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">✏️</span>
+              <span class="right-item__text">Correção</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">🗑️</span>
+              <span class="right-item__text">Exclusão</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">📦</span>
+              <span class="right-item__text">Portabilidade</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">🚫</span>
+              <span class="right-item__text">Oposição</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">↩️</span>
+              <span class="right-item__text">Revogação</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">🔒</span>
+              <span class="right-item__text">Bloqueio</span>
+            </div>
+            <div class="right-item">
+              <span class="right-item__icon">📢</span>
+              <span class="right-item__text">Informação</span>
+            </div>
+          </div>
+          <p class="rights-summary__cta">
+            Para exercer qualquer um desses direitos, entre em contato pelo e-mail 
+            <a href="mailto:privacidade@telecuidar.com.br">privacidade@telecuidar.com.br</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact-cta">
+      <div class="container">
+        <div class="contact-cta__content">
+          <div class="contact-cta__icon">🛡️</div>
+          <h2 class="contact-cta__title">Dúvidas sobre LGPD?</h2>
+          <p class="contact-cta__text">
+            Nossa equipe está pronta para esclarecer qualquer dúvida sobre como tratamos seus dados pessoais.
+          </p>
+          <div class="contact-cta__actions">
+            <a href="mailto:dpo@telecuidar.com.br" class="contact-cta__button contact-cta__button--primary">
+              <span>👔</span> Falar com o DPO
+            </a>
+            <a href="/privacidade" class="contact-cta__button contact-cta__button--secondary">
+              <span>🔒</span> Ver Política de Privacidade
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <app-footer></app-footer>
+</div>

@@ -1,0 +1,16 @@
+@use 'panel-shared' as *;
+
+// Assistant Panel - 5 botões + 1 branding card = 6 items em layout 3x2
+// Layout mais equilibrado e compacto que 5x1
+@include user-panel-styles(3, 2);
+
+// Ajuste específico para centralizar o grid
+.buttons-grid {
+  @media (min-width: 768px) {
+    // Grid 3x2 com cards centralizados e tamanho máximo
+    grid-template-columns: repeat(3, minmax(120px, 200px));
+    grid-template-rows: repeat(2, auto);
+    justify-content: center;
+    align-content: center;
+  }
+}

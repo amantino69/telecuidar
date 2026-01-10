@@ -1,0 +1,197 @@
+<div class="users">
+  <div class="users__header">
+    <div class="users__header-content">
+      <app-icon name="users" [size]="32" />
+      <div>
+        <h1 class="users__title">Usuários</h1>
+        <p class="users__subtitle">Gerencie todos os usuários da plataforma</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="users__create-btn"
+      (click)="createUser()"
+    >
+      <app-icon name="user" [size]="20" />
+      Novo Usuário
+    </button>
+  </div>
+
+  <div class="users__filters">
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+      (search)="onSearch($event)"
+      placeholder="Buscar por nome, email, CPF ou ID..."
+      icon="user"
+    />
+
+    <app-filter-select
+      [(ngModel)]="roleFilter"
+      (change)="onFilterChange()"
+      [options]="roleOptions"
+    />
+
+    <app-filter-select
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
+      [options]="statusOptions"
+    />
+  </div>
+
+  @if (loading) {
+    <div class="users__loading">
+      <p>Carregando usuários...</p>
+    </div>
+  } @else if (users.length === 0) {
+    <div class="users__empty">
+      <app-icon name="users" [size]="48" />
+      <p>Nenhum usuário encontrado</p>
+    </div>
+  } @else {
+    <div class="users__table-wrapper">
+      <table class="users-table">
+        <thead class="users-table__head">
+          <tr>
+            <th class="users-table__header users-table__header--sortable">
+              <app-table-header
+                label="ID"
+                field="id"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="sort($event)"
+              />
+            </th>
+            <th class="users-table__header users-table__header--sortable">
+              <app-table-header
+                label="USUÁRIO"
+                field="name"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="sort($event)"
+              />
+            </th>
+            <th class="users-table__header users-table__header--sortable">
+              <app-table-header
+                label="CONTATO"
+                field="email"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="sort($event)"
+              />
+            </th>
+            <th class="users-table__header users-table__header--sortable">
+              <app-table-header
+                label="PERFIL"
+                field="role"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="sort($event)"
+              />
+            </th>
+            <th class="users-table__header">CPF</th>
+            <th class="users-table__header users-table__header--sortable">
+              <app-table-header
+                label="STATUS"
+                field="status"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="sort($event)"
+              />
+            </th>
+            <th class="users-table__header users-table__header--actions">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody class="users-table__body">
+          @for (user of users; track user.id) {
+            <tr class="users-table__row">
+              <td class="users-table__cell">
+                <span class="users-table__id">#{{ user.id }}</span>
+              </td>
+              <td class="users-table__cell">
+                <div class="users-table__user">
+                  <app-avatar 
+                    [name]="user.name + ' ' + user.lastName" 
+                    [imageUrl]="user.avatar"
+                    size="sm"
+                  />
+                  <span class="users-table__user-name">{{ user.name }} {{ user.lastName }}</span>
+                </div>
+              </td>
+              <td class="users-table__cell">
+                <div class="users-table__contact">
+                  <span class="users-table__contact-email">{{ user.email }}</span>
+                  @if (user.phone) {
+                    <span class="users-table__contact-phone">{{ user.phone | phoneMask }}</span>
+                  }
+                </div>
+              </td>
+              <td class="users-table__cell">
+                <app-badge 
+                  [variant]="getRoleBadgeVariant(user.role)"
+                  [label]="user.role | userRole"
+                  size="sm"
+                />
+              </td>
+              <td class="users-table__cell">{{ user.cpf | cpfMask }}</td>
+              <td class="users-table__cell">
+                <app-badge 
+                  [variant]="user.status === 'Active' ? 'success' : 'neutral'"
+                  [label]="user.status | userStatus"
+                  size="sm"
+                />
+              </td>
+              <td class="users-table__cell users-table__cell--actions">
+                <div class="users-table__actions">
+                  <button
+                    type="button"
+                    class="users-table__action-btn"
+                    (click)="editUser(user.id)"
+                    title="Editar usuário"
+                  >
+                    <app-icon name="settings" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="users-table__action-btn users-table__action-btn--delete"
+                    (click)="deleteUser(user.id)"
+                    title="Excluir usuário"
+                  >
+                    <app-icon name="close" [size]="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalUsers"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+
+  <app-user-edit-modal
+    [user]="userToEdit"
+    [isOpen]="isEditModalOpen"
+    (close)="onEditModalClose()"
+    (save)="onEditModalSave($event)"
+  />
+
+  <app-user-create-modal
+    [isOpen]="isCreateModalOpen"
+    (close)="onCreateModalClose()"
+    (create)="onCreateModalSubmit($event)"
+  />
+</div>

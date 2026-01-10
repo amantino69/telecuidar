@@ -1,0 +1,26 @@
+<section class="vision">
+  <div class="container">
+    <div class="vision-card" (click)="openModal()">
+      <h3 class="vision-card__title">Nossa Visão de Futuro</h3>
+      <p class="vision-card__text">
+        Acreditamos em um Brasil onde a tecnologia não substitui o cuidado humano, mas o 
+        potencializa. Onde cada cidadão, independente de onde more, tenha acesso a 
+        cuidados de saúde de qualidade. Onde a inovação serve à vida e à dignidade humana.
+      </p>
+      <blockquote class="vision-card__quote">
+        <p class="vision-card__quote-text">
+          "O TeleCuidar representa mais que uma evolução tecnológica na saúde - é uma 
+          revolução na forma como cuidamos uns dos outros, unindo o melhor da ciência com o 
+          calor humano que todo paciente merece."
+        </p>
+      </blockquote>
+      <span class="vision-card__more">Clique para saber mais →</span>
+    </div>
+  </div>
+</section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="visionModalData"
+  (close)="closeModal()"
+></app-info-modal>

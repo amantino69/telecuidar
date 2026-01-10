@@ -1,0 +1,17 @@
+<div class="filter-select">
+  @if (icon) {
+    <app-icon [name]="icon" [size]="iconSize" class="filter-select__icon" />
+  }
+  <select
+    class="filter-select__field"
+    [class.filter-select__field--with-icon]="icon"
+    [(ngModel)]="value"
+    (ngModelChange)="onValueChange($event)"
+    [disabled]="disabled"
+  >
+    @for (option of options; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+  <app-icon name="chevron-down" [size]="16" class="filter-select__arrow" />
+</div>

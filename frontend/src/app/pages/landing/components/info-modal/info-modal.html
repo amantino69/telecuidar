@@ -1,0 +1,33 @@
+@if (isOpen && data) {
+  <div class="info-modal-backdrop" (click)="onBackdropClick()">
+    <div class="info-modal" [class]="'info-modal--' + (data.color || 'primary')" (click)="onContentClick($event)">
+      <button type="button" class="info-modal__close" (click)="close.emit()" aria-label="Fechar">
+        <app-icon name="close" [size]="24"></app-icon>
+      </button>
+      
+      <div class="info-modal__header">
+        <span class="info-modal__icon">{{ data.icon }}</span>
+        <h2 class="info-modal__title">{{ data.title }}</h2>
+      </div>
+
+      <div class="info-modal__content">
+        <p class="info-modal__description">{{ data.description }}</p>
+        
+        @if (data.details.length > 0) {
+          <ul class="info-modal__list">
+            @for (detail of data.details; track detail) {
+              <li class="info-modal__item">
+                <span class="info-modal__check">✓</span>
+                <span>{{ detail }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="info-modal__footer">
+        <app-button variant="primary" (click)="close.emit()">Entendi</app-button>
+      </div>
+    </div>
+  </div>
+}

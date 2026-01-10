@@ -1,0 +1,58 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-full;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-weight: $font-weight-semibold;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Sizes
+  &--sm {
+    width: 32px;
+    height: 32px;
+    font-size: $font-size-xs;
+  }
+
+  &--md {
+    width: 40px;
+    height: 40px;
+    font-size: $font-size-sm;
+  }
+
+  &--lg {
+    width: 48px;
+    height: 48px;
+    font-size: $font-size-base;
+  }
+
+  &--xl {
+    width: 64px;
+    height: 64px;
+    font-size: $font-size-lg;
+  }
+
+  &--2xl {
+    width: 120px;
+    height: 120px;
+    font-size: $font-size-2xl;
+  }
+}

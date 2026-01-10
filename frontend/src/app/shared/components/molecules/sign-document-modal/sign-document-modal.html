@@ -1,0 +1,225 @@
+@if (isOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="modal-title">
+          <app-icon name="edit" [size]="24" />
+          <h2>Assinar {{ getDocumentTypeName() }}</h2>
+        </div>
+        <button class="close-btn" (click)="closeModal()">
+          <app-icon name="close" [size]="20" />
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        @if (isLoadingCertificates) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando certificados...</p>
+          </div>
+        } @else {
+          <!-- Mode Selector -->
+          <div class="mode-selector">
+            <button 
+              class="mode-btn" 
+              [class.active]="signMode === 'saved'"
+              [disabled]="certificates.length === 0"
+              (click)="signMode = 'saved'">
+              <app-icon name="file" [size]="18" />
+              <span>Certificado Salvo</span>
+            </button>
+            <button 
+              class="mode-btn" 
+              [class.active]="signMode === 'save-new'"
+              (click)="signMode = 'save-new'">
+              <app-icon name="plus" [size]="18" />
+              <span>Salvar e Assinar</span>
+            </button>
+            <button 
+              class="mode-btn" 
+              [class.active]="signMode === 'one-time'"
+              (click)="signMode = 'one-time'">
+              <app-icon name="shield" [size]="18" />
+              <span>Uso Único</span>
+            </button>
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="error-message">
+              <app-icon name="alert-circle" [size]="16" />
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Saved Certificate Mode -->
+          @if (signMode === 'saved') {
+            <div class="mode-content">
+              @if (certificates.length === 0) {
+                <div class="empty-notice">
+                  <p>Você não possui certificados salvos.</p>
+                  <p>Use as outras opções para assinar.</p>
+                </div>
+              } @else {
+                <div class="form-group">
+                  <label>Selecione o certificado</label>
+                  <div class="certificates-list">
+                    @for (cert of certificates; track cert.id) {
+                      <label class="certificate-option" [class.selected]="selectedCertificateId === cert.id">
+                        <input 
+                          type="radio" 
+                          name="certificate" 
+                          [value]="cert.id"
+                          [(ngModel)]="selectedCertificateId"
+                        />
+                        <div class="certificate-info">
+                          <strong>{{ cert.displayName }}</strong>
+                          <span>{{ cert.nameFromCertificate || cert.subject }}</span>
+                          <span class="expiry">Válido até {{ formatDate(cert.expirationDate) }}</span>
+                        </div>
+                        @if (cert.quickUseEnabled) {
+                          <app-badge variant="success" label="Uso Rápido" size="sm" />
+                        }
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                @if (needsPassword) {
+                  <div class="form-group">
+                    <label for="password">Senha do Certificado *</label>
+                    <div class="password-input-wrapper">
+                      <input 
+                        [type]="showPassword ? 'text' : 'password'" 
+                        id="password"
+                        [(ngModel)]="password"
+                        placeholder="Digite a senha do certificado"
+                      />
+                      <button type="button" class="password-toggle" (click)="showPassword = !showPassword">
+                        <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="18" />
+                      </button>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- Save-New or One-Time Mode -->
+          @if (signMode === 'save-new' || signMode === 'one-time') {
+            <div class="mode-content">
+              <!-- File Input -->
+              <div class="form-group">
+                <label>Arquivo do Certificado (.pfx)</label>
+                <div class="file-input-wrapper">
+                  <input 
+                    type="file" 
+                    id="pfxFile" 
+                    accept=".pfx,.p12" 
+                    (change)="onFileSelected($event)"
+                    hidden
+                  />
+                  <label for="pfxFile" class="file-input-label">
+                    <app-icon name="upload-cloud" [size]="20" />
+                    @if (file) {
+                      <span>{{ file.name }}</span>
+                    } @else {
+                      <span>Clique para selecionar</span>
+                    }
+                  </label>
+                </div>
+              </div>
+
+              <!-- Password -->
+              <div class="form-group">
+                <label for="filePassword">Senha do Certificado *</label>
+                <div class="password-input-wrapper">
+                  <input 
+                    [type]="showFilePassword ? 'text' : 'password'" 
+                    id="filePassword"
+                    [(ngModel)]="filePassword"
+                    placeholder="Digite a senha"
+                    [disabled]="!file"
+                  />
+                  <button type="button" class="password-toggle" (click)="showFilePassword = !showFilePassword" [disabled]="!file">
+                    <app-icon [name]="showFilePassword ? 'eye-off' : 'eye'" [size]="18" />
+                  </button>
+                </div>
+              </div>
+
+              @if (signMode === 'one-time') {
+                <p class="hint-text">
+                  <app-icon name="alert-circle" [size]="14" />
+                  O certificado será usado apenas para esta assinatura e não será salvo.
+                </p>
+              }
+
+              @if (signMode === 'save-new') {
+                <!-- Validate Button -->
+                @if (!validation?.isValid) {
+                  <app-button 
+                    variant="secondary" 
+                    (click)="validateCertificate()"
+                    [disabled]="!file || !filePassword || isValidating">
+                    @if (isValidating) {
+                      Validando...
+                    } @else {
+                      <app-icon name="check-circle" [size]="16" />
+                      Validar Certificado
+                    }
+                  </app-button>
+                }
+
+                <!-- Validation Result -->
+                @if (validation?.isValid && !validation?.isExpired) {
+                  <div class="validation-success">
+                    <app-icon name="check-circle" [size]="18" />
+                    <span>Certificado válido: {{ validation?.nameFromCertificate }}</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="displayName">Nome de exibição *</label>
+                    <input 
+                      type="text" 
+                      id="displayName"
+                      [(ngModel)]="displayName"
+                      placeholder="Ex: Meu certificado principal"
+                    />
+                  </div>
+
+                  <div class="form-group form-group--switch">
+                    <label class="switch-label">
+                      <input type="checkbox" [(ngModel)]="quickUseEnabled" />
+                      <span class="switch-toggle"></span>
+                      <span>Uso rápido (não solicitar senha)</span>
+                    </label>
+                  </div>
+                }
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <app-button variant="secondary" (click)="closeModal()">
+          Cancelar
+        </app-button>
+        <app-button 
+          variant="primary" 
+          (click)="signDocument()"
+          [disabled]="isSigning || isLoadingCertificates || (signMode === 'saved' && certificates.length === 0)">
+          @if (isSigning) {
+            <span>Assinando...</span>
+          } @else {
+            <app-icon name="edit" [size]="16" />
+            <span>Assinar {{ getDocumentTypeName() }}</span>
+          }
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

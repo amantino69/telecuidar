@@ -1,0 +1,45 @@
+<div class="stat-card" [ngClass]="variantClass">
+  @if (loading) {
+    <div class="stat-card__loading">
+      <div class="stat-card__skeleton stat-card__skeleton--title"></div>
+      <div class="stat-card__skeleton stat-card__skeleton--value"></div>
+    </div>
+  } @else {
+    @if (icon) {
+      <div class="stat-card__icon">
+        <app-icon [name]="icon" [size]="24" />
+      </div>
+    }
+    
+    <div class="stat-card__content">
+      <span class="stat-card__title">{{ title }}</span>
+      <div class="stat-card__value-wrapper">
+        <span class="stat-card__value">
+          @switch (format) {
+            @case ('currency') {
+              {{ numericValue | currency:'BRL':'symbol':'1.2-2' }}
+            }
+            @case ('percent') {
+              {{ numericValue / 100 | percent:'1.1-1' }}
+            }
+            @case ('number') {
+              {{ numericValue | number:'1.0-0' }}
+            }
+            @default {
+              {{ value }}
+            }
+          }
+        </span>
+        @if (trend && trendValue) {
+          <span class="stat-card__trend" [class.stat-card__trend--up]="trend === 'up'" [class.stat-card__trend--down]="trend === 'down'">
+            <app-icon [name]="trendIcon" [size]="14" />
+            {{ trendValue }}
+          </span>
+        }
+      </div>
+      @if (description) {
+        <span class="stat-card__description">{{ description }}</span>
+      }
+    </div>
+  }
+</div>

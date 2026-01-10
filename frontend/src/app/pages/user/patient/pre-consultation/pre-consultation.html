@@ -1,0 +1,363 @@
+<div class="pre-consultation-container">
+  <div class="header">
+    <button class="back-btn" (click)="onCancel()">
+      <app-icon name="arrow-left" [size]="20" />
+      Voltar
+    </button>
+    <div class="title-section">
+      <h1>Pré-consulta</h1>
+      <p class="subtitle">Preencha as informações abaixo para agilizar seu atendimento</p>
+    </div>
+  </div>
+
+  @if (appointment) {
+    <div class="appointment-summary">
+      <div class="summary-item">
+        <span class="label">Profissional:</span>
+        <span class="value">{{ appointment.professionalName }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Especialidade:</span>
+        <span class="value">{{ appointment.specialtyName }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Data:</span>
+        <span class="value">{{ appointment.date | date:'dd/MM/yyyy':'':'pt-BR' }} às {{ (appointment.time) }}</span>
+      </div>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+    <!-- Informações Pessoais -->
+    <section class="form-section" formGroupName="personalInfo">
+      <h2 class="section-title">Informações Pessoais</h2>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="fullName">Nome Completo *</label>
+          <input id="fullName" type="text" formControlName="fullName" class="form-input" placeholder="Seu nome completo">
+        </div>
+        <div class="form-group">
+          <label for="birthDate">Data de Nascimento *</label>
+          <input id="birthDate" type="date" formControlName="birthDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="weight">Peso (kg) *</label>
+          <input id="weight" type="number" formControlName="weight" class="form-input" placeholder="Ex: 70">
+        </div>
+        <div class="form-group">
+          <label for="height">Altura (cm) *</label>
+          <input id="height" type="number" formControlName="height" class="form-input" placeholder="Ex: 175">
+        </div>
+      </div>
+    </section>
+
+    <!-- Histórico Médico -->
+    <section class="form-section" formGroupName="medicalHistory">
+      <h2 class="section-title">Histórico Médico</h2>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="chronicConditions">Doenças Crônicas (Ex: Diabetes, Hipertensão)</label>
+          <input id="chronicConditions" type="text" formControlName="chronicConditions" class="form-input" placeholder="Liste suas condições crônicas">
+        </div>
+        <div class="form-group full-width">
+          <label for="medications">Medicamentos em Uso</label>
+          <input id="medications" type="text" formControlName="medications" class="form-input" placeholder="Nome e dosagem dos medicamentos">
+        </div>
+        <div class="form-group">
+          <label for="allergies">Alergias</label>
+          <input id="allergies" type="text" formControlName="allergies" class="form-input" placeholder="Alimentos, medicamentos, etc.">
+        </div>
+        <div class="form-group">
+          <label for="surgeries">Cirurgias Anteriores</label>
+          <input id="surgeries" type="text" formControlName="surgeries" class="form-input" placeholder="Cirurgias e datas aproximadas">
+        </div>
+        <div class="form-group full-width">
+          <label for="medHistObservations">Observações Gerais do Histórico</label>
+          <textarea id="medHistObservations" formControlName="generalObservations" class="form-textarea" rows="3" placeholder="Outras informações relevantes..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hábitos de Vida -->
+    <section class="form-section" formGroupName="lifestyleHabits">
+      <h2 class="section-title">Hábitos de Vida</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="smoker">Fumante? *</label>
+          <select id="smoker" formControlName="smoker" class="form-input">
+            <option value="">Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+            <option value="ex-fumante">Ex-fumante</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="alcoholConsumption">Consumo de Álcool *</label>
+          <select id="alcoholConsumption" formControlName="alcoholConsumption" class="form-input">
+            <option value="">Selecione...</option>
+            <option value="nenhum">Nenhum</option>
+            <option value="social">Socialmente</option>
+            <option value="frequente">Frequente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="physicalActivity">Atividade Física *</label>
+          <select id="physicalActivity" formControlName="physicalActivity" class="form-input">
+            <option value="">Selecione...</option>
+            <option value="nenhuma">Sedentário</option>
+            <option value="leve">Leve (1-2x/semana)</option>
+            <option value="moderada">Moderada (3-4x/semana)</option>
+            <option value="intensa">Intensa (5+x/semana)</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label for="lifestyleObservations">Observações sobre Hábitos</label>
+          <textarea id="lifestyleObservations" formControlName="generalObservations" class="form-textarea" rows="3" placeholder="Detalhes sobre dieta, sono, etc..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sinais Vitais -->
+    <section class="form-section" formGroupName="vitalSigns">
+      <h2 class="section-title">Sinais Vitais (Se houver medição recente)</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="bloodPressure">Pressão Arterial (mmHg)</label>
+          <input id="bloodPressure" type="text" formControlName="bloodPressure" class="form-input" placeholder="Ex: 120/80">
+        </div>
+        <div class="form-group">
+          <label for="heartRate">Frequência Cardíaca (bpm)</label>
+          <input id="heartRate" type="number" formControlName="heartRate" class="form-input" placeholder="Ex: 72">
+        </div>
+        <div class="form-group">
+          <label for="temperature">Temperatura (°C)</label>
+          <input id="temperature" type="number" step="0.1" formControlName="temperature" class="form-input" placeholder="Ex: 36.5">
+        </div>
+        <div class="form-group">
+          <label for="oxygenSaturation">Saturação de Oxigênio (%)</label>
+          <input id="oxygenSaturation" type="number" formControlName="oxygenSaturation" class="form-input" placeholder="Ex: 98">
+        </div>
+        <div class="form-group full-width">
+          <label for="vitalSignsObservations">Observações sobre Sinais Vitais</label>
+          <textarea id="vitalSignsObservations" formControlName="generalObservations" class="form-textarea" rows="2" placeholder="Como foram feitas as medições..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sintomas Atuais -->
+    <section class="form-section" formGroupName="currentSymptoms">
+      <h2 class="section-title">Sintomas Atuais</h2>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="mainSymptoms">Sintomas Principais *</label>
+          <input id="mainSymptoms" type="text" formControlName="mainSymptoms" class="form-input" placeholder="O que você está sentindo?">
+        </div>
+        <div class="form-group">
+          <label for="symptomOnset">Quando começou? *</label>
+          <input id="symptomOnset" type="text" formControlName="symptomOnset" class="form-input" placeholder="Ex: Há 2 dias, Ontem à noite...">
+        </div>
+        <div class="form-group">
+          <label for="painIntensity">Intensidade da Dor (0-10)</label>
+          <input id="painIntensity" type="number" min="0" max="10" formControlName="painIntensity" class="form-input" placeholder="0 = Sem dor, 10 = Pior dor possível">
+        </div>
+        <div class="form-group full-width">
+          <label for="symptomsObservations">Descrição Detalhada / Observações</label>
+          <textarea id="symptomsObservations" formControlName="generalObservations" class="form-textarea" rows="4" placeholder="Descreva a evolução dos sintomas, o que melhora ou piora..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Observações Adicionais -->
+    <section class="form-section">
+      <h2 class="section-title">Observações Adicionais</h2>
+      <div class="form-group full-width">
+        <label for="additionalObservations">Algo mais que o médico deva saber?</label>
+        <textarea id="additionalObservations" formControlName="additionalObservations" class="form-textarea" rows="3" placeholder="Informações extras..."></textarea>
+      </div>
+    </section>
+
+    <!-- Anexos -->
+    <section class="form-section">
+      <h2 class="section-title">Anexos</h2>
+      
+      <!-- List of Attachments -->
+      @if (attachments.length > 0) {
+        <div class="attachments-list">
+          @for (att of attachments; track $index) {
+            <div class="attachment-item">
+              <div class="attachment-preview" (click)="openPreview(att)" style="cursor: pointer;">
+                <img [src]="att.previewUrl" [alt]="att.title">
+              </div>
+              <div class="attachment-info">
+                @if (editingAttachmentIndex === $index) {
+                  <input 
+                    type="text" 
+                    [(ngModel)]="att.title" 
+                    [ngModelOptions]="{standalone: true}"
+                    class="form-input edit-title-input" 
+                    (keyup.enter)="saveAttachmentEdit($index)"
+                    (keyup.escape)="cancelAttachmentEdit()">
+                  <div class="edit-actions">
+                    <button type="button" class="save-btn" (click)="saveAttachmentEdit($index)">
+                      <app-icon name="check" [size]="14" />
+                    </button>
+                    <button type="button" class="cancel-btn" (click)="cancelAttachmentEdit()">
+                      <app-icon name="close" [size]="14" />
+                    </button>
+                  </div>
+                } @else {
+                  <span class="attachment-title">{{ att.title }}</span>
+                  <div class="attachment-actions">
+                    <button type="button" class="edit-btn" (click)="editAttachment($index)">
+                      <app-icon name="edit" [size]="16" />
+                      Editar
+                    </button>
+                    <button type="button" class="remove-btn" (click)="removeAttachment($index)">
+                      <app-icon name="trash" [size]="16" />
+                      Remover
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Add Attachment UI -->
+      @if (isAddingAttachment) {
+        <div class="add-attachment-container">
+          <!-- Multiple files list -->
+          @if (pendingFiles.length > 0) {
+            <div class="pending-files-list">
+              @for (pending of pendingFiles; track $index) {
+                <div class="pending-file-item">
+                  <div class="pending-file-preview" [class.loading]="pending.loading">
+                    @if (pending.loading) {
+                      <div class="loading-spinner"></div>
+                    } @else {
+                      <img [src]="pending.previewUrl" [alt]="pending.title">
+                    }
+                  </div>
+                  <div class="pending-file-info">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="pending.title" 
+                      [ngModelOptions]="{standalone: true}"
+                      class="form-input pending-title-input" 
+                      placeholder="Título do anexo">
+                    <span class="file-name">{{ pending.file.name }}</span>
+                  </div>
+                  <button type="button" class="remove-pending-btn" (click)="removePendingFile($index)">
+                    <app-icon name="close" [size]="18" />
+                  </button>
+                </div>
+              }
+            </div>
+            
+            <div class="add-more-files">
+              <button type="button" class="add-more-btn" (click)="fileInput.click()">
+                <app-icon name="plus" [size]="16" />
+                Adicionar mais arquivos
+              </button>
+              <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf,.doc,.docx" hidden multiple>
+            </div>
+          } @else {
+            <!-- Original single file flow (fallback) -->
+            <div class="form-group">
+              <label for="attachmentTitle">Título do Anexo</label>
+              <input id="attachmentTitle" type="text" [(ngModel)]="newAttachmentTitle" [ngModelOptions]="{standalone: true}" class="form-input" placeholder="Ex: Exame de Sangue">
+            </div>
+
+            @if (selectedFilePreview) {
+              <div class="upload-area" (click)="fileInput.click()">
+                <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf,.doc,.docx" hidden multiple>
+                <div class="preview-selected">
+                  <img [src]="selectedFilePreview" alt="Preview">
+                  <p>{{ selectedFile?.name }}</p>
+                  <p style="font-size: 12px; color: var(--primary);">Clique para alterar</p>
+                </div>
+              </div>
+            } @else {
+                <div class="upload-area" 
+                     (drop)="onFileDropped($event)" 
+                     (dragover)="onDragOver($event)"
+                     (click)="fileInput.click()">
+                  <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf,.doc,.docx" hidden multiple>
+                  <app-icon name="upload-cloud" [size]="48" />
+                  <div>
+                    <p><strong>Clique para fazer upload</strong> ou arraste e solte</p>
+                    <p class="text-sm text-secondary">Imagens, PDF, DOC (múltiplos arquivos)</p>
+                  </div>
+                </div>
+            }
+          }
+
+          <div class="attachment-actions">
+            <app-button variant="outline" size="sm" type="button" (click)="cancelAddingAttachment()">Cancelar</app-button>
+            <app-button variant="primary" size="sm" type="button" (click)="saveAttachment()" [disabled]="pendingFiles.length === 0 && (!newAttachmentTitle || !selectedFile)">
+              {{ pendingFiles.length > 1 ? 'Adicionar ' + pendingFiles.length + ' arquivos' : 'Adicionar' }}
+            </app-button>
+          </div>
+        </div>
+      } @else {
+        <div class="add-buttons">
+          @if (isMobile) {
+            <!-- Mobile Specific Buttons -->
+             <div class="mobile-buttons-grid">
+               <button type="button" class="add-attachment-btn" (click)="fileInputMobile.click()">
+                 <app-icon name="file" [size]="20" />
+                 Adicionar Arquivo
+               </button>
+               <button type="button" class="add-attachment-btn" (click)="photoInput.click()">
+                 <app-icon name="image" [size]="20" />
+                 Adicionar da Galeria
+               </button>
+               <button type="button" class="add-attachment-btn" (click)="cameraInput.click()">
+                 <app-icon name="camera" [size]="20" />
+                 Tirar Foto/Vídeo
+               </button>
+             </div>
+             
+             <!-- Hidden Inputs for Mobile -->
+             <input #cameraInput type="file" (change)="onFileSelectedDirectly($event)" accept="image/*" capture="environment" hidden>
+             <input #photoInput type="file" (change)="onFileSelectedDirectly($event)" accept="image/*" hidden>
+             <input #fileInputMobile type="file" (change)="onFileSelectedDirectly($event)" accept="*/*" hidden>
+          } @else {
+            <!-- Desktop Buttons -->
+            <button type="button" class="add-attachment-btn" (click)="startAddingAttachment()">
+              <app-icon name="plus" [size]="20" />
+              Adicionar Anexo
+            </button>
+            <app-mobile-upload-button
+              variant="button"
+              buttonText="Usar Celular"
+              activeText="Link Ativo - Ver QR Code"
+              (uploadReceived)="onMobileUploadReceived($event)">
+            </app-mobile-upload-button>
+          }
+        </div>
+      }
+    </section>
+
+    <div class="form-actions">
+      <app-button variant="outline" type="button" (click)="onCancel()">Cancelar</app-button>
+      <app-button variant="primary" type="submit" [disabled]="form.invalid || isSubmitting">
+        @if (isSubmitting) {
+          <span>Salvando...</span>
+        } @else {
+          <span>Salvar Pré-consulta</span>
+        }
+      </app-button>
+    </div>
+  </form>
+</div>
+
+<app-media-preview-modal
+  [isOpen]="isPreviewModalOpen"
+  [url]="previewUrl"
+  [title]="previewTitle"
+  [type]="previewType"
+  (close)="closePreview()"
+  (download)="downloadAttachment()">
+</app-media-preview-modal>

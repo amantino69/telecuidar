@@ -1,0 +1,201 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'table-standard' as *;
+
+.invites {
+  @include page-container;
+
+  &__header {
+    @include page-header;
+  }
+
+  &__header-content {
+    @include page-header-content;
+  }
+
+  &__title {
+    @include page-title;
+  }
+
+  &__subtitle {
+    @include page-subtitle;
+  }
+
+  &__create-btn {
+    @include page-action-btn;
+  }
+
+  &__filters {
+    @include page-filters;
+  }
+
+  &__loading,
+  &__empty {
+    @include page-loading-empty;
+  }
+
+  &__table-wrapper {
+    @include page-table-wrapper;
+  }
+}
+
+.invites-table {
+  @include standard-table;
+
+  &__head {
+    @include table-head;
+  }
+
+  &__header {
+    @include table-header;
+  }
+
+  &__row {
+    @include table-row;
+  }
+
+  &__cell {
+    @include table-cell;
+  }
+
+  &__id {
+    @include table-id;
+  }
+
+  &__email {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__email-text {
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  &__created-by {
+    font-size: $font-size-xs;
+    color: #94a3b8;
+  }
+
+  &__prefilled {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__prefilled-text {
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  &__prefilled-details {
+    font-size: $font-size-xs;
+    color: #94a3b8;
+  }
+
+  &__empty-data {
+    color: #94a3b8;
+  }
+
+  &__date {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    &--expired {
+      color: #dc2626;
+    }
+  }
+
+  &__time {
+    font-size: $font-size-xs;
+    color: #94a3b8;
+  }
+
+  &__actions {
+    @include table-actions;
+  }
+
+  &__action-btn {
+    @include table-action-btn;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  &__empty-cell {
+    text-align: center;
+    padding: $spacing-3xl !important;
+  }
+}
+
+// === TEMA ESCURO ===
+:host-context([data-theme='dark']) {
+  .invites {
+    &__title {
+      @include page-title-dark;
+    }
+
+    &__subtitle {
+      color: #94a3b8;
+    }
+
+    &__table-wrapper {
+      @include page-table-wrapper-dark;
+    }
+  }
+
+  .invites-table {
+    &__head {
+      @include table-head-dark;
+    }
+
+    &__header {
+      @include table-header-dark;
+    }
+
+    &__row {
+      @include table-row-dark;
+    }
+
+    &__cell {
+      @include table-cell-dark;
+    }
+
+    &__id {
+      @include table-id-dark;
+    }
+
+    &__email-text {
+      color: #f1f5f9;
+    }
+
+    &__created-by {
+      color: #64748b;
+    }
+
+    &__prefilled-text {
+      color: #f1f5f9;
+    }
+
+    &__prefilled-details {
+      color: #64748b;
+    }
+
+    &__empty-data {
+      color: #64748b;
+    }
+
+    &__date--expired {
+      color: #f87171;
+    }
+
+    &__time {
+      color: #64748b;
+    }
+
+    &__action-btn {
+      @include table-action-btn-dark;
+    }
+  }
+}

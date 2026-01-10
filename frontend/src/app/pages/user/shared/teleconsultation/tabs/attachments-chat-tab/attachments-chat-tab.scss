@@ -1,0 +1,538 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background: var(--surface);
+
+  .messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+      opacity: 0.7;
+
+      p {
+        font-weight: $font-weight-semibold;
+        margin-top: $spacing-md;
+        margin-bottom: $spacing-xs;
+      }
+
+      span {
+        font-size: $font-size-sm;
+      }
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      
+      &.sent {
+        align-self: flex-end;
+        
+        .message-content {
+          background: var(--primary-50);
+          border-bottom-right-radius: $radius-sm;
+        }
+      }
+
+      &.received {
+        align-self: flex-start;
+
+        .message-content {
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-bottom-left-radius: $radius-sm;
+        }
+      }
+
+      .message-content {
+        padding: $spacing-md;
+        border-radius: $radius-lg;
+        
+        .message-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: $spacing-sm;
+          font-size: $font-size-xs;
+          color: var(--text-secondary);
+        }
+
+        .attachment-card {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+          padding: $spacing-sm;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: $radius-lg;
+          margin-top: $spacing-xs;
+          max-width: 100%;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+          }
+
+          .attachment-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: $radius-md;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--neutral-100);
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .attachment-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--neutral-100);
+            border-radius: $radius-md;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+          }
+
+          .attachment-info {
+            h4 {
+              margin: 0;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-semibold;
+            }
+
+            span {
+              font-size: $font-size-xs;
+              color: var(--text-secondary);
+            }
+          }
+
+          .download-btn {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: var(--primary-600);
+            cursor: pointer;
+            padding: $spacing-xs;
+            border-radius: $radius-sm;
+            
+            &:hover {
+              background: var(--primary-50);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .upload-area {
+    padding: $spacing-md;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    transition: all $transition-fast;
+
+    &.drag-over {
+      background: var(--primary-50);
+      border-top-color: var(--primary-500);
+    }
+
+    .upload-form {
+      .selected-file-preview {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-sm;
+        background: var(--background);
+        border-radius: $radius-md;
+        margin-bottom: $spacing-sm;
+
+        .file-details {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          font-size: $font-size-xs;
+          overflow: hidden;
+
+          .filename {
+            font-weight: $font-weight-medium;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .filesize {
+            color: var(--text-secondary);
+          }
+        }
+
+        .remove-btn {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          
+          &:hover {
+            color: var(--red-500);
+          }
+        }
+      }
+
+      .input-group {
+        display: flex;
+        gap: $spacing-sm;
+
+        input {
+          flex: 1;
+          padding: $spacing-sm $spacing-md;
+          border: 1px solid var(--border);
+          border-radius: $radius-md;
+          font-size: $font-size-sm;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-500);
+          }
+        }
+      }
+    }
+
+    .upload-actions {
+      .mobile-actions {
+        display: flex;
+        justify-content: space-around;
+        gap: $spacing-sm;
+
+        .action-btn {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: $spacing-xs;
+          padding: $spacing-sm;
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: $radius-lg;
+          cursor: pointer;
+          color: var(--text-secondary);
+
+          &:hover {
+            background: var(--neutral-100);
+            color: var(--primary-600);
+          }
+
+          span {
+            font-size: $font-size-xs;
+          }
+        }
+      }
+
+      .desktop-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: $spacing-sm;
+        width: 100%;
+
+        .drag-hint {
+          font-size: $font-size-sm;
+          color: var(--text-secondary);
+          margin: 0;
+          text-align: center;
+        }
+
+        .desktop-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-sm;
+          width: 100%;
+
+          app-button {
+            display: block;
+            width: 100%;
+
+            button, .btn {
+              width: 100%;
+            }
+          }
+
+          app-mobile-upload-button {
+            width: 100%;
+            display: block;
+          }
+        }
+      }
+
+      // When sidebar is full-screen, buttons side by side
+      :host-context(.full-screen) & {
+        .desktop-buttons {
+          flex-direction: row;
+
+          app-button,
+          app-mobile-upload-button {
+            flex: 1;
+          }
+        }
+      }
+
+      // Mobile buttons grid
+      .mobile-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: $spacing-sm;
+      }
+    }
+
+    // Add attachment container
+    &.adding {
+      padding: $spacing-lg;
+    }
+
+    .add-attachment-container {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-md;
+
+      .pending-files-list {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .pending-file-item {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        padding: $spacing-sm;
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: $radius-md;
+
+        .pending-file-preview {
+          width: 48px;
+          height: 48px;
+          border-radius: $radius-sm;
+          overflow: hidden;
+          flex-shrink: 0;
+          background: var(--neutral-100);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &.loading {
+            .loading-spinner {
+              width: 24px;
+              height: 24px;
+              border: 2px solid var(--border);
+              border-top-color: var(--primary-500);
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+            }
+          }
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .pending-file-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+
+          .pending-title-input {
+            padding: $spacing-xs $spacing-sm;
+            border: 1px solid var(--border);
+            border-radius: $radius-sm;
+            font-size: $font-size-sm;
+
+            &:focus {
+              outline: none;
+              border-color: var(--primary-500);
+            }
+          }
+
+          .file-name {
+            font-size: $font-size-xs;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .remove-pending-btn {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          padding: $spacing-xs;
+          border-radius: $radius-sm;
+
+          &:hover {
+            color: var(--red-500);
+            background: var(--red-50);
+          }
+        }
+      }
+
+      .add-more-files {
+        .add-more-btn {
+          display: flex;
+          align-items: center;
+          gap: $spacing-xs;
+          padding: $spacing-sm $spacing-md;
+          background: var(--background);
+          border: 1px dashed var(--border);
+          border-radius: $radius-md;
+          color: var(--primary-600);
+          font-size: $font-size-sm;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-500);
+          }
+        }
+      }
+
+      .upload-dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: $spacing-sm;
+        padding: $spacing-xl;
+        border: 2px dashed var(--border);
+        border-radius: $radius-lg;
+        cursor: pointer;
+        text-align: center;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--primary-500);
+          background: var(--primary-50);
+        }
+
+        p {
+          margin: 0;
+        }
+
+        .text-sm {
+          font-size: $font-size-sm;
+        }
+
+        .text-secondary {
+          color: var(--text-secondary);
+        }
+      }
+
+      .attachment-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: $spacing-sm;
+      }
+    }
+  }
+
+  // Message actions (edit/download)
+  .message-actions {
+    display: flex;
+    gap: $spacing-xs;
+    
+    button {
+      background: none;
+      border: none;
+      color: var(--primary-600);
+      cursor: pointer;
+      padding: $spacing-xs;
+      border-radius: $radius-sm;
+      
+      &:hover {
+        background: var(--primary-50);
+      }
+    }
+  }
+
+  // Edit title input
+  .edit-title-input {
+    padding: $spacing-xs $spacing-sm;
+    border: 1px solid var(--primary-500);
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
+
+    button {
+      padding: $spacing-xs;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &.save-btn {
+        background: var(--green-500);
+        color: white;
+
+        &:hover {
+          background: var(--green-600);
+        }
+      }
+
+      &.cancel-btn {
+        background: var(--neutral-200);
+        color: var(--text-secondary);
+
+        &:hover {
+          background: var(--neutral-300);
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

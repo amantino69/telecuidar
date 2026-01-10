@@ -1,0 +1,1073 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ========================================
+// SHARED PANEL STYLES - 3D Button Control Panel
+// Reutilizável para Admin, Patient, Professional, Assistant
+// ========================================
+
+@mixin panel-base {
+  :host {
+    display: block;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .panel {
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    box-sizing: border-box;
+
+    @media (max-width: 767px) {
+      overflow-y: auto;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      padding: 1.5vh 2vw;
+      gap: 1.2vh;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      padding: 1.8vh 2.5vw;
+      gap: 1.5vh;
+    }
+
+    @media (min-width: 1920px) {
+      padding: 24px 40px;
+      gap: 20px;
+    }
+  }
+
+  :host-context([data-theme="dark"]) .panel {
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+  }
+}
+
+@mixin header-styles {
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 16px;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+    animation: fadeInUp 0.4s ease-out;
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      padding: 1vh 1.5vw;
+      border-radius: 1.2vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      padding: 1.2vh 1.5vw;
+      border-radius: 1vw;
+    }
+
+    @media (min-width: 1920px) {
+      padding: 16px 20px;
+      border-radius: 20px;
+    }
+
+    &__left {
+      flex-shrink: 0;
+    }
+
+    &__center {
+      display: none;
+      
+      @media (min-width: 768px) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    &__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      @media (min-width: 768px) and (max-width: 1919px) {
+        gap: 0.8vw;
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .header {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@mixin clock-styles {
+  .clock {
+    text-align: center;
+
+    &__time {
+      display: block;
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #1e293b;
+      letter-spacing: 2px;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 2vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 1.6vw;
+      }
+    }
+
+    &__date {
+      display: block;
+      font-size: 13px;
+      color: #64748b;
+      text-transform: capitalize;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 1vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 0.75vw;
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .clock {
+    &__time { color: #f1f5f9; }
+    &__date { color: #94a3b8; }
+  }
+}
+
+@mixin logout-btn-styles {
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 
+      4px 4px 10px rgba(0, 0, 0, 0.1),
+      -2px -2px 8px rgba(255, 255, 255, 0.8);
+
+    @media (min-width: 768px) and (max-width: 1919px) {
+      width: 3.5vh;
+      height: 3.5vh;
+      border-radius: 0.8vw;
+    }
+
+    &:hover {
+      color: #ef4444;
+      transform: translateY(-2px);
+      box-shadow: 
+        6px 6px 14px rgba(0, 0, 0, 0.15),
+        -3px -3px 10px rgba(255, 255, 255, 0.9);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 
+        2px 2px 6px rgba(0, 0, 0, 0.1),
+        -1px -1px 4px rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  :host-context([data-theme="dark"]) .logout-btn {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    box-shadow: 
+      4px 4px 10px rgba(0, 0, 0, 0.3),
+      -2px -2px 8px rgba(255, 255, 255, 0.05);
+  }
+}
+
+@mixin welcome-styles {
+  .welcome {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 20px;
+    box-shadow: 
+      0 10px 40px -10px rgba(0, 0, 0, 0.1),
+      0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+    animation: fadeInUp 0.5s ease-out 0.1s backwards;
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      padding: 1.2vh 1.5vw;
+      gap: 1.5vw;
+      border-radius: 1.2vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      padding: 1.5vh 2vw;
+      gap: 1.5vw;
+      border-radius: 1vw;
+    }
+
+    @media (min-width: 1920px) {
+      padding: 24px 32px;
+      gap: 28px;
+      border-radius: 24px;
+    }
+
+    &__avatar {
+      flex-shrink: 0;
+      
+      ::ng-deep .avatar {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 28px !important;
+        box-shadow: 
+          0 8px 24px rgba(0, 0, 0, 0.15),
+          0 4px 8px rgba(0, 0, 0, 0.1);
+        border: 2px solid #3b82f6;
+
+        @media (min-width: 768px) and (max-width: 1365px) {
+          width: 6vh !important;
+          height: 6vh !important;
+          font-size: 2vh !important;
+        }
+
+        @media (min-width: 1366px) and (max-width: 1919px) {
+          width: 7vh !important;
+          height: 7vh !important;
+          font-size: 2.5vh !important;
+        }
+
+        @media (min-width: 1920px) {
+          width: 100px !important;
+          height: 100px !important;
+          font-size: 36px !important;
+        }
+      }
+    }
+
+    &__text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__greeting {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 2.5vw;
+        margin-bottom: 0.3vh;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 2vw;
+        margin-bottom: 0.3vh;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 40px;
+      }
+    }
+
+    &__role {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+      font-weight: 500;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 1.2vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 1vw;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 16px;
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .welcome {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+
+    &__greeting { color: #f1f5f9; }
+    &__role { color: #94a3b8; }
+  }
+}
+
+@mixin quick-stats-styles {
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex-shrink: 0;
+    animation: fadeInUp 0.5s ease-out 0.2s backwards;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      gap: 1vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      gap: 1vw;
+    }
+
+    @media (min-width: 1920px) {
+      gap: 20px;
+    }
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.08),
+      0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      padding: 1vh 1vw;
+      gap: 0.8vw;
+      border-radius: 1vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      padding: 1.2vh 1vw;
+      gap: 0.8vw;
+      border-radius: 0.9vw;
+    }
+
+    @media (min-width: 1920px) {
+      padding: 20px;
+      gap: 16px;
+      border-radius: 20px;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 
+        0 12px 30px rgba(0, 0, 0, 0.12),
+        0 4px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    app-icon {
+      flex-shrink: 0;
+      padding: 10px;
+      border-radius: 12px;
+
+      @media (min-width: 768px) and (max-width: 1919px) {
+        padding: 0.6vw;
+        border-radius: 0.6vw;
+      }
+    }
+
+    &--blue app-icon {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    &--green app-icon {
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.15);
+    }
+
+    &--purple app-icon {
+      color: #a855f7;
+      background: rgba(168, 85, 247, 0.15);
+    }
+
+    &--orange app-icon {
+      color: #f97316;
+      background: rgba(249, 115, 22, 0.15);
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    &__value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1.1;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 2vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 1.5vw;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 28px;
+      }
+    }
+
+    &__label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 1vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 0.75vw;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 13px;
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .stat-card {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+
+    &__value { color: #f1f5f9; }
+    &__label { color: #94a3b8; }
+  }
+}
+
+// Mixin para diferentes grids baseado no número de botões
+// MELHORIA UI/UX: Cards quadrados com max-width para não esticar
+@mixin buttons-grid($columns: 5, $rows: 2) {
+  .buttons-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 20px;
+
+    // Mobile: lista vertical compacta
+    @media (max-width: 767px) {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    // Desktop: grid responsivo com auto-fit
+    @media (min-width: 768px) {
+      display: grid;
+      flex-direction: unset;
+      overflow-y: visible;
+      padding: 20px;
+      // Auto-fit para adaptação automática
+      grid-template-columns: repeat(auto-fit, minmax(110px, 120px));
+      gap: 16px;
+      justify-content: center;
+      align-content: start;
+    }
+
+    @media (min-width: 1200px) {
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 140px));
+    }
+
+    @media (min-width: 1600px) {
+      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 160px));
+    }
+  }
+}
+
+@mixin control-btn-styles {
+  .control-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    text-align: center;
+    animation: fadeInUp 0.4s ease-out backwards;
+    
+    // Tamanho fixo quadrado no desktop
+    @media (min-width: 768px) {
+      width: 115px;
+      height: 115px;
+      padding: 10px 6px;
+      gap: 6px;
+    }
+
+    @media (min-width: 1200px) {
+      width: 135px;
+      height: 135px;
+      padding: 12px 8px;
+      gap: 8px;
+    }
+
+    @media (min-width: 1600px) {
+      width: 155px;
+      height: 155px;
+      padding: 14px 10px;
+      gap: 10px;
+    }
+
+    // Mobile: layout horizontal compacto estilo lista
+    @media (max-width: 767px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      text-align: left;
+    }
+
+    @for $i from 1 through 12 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{0.1 + ($i * 0.04)}s;
+      }
+    }
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px);
+      box-shadow: 
+        inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3),
+        0 3px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      // Mobile: ícone para layout horizontal
+      @media (max-width: 767px) {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 11px;
+      }
+
+      @media (min-width: 1200px) {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        border-radius: 10px;
+      }
+
+      @media (min-width: 1600px) {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 12px;
+      }
+
+      app-icon {
+        color: white;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+      }
+    }
+
+    &__title {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      line-height: 1.15;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      max-width: 100%;
+      text-align: center;
+
+      @media (max-width: 767px) {
+        font-size: 15px;
+        font-weight: 600;
+        text-align: left;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 11px;
+      }
+
+      @media (min-width: 1600px) {
+        font-size: 12px;
+      }
+    }
+
+    &__desc {
+      display: block;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.2;
+      max-width: 100%;
+
+      @media (max-width: 767px) {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 9px;
+      }
+
+      @media (min-width: 1600px) {
+        font-size: 10px;
+      }
+    }
+
+    // Container para título e descrição no mobile (layout horizontal)
+    &__text {
+      display: none;
+      
+      @media (max-width: 767px) {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+      }
+    }
+
+    &__badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 100px;
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+      @media (max-width: 767px) {
+        position: static;
+        margin-left: auto;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      @media (min-width: 768px) and (max-width: 1919px) {
+        top: 0.5vh;
+        right: 0.5vw;
+        padding: 0.3vh 0.6vw;
+        font-size: 0.7vw;
+      }
+    }
+
+    // Seta de navegação no mobile
+    &__arrow {
+      display: none;
+      
+      @media (max-width: 767px) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    &:hover {
+      transform: translateY(-4px) scale(1.02);
+
+      @media (max-width: 767px) {
+        transform: translateX(4px);
+      }
+      
+      .control-btn__icon {
+        transform: scale(1.08);
+
+        @media (max-width: 767px) {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(0.98);
+
+      @media (max-width: 767px) {
+        transform: scale(0.98);
+      }
+    }
+
+    &:focus-visible {
+      outline: 3px solid white;
+      outline-offset: 3px;
+    }
+
+    // GREEN
+    &--green {
+      background: linear-gradient(145deg, #4ade80 0%, #22c55e 40%, #16a34a 100%);
+      box-shadow: 
+        0 6px 0 #15803d,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(34, 197, 94, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 
+          0 8px 0 #15803d,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(34, 197, 94, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        box-shadow: 
+          0 3px 0 #15803d,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    // BLUE
+    &--blue {
+      background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #2563eb 100%);
+      box-shadow: 
+        0 6px 0 #1d4ed8,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(59, 130, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 
+          0 8px 0 #1d4ed8,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(59, 130, 246, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        box-shadow: 
+          0 3px 0 #1d4ed8,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    // RED
+    &--red {
+      background: linear-gradient(145deg, #f87171 0%, #ef4444 40%, #dc2626 100%);
+      box-shadow: 
+        0 6px 0 #b91c1c,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(239, 68, 68, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 
+          0 8px 0 #b91c1c,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(239, 68, 68, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        box-shadow: 
+          0 3px 0 #b91c1c,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    // PURPLE
+    &--purple {
+      background: linear-gradient(145deg, #c084fc 0%, #a855f7 40%, #9333ea 100%);
+      box-shadow: 
+        0 6px 0 #7e22ce,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(168, 85, 247, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 
+          0 8px 0 #7e22ce,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(168, 85, 247, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        box-shadow: 
+          0 3px 0 #7e22ce,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    // ORANGE
+    &--orange {
+      background: linear-gradient(145deg, #fb923c 0%, #f97316 40%, #ea580c 100%);
+      box-shadow: 
+        0 6px 0 #c2410c,
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 12px 32px rgba(249, 115, 22, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 
+          0 8px 0 #c2410c,
+          0 12px 24px rgba(0, 0, 0, 0.2),
+          0 16px 40px rgba(249, 115, 22, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        box-shadow: 
+          0 3px 0 #c2410c,
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+
+  // Touch device optimizations
+  @media (hover: none) and (pointer: coarse) {
+    .control-btn {
+      min-height: 200px;
+      
+      &:hover {
+        transform: none;
+        
+        .control-btn__icon {
+          transform: none;
+        }
+      }
+
+      &:active {
+        transform: translateY(-4px) scale(0.98);
+      }
+    }
+
+    .logout-btn {
+      width: 56px;
+      height: 56px;
+    }
+  }
+}
+
+@mixin animations {
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+// ========================================
+// MELHORIA UI/UX: Card decorativo para preencher espaços vazios
+// ========================================
+@mixin branding-card-styles {
+  .branding-card {
+    position: relative;
+    display: none; // Escondido no mobile
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    // Gradiente sutil com cores da marca
+    background: linear-gradient(145deg, 
+      rgba(59, 130, 246, 0.08) 0%, 
+      rgba(139, 92, 246, 0.08) 50%,
+      rgba(236, 72, 153, 0.05) 100%
+    );
+    border: 2px dashed rgba(59, 130, 246, 0.2);
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+
+    // Mostra apenas no desktop
+    @media (min-width: 768px) {
+      display: flex;
+    }
+
+    @media (min-width: 768px) and (max-width: 1365px) {
+      border-radius: 1.2vw;
+      gap: 0.8vw;
+    }
+
+    @media (min-width: 1366px) and (max-width: 1919px) {
+      border-radius: 1vw;
+      gap: 1vw;
+    }
+
+    @media (min-width: 1920px) {
+      border-radius: 28px;
+      gap: 16px;
+    }
+
+    &__logo {
+      width: 60%;
+      max-width: 80px;
+      height: auto;
+      opacity: 0.6;
+      filter: grayscale(20%);
+      transition: all 0.3s ease;
+
+      @media (min-width: 1920px) {
+        max-width: 100px;
+      }
+    }
+
+    &__text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-align: center;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+
+      @media (min-width: 768px) and (max-width: 1365px) {
+        font-size: 0.9vw;
+      }
+
+      @media (min-width: 1366px) and (max-width: 1919px) {
+        font-size: 0.75vw;
+      }
+
+      @media (min-width: 1920px) {
+        font-size: 13px;
+      }
+    }
+
+    &__tagline {
+      font-size: 9px;
+      color: #94a3b8;
+      font-style: italic;
+      text-align: center;
+
+      @media (min-width: 1920px) {
+        font-size: 11px;
+      }
+    }
+
+    // Animação sutil de pulso no hover
+    &:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: linear-gradient(145deg, 
+        rgba(59, 130, 246, 0.12) 0%, 
+        rgba(139, 92, 246, 0.12) 50%,
+        rgba(236, 72, 153, 0.08) 100%
+      );
+
+      .branding-card__logo {
+        opacity: 0.85;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  :host-context([data-theme="dark"]) .branding-card {
+    background: linear-gradient(145deg, 
+      rgba(59, 130, 246, 0.1) 0%, 
+      rgba(139, 92, 246, 0.1) 50%,
+      rgba(236, 72, 153, 0.06) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.25);
+
+    &__text { color: #94a3b8; }
+    &__tagline { color: #64748b; }
+    &__logo { opacity: 0.5; filter: grayscale(30%) brightness(1.2); }
+
+    &:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: linear-gradient(145deg, 
+        rgba(59, 130, 246, 0.15) 0%, 
+        rgba(139, 92, 246, 0.15) 50%,
+        rgba(236, 72, 153, 0.1) 100%
+      );
+    }
+  }
+}
+
+// Mixin completo para aplicar todos os estilos do painel
+@mixin user-panel-styles($gridColumns: 5, $gridRows: 2) {
+  @include panel-base;
+  @include header-styles;
+  @include clock-styles;
+  @include logout-btn-styles;
+  @include welcome-styles;
+  @include quick-stats-styles;
+  @include buttons-grid($gridColumns, $gridRows);
+  @include control-btn-styles;
+  @include branding-card-styles;
+  @include animations;
+}

@@ -1,0 +1,1390 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.appointments-container {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-2xl;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+
+      app-icon {
+        color: #3b82f6;
+        flex-shrink: 0;
+      }
+
+      h1 {
+        font-size: clamp($font-size-2xl, 4vw, $font-size-4xl);
+        font-weight: 800;
+        background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 $spacing-xs 0;
+      }
+
+      .subtitle {
+        color: #64748b;
+        font-size: $font-size-lg;
+        margin: 0;
+      }
+    }
+  }
+
+  .filters-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    
+    @include min-width($breakpoint-tablet) {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    @include max-width(900px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      // Tabs 3D container
+      background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+      overflow-x: auto;
+      flex-wrap: wrap;
+      
+      @include max-width(900px) {
+        justify-content: center;
+      }
+      
+      .tab-btn {
+        padding: 0.6rem 1.25rem;
+        border: none;
+        // Tab 3D
+        background: transparent;
+        border-radius: 10px;
+        color: #64748b;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        @include max-width(900px) {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.875rem;
+        }
+
+        .count-badge {
+          background: linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 100%);
+          padding: 0.2rem 0.6rem;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          color: #64748b;
+          font-weight: 600;
+          transition: all 0.2s;
+        }
+
+        &:hover {
+          color: #3b82f6;
+          background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+
+          .count-badge {
+            background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #2563eb;
+          }
+        }
+
+        &.active {
+          background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+          color: white;
+          box-shadow:
+            0 2px 0 #1d4ed8,
+            0 4px 8px rgba(59, 130, 246, 0.25);
+
+          .count-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+          }
+        }
+      }
+    }
+
+    .search-sort {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      @include max-width(900px) {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .search-wrapper {
+        min-width: 250px;
+        flex: 1;
+
+        @include max-width(900px) {
+          width: 100%;
+          min-width: unset;
+        }
+      }
+
+      .sort-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        // Botão 3D
+        background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        color: #64748b;
+        cursor: pointer;
+        height: 44px;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+        @include max-width(900px) {
+          width: 100%;
+          justify-content: center;
+        }
+
+        &:hover {
+          background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+          color: #3b82f6;
+          transform: translateY(-1px);
+          box-shadow:
+            0 3px 0 rgba(0, 0, 0, 0.02),
+            0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .desktop-only {
+            display: none;
+            @include min-width($breakpoint-tablet) {
+                display: inline;
+            }
+
+            @include max-width(900px) {
+                display: inline;
+            }
+        }
+      }
+    }
+  }
+
+  .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .loading-state, .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #94a3b8;
+    // Inset style
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    border: 2px dashed rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+
+    h3 {
+        margin-top: 1rem;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    app-button {
+        margin-top: 1.5rem;
+    }
+  }
+
+  .appointment-card {
+    // Card 3D
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow:
+      0 4px 0 rgba(0, 0, 0, 0.02),
+      0 8px 20px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+
+    @include min-width($breakpoint-tablet) {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    @include max-width(900px) {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+    }
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow:
+          0 6px 0 rgba(0, 0, 0, 0.02),
+          0 12px 28px rgba(0, 0, 0, 0.1);
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 120px;
+
+        @include max-width(900px) {
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        .date-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            // Badge 3D colorido
+            background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+            
+            .day {
+                font-weight: 800;
+                font-size: 1.25rem;
+                color: #1d4ed8;
+                line-height: 1;
+            }
+
+            .month {
+                font-size: 0.7rem;
+                color: #3b82f6;
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+
+            &.scheduled {
+              background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+              color: #1d4ed8;
+              border: 1px solid rgba(59, 130, 246, 0.2);
+              box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+            }
+            &.confirmed {
+              background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
+              color: #15803d;
+              border: 1px solid rgba(34, 197, 94, 0.2);
+              box-shadow: 0 2px 4px rgba(34, 197, 94, 0.15);
+            }
+            &.completed {
+              background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+              color: #475569;
+              border: 1px solid rgba(0, 0, 0, 0.06);
+            }
+            &.cancelled {
+              background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+              color: #b91c1c;
+              border: 1px solid rgba(239, 68, 68, 0.2);
+              box-shadow: 0 2px 4px rgba(239, 68, 68, 0.15);
+            }
+            &.in_progress {
+              background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
+              color: #92400e;
+              border: 1px solid rgba(245, 158, 11, 0.2);
+              box-shadow: 0 2px 4px rgba(245, 158, 11, 0.15);
+            }
+        }
+    }
+
+    .card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 0;
+        overflow: hidden;
+
+        .professional-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+
+            .avatar-placeholder {
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                // Avatar 3D
+                background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #64748b;
+                overflow: hidden;
+                flex-shrink: 0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+
+            .info-text {
+                min-width: 0;
+                overflow: hidden;
+
+                h3 {
+                    margin: 0;
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: #1e293b;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .specialty {
+                    margin: 0;
+                    font-size: 0.875rem;
+                    color: #64748b;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+            padding-left: calc(44px + 1rem);
+            flex-wrap: wrap;
+
+            @include max-width(900px) {
+              padding-left: 0;
+              gap: 1rem;
+            }
+
+            .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.875rem;
+                color: #64748b;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        @include max-width(900px) {
+          justify-content: stretch;
+          width: 100%;
+          gap: 0.125rem;
+          
+          app-button {
+            flex: 1 1 0;
+            min-width: 0;
+
+            ::ng-deep button {
+              width: 100%;
+              height: 40px;
+              padding: 0.5rem 0;
+              font-size: 0.65rem;
+              white-space: nowrap;
+              letter-spacing: -0.03em;
+            }
+          }
+        }
+
+        .danger-text ::ng-deep button {
+            color: #dc2626;
+            
+            &:hover:not(:disabled) {
+                background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+                color: #b91c1c;
+            }
+        }
+    }
+  }
+}
+
+// === TEMA ESCURO ===
+:host-context([data-theme='dark']) .appointments-container {
+  .header .header-content h1 {
+    background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header .header-content .subtitle {
+    color: #94a3b8;
+  }
+
+  .filters-bar .tabs {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+
+    .tab-btn {
+      color: #94a3b8;
+
+      .count-badge {
+        background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+        color: #94a3b8;
+      }
+
+      &:hover {
+        color: #60a5fa;
+        background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+
+        .count-badge {
+          background: linear-gradient(145deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
+          color: #60a5fa;
+        }
+      }
+
+      &.active {
+        background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+      }
+    }
+  }
+
+  .filters-bar .search-sort .sort-btn {
+    background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+
+    &:hover {
+      background: linear-gradient(145deg, #475569 0%, #334155 100%);
+      color: #60a5fa;
+    }
+  }
+
+  .loading-state, .empty-state {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #64748b;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+
+    h3 {
+      color: #e2e8f0;
+    }
+  }
+
+  .appointment-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 4px 0 rgba(0, 0, 0, 0.1),
+      0 8px 20px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      box-shadow:
+        0 6px 0 rgba(0, 0, 0, 0.1),
+        0 12px 28px rgba(0, 0, 0, 0.3);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .card-header .date-badge {
+      background: linear-gradient(145deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
+      border-color: rgba(59, 130, 246, 0.3);
+      
+      .day {
+        color: #60a5fa;
+      }
+
+      .month {
+        color: #93c5fd;
+      }
+    }
+
+    .card-content .professional-info {
+      .avatar-placeholder {
+        background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+        border-color: rgba(255, 255, 255, 0.06);
+        color: #94a3b8;
+      }
+
+      .info-text h3 {
+        color: #f1f5f9;
+      }
+
+      .info-text .specialty {
+        color: #94a3b8;
+      }
+    }
+
+    .card-content .meta-info .meta-item {
+      color: #94a3b8;
+    }
+  }
+}
+
+// =========================================
+// Header Actions & View Toggle
+// =========================================
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+
+  .toggle-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    &.active {
+      background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+  }
+}
+
+// =========================================
+// Calendar Section
+// =========================================
+.calendar-section {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.calendar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  @include max-width(900px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.calendar-view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 4px;
+  border-radius: 10px;
+
+  .view-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #3b82f6;
+    }
+
+    &.active {
+      background: white;
+      color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .nav-btn {
+    padding: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: white;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: #f1f5f9;
+      color: #3b82f6;
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    &.today-btn {
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.calendar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  text-transform: capitalize;
+
+  @include max-width(900px) {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.calendar-options {
+  margin-left: auto;
+
+  .show-empty-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #3b82f6;
+    }
+  }
+}
+
+// Day View
+.calendar-day-view {
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+
+    .day-name {
+      font-weight: 600;
+      color: #1e293b;
+      text-transform: capitalize;
+    }
+
+    .day-date {
+      color: #64748b;
+    }
+
+    .appointment-count {
+      margin-left: auto;
+      padding: 0.25rem 0.75rem;
+      background: #e2e8f0;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      color: #64748b;
+
+      &.has-appointments {
+        background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+      }
+    }
+  }
+
+  .day-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .time-slot {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+
+    .slot-time {
+      font-weight: 600;
+      color: #3b82f6;
+      min-width: 60px;
+    }
+
+    .slot-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .patient-name {
+        font-weight: 500;
+        color: #1e293b;
+      }
+
+      .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        
+        &.Scheduled { background: #dbeafe; color: #1d4ed8; }
+        &.Confirmed { background: #d1fae5; color: #047857; }
+        &.InProgress { background: #fef3c7; color: #b45309; }
+        &.Completed { background: #e2e8f0; color: #475569; }
+        &.Cancelled { background: #fee2e2; color: #dc2626; }
+      }
+    }
+
+    .slot-empty-label {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    &.slot-filled {
+      border-color: rgba(59, 130, 246, 0.2);
+      cursor: pointer;
+
+      &:hover {
+        background: #f8fafc;
+        transform: translateX(4px);
+      }
+    }
+
+    &.slot-empty {
+      background: #fafafa;
+      border-style: dashed;
+    }
+
+    &.slot-past {
+      opacity: 0.6;
+    }
+  }
+
+  .no-slots {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 3rem;
+    color: #94a3b8;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Week View
+.calendar-week-view {
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+
+    @include max-width(768px) {
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.25rem;
+    }
+  }
+
+  .week-day {
+    .week-day-header {
+      text-align: center;
+      padding: 0.75rem 0.5rem;
+      background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-radius: 10px 10px 0 0;
+
+      .weekday-name {
+        display: block;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+
+      .weekday-number {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      &.is-today {
+        background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+
+        .weekday-name, .weekday-number {
+          color: white;
+        }
+      }
+    }
+
+    .week-day-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f8fafc;
+      }
+
+      .appointment-count-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+      }
+
+      .no-appointments {
+        color: #cbd5e1;
+        font-size: 1.5rem;
+      }
+
+      &.has-appointments {
+        background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
+      }
+    }
+  }
+}
+
+// Month View
+.calendar-month-view {
+  .month-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+
+    .weekday-label {
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+  }
+
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+  }
+
+  .month-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+
+    .day-number {
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .day-count {
+      position: absolute;
+      bottom: 4px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &:hover {
+      background: #f1f5f9;
+      transform: scale(1.05);
+    }
+
+    &.other-month {
+      .day-number {
+        color: #cbd5e1;
+      }
+    }
+
+    &.is-today {
+      background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+      
+      .day-number {
+        color: white;
+      }
+
+      .day-count {
+        background: white;
+        color: #3b82f6;
+      }
+    }
+
+    &.has-appointments:not(.is-today) {
+      background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+  }
+}
+
+// Day Detail Panel
+.day-detail-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px;
+  max-width: 100%;
+  height: 100%;
+  background: white;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  animation: slideInRight 0.2s ease;
+
+  @include max-width(768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-left: none;
+    border-radius: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+    h4 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e293b;
+      text-transform: capitalize;
+    }
+
+    .close-btn {
+      padding: 0.5rem;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #ef4444;
+      }
+    }
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .slot-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    .slot-time {
+      font-weight: 600;
+      color: #3b82f6;
+      min-width: 50px;
+      font-size: 0.875rem;
+    }
+
+    .slot-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .patient-name {
+        font-weight: 500;
+        color: #1e293b;
+        font-size: 0.875rem;
+      }
+
+      .status-mini {
+        font-size: 0.7rem;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+        width: fit-content;
+        
+        &.Scheduled { background: #dbeafe; color: #1d4ed8; }
+        &.Confirmed { background: #d1fae5; color: #047857; }
+        &.InProgress { background: #fef3c7; color: #b45309; }
+        &.Completed { background: #e2e8f0; color: #475569; }
+        &.Cancelled { background: #fee2e2; color: #dc2626; }
+      }
+    }
+
+    .slot-available {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+
+    &.slot-filled {
+      background: white;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      cursor: pointer;
+
+      &:hover {
+        background: #eff6ff;
+      }
+    }
+
+    &.slot-empty {
+      border: 1px dashed #e2e8f0;
+      background: transparent;
+    }
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Dark Theme for Calendar
+:host-context([data-theme='dark']) {
+  .view-toggle {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+
+    .toggle-btn {
+      color: #94a3b8;
+
+      &:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.15);
+      }
+
+      &.active {
+        background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+      }
+    }
+  }
+
+  .calendar-section {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .calendar-controls {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .calendar-view-toggle {
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+
+    .view-btn {
+      color: #94a3b8;
+
+      &.active {
+        background: #334155;
+        color: #60a5fa;
+      }
+    }
+  }
+
+  .calendar-nav .nav-btn {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+
+    &:hover {
+      background: #334155;
+      color: #60a5fa;
+    }
+  }
+
+  .calendar-title {
+    color: #f1f5f9;
+  }
+
+  .calendar-options .show-empty-toggle {
+    color: #94a3b8;
+  }
+
+  .calendar-day-view {
+    .day-header {
+      background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+
+      .day-name { color: #f1f5f9; }
+      .day-date { color: #94a3b8; }
+
+      .appointment-count {
+        background: #334155;
+        color: #94a3b8;
+
+        &.has-appointments {
+          background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+          color: white;
+        }
+      }
+    }
+
+    .time-slot {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.06);
+
+      .slot-content .patient-name {
+        color: #f1f5f9;
+      }
+
+      .slot-empty-label {
+        color: #64748b;
+      }
+
+      &.slot-filled:hover {
+        background: #334155;
+      }
+
+      &.slot-empty {
+        background: #0f172a;
+      }
+    }
+
+    .no-slots {
+      color: #64748b;
+    }
+  }
+
+  .calendar-week-view {
+    .week-day-header {
+      background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+
+      .weekday-name { color: #64748b; }
+      .weekday-number { color: #f1f5f9; }
+    }
+
+    .week-day-content {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.06);
+
+      &:hover {
+        background: #334155;
+      }
+
+      .no-appointments {
+        color: #475569;
+      }
+
+      &.has-appointments {
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+      }
+    }
+  }
+
+  .calendar-month-view {
+    .weekday-label {
+      color: #64748b;
+    }
+
+    .month-day {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.04);
+
+      .day-number {
+        color: #f1f5f9;
+      }
+
+      &:hover {
+        background: #334155;
+      }
+
+      &.other-month .day-number {
+        color: #475569;
+      }
+
+      &.has-appointments:not(.is-today) {
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+      }
+    }
+  }
+
+  .day-detail-panel {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.08);
+
+    .panel-header {
+      border-color: rgba(255, 255, 255, 0.06);
+
+      h4 { color: #f1f5f9; }
+
+      .close-btn {
+        color: #94a3b8;
+
+        &:hover {
+          background: #334155;
+        }
+      }
+    }
+
+    .slot-item {
+      background: #0f172a;
+
+      .slot-info .patient-name {
+        color: #f1f5f9;
+      }
+
+      .slot-available {
+        color: #64748b;
+      }
+
+      &.slot-filled {
+        background: #1e293b;
+        border-color: rgba(59, 130, 246, 0.2);
+
+        &:hover {
+          background: #334155;
+        }
+      }
+
+      &.slot-empty {
+        border-color: #334155;
+      }
+    }
+  }
+}

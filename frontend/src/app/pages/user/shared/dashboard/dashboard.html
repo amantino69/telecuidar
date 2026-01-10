@@ -1,0 +1,524 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <div class="dashboard__header-content">
+      <app-icon name="home" [size]="32" />
+      <div>
+        <h1 class="dashboard__title">Painel</h1>
+        <p class="dashboard__subtitle">Bem-vindo de volta, {{ user?.name }}!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Card for All Users -->
+  <div class="dashboard__profile-card">
+    <div class="profile-card">
+      <div class="profile-card__content">
+        <app-avatar 
+          [name]="(user?.name || '') + ' ' + (user?.lastName || '')" 
+          [imageUrl]="user?.avatar"
+          size="xl"
+        />
+        <div class="profile-card__info">
+          <div>
+            <h2 class="profile-card__name">{{ user?.name }} {{ user?.lastName }}</h2>
+            <p class="profile-card__email">{{ user?.email }}</p>
+          </div>
+          <div class="profile-card__meta">
+            <div class="profile-card__meta-item">
+              <app-icon name="calendar" [size]="16" />
+              <span>Membro desde {{ user?.memberSince }}</span>
+            </div>
+            <div class="profile-card__meta-item">
+              <app-icon name="clock" [size]="16" />
+              <span>Último login: {{ user?.lastLogin }}</span>
+            </div>
+          </div>
+          <app-badge [variant]="getRoleBadgeVariant()" [label]="getRoleLabel()" size="sm" />
+        </div>
+      </div>
+      <div class="profile-card__actions">
+        <button class="profile-card__button" (click)="goToProfile()">
+          <app-icon name="user" [size]="18" />
+          <span>Ver Perfil</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isAdmin()) {
+    <div class="dashboard__stats">
+      <h2 class="dashboard__section-title">Estatísticas da Plataforma</h2>
+      <div class="dashboard__stats-grid">
+        <app-stat-card
+          title="Total de Usuários"
+          [value]="stats?.totalUsers || 0"
+          icon="users"
+          [trend]="stats?.usersTrend?.direction"
+          [trendValue]="stats?.usersTrend?.value"
+          description="Usuários registrados"
+        />
+
+        <app-stat-card
+          title="Consultas Agendadas"
+          [value]="stats?.appointmentsScheduled || 0"
+          icon="calendar"
+          [trend]="stats?.appointmentsTrend?.direction"
+          [trendValue]="stats?.appointmentsTrend?.value"
+          description="Próximos 7 dias"
+        />
+
+        <app-stat-card
+          title="Taxa de Ocupação"
+          value="A implementar"
+          icon="activity"
+          description="Média semanal"
+        />
+
+        <app-stat-card
+          title="Avaliação Média"
+          value="A implementar"
+          icon="check-circle"
+          description="Satisfação dos pacientes"
+        />
+      </div>
+    </div>
+
+    <div class="dashboard__overview">
+      <h2 class="dashboard__section-title">Visão Geral</h2>
+      <div class="dashboard__overview-grid">
+        <div class="overview-card">
+          <div class="overview-card__header">
+            <h3 class="overview-card__title">Profissionais Ativos</h3>
+            <app-icon name="users" [size]="20" />
+          </div>
+          <div class="overview-card__value">{{ stats?.activeProfessionals || 0 }}</div>
+          <p class="overview-card__description">Profissionais disponíveis hoje</p>
+        </div>
+
+        <div class="overview-card">
+          <div class="overview-card__header">
+            <h3 class="overview-card__title">Pacientes Ativos</h3>
+            <app-icon name="user" [size]="20" />
+          </div>
+          <div class="overview-card__value">{{ stats?.activePatients || 0 }}</div>
+          <p class="overview-card__description">Pacientes com consultas ativas</p>
+        </div>
+
+        <div class="overview-card">
+          <div class="overview-card__header">
+            <h3 class="overview-card__title">Consultas Hoje</h3>
+            <app-icon name="video" [size]="20" />
+          </div>
+          <div class="overview-card__value">{{ stats?.todayAppointments || 0 }}</div>
+          <p class="overview-card__description">Consultas agendadas para hoje</p>
+        </div>
+
+        <div class="overview-card">
+          <div class="overview-card__header">
+            <h3 class="overview-card__title">Tempo Médio</h3>
+            <app-icon name="clock" [size]="20" />
+          </div>
+          <div class="overview-card__value">{{ stats?.averageConsultationTime || 0 }}min</div>
+          <p class="overview-card__description">Duração média das consultas</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard__charts">
+      <h2 class="dashboard__section-title">Análise do Sistema</h2>
+      <div class="dashboard__charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-card__title">Status de Agendamentos</h3>
+          <div class="chart-container chart-container--doughnut">
+            <canvas #appointmentsChart></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-card">
+          <h3 class="chart-card__title">Usuários por Perfil</h3>
+          <div class="chart-container chart-container--doughnut">
+            <canvas #usersChart></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-card chart-card--full">
+          <h3 class="chart-card__title">Evolução de Consultas (Últimos 6 meses)</h3>
+          <div class="chart-container chart-container--line">
+            <canvas #monthlyChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else if (isProfessional()) {
+    <div class="dashboard__content-grid">
+      <!-- Card: Próximas Consultas (Novo) -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Próximas Consultas</h3>
+          <app-icon name="calendar" [size]="20" />
+        </div>
+        
+        @if (nextAppointments.length > 0) {
+          <div class="appointment-list">
+            @for (appt of nextAppointments; track appt.id) {
+              <div class="appointment-item appointment-item--with-actions">
+                <div class="appointment-item__main">
+                  <div class="appointment-item__date">
+                    <span class="day">{{ appt.date | date:'dd' }}</span>
+                    <span class="month">{{ appt.date | date:'MMM':'':'pt-BR' }}</span>
+                  </div>
+                  <div class="appointment-card__time">
+                    <span class="time">{{ appt.time }}</span>
+                    <h4 class="name">{{ appt.patientName }}</h4>
+                    <span class="specialty">{{ appt.specialtyName }}</span>
+                  </div>
+                </div>
+                
+                <div class="appointment-item__actions">
+                  <app-button 
+                    variant="outline" 
+                    size="sm" 
+                    [fullWidth]="true"
+                    [routerLink]="['/consultas']" 
+                    [queryParams]="{id: appt.id}">
+                    Ver Detalhes
+                  </app-button>
+                  @if (appt.status === 'Scheduled' || appt.status === 'Confirmed' || appt.status === 'InProgress') {
+                    <app-button 
+                      variant="primary" 
+                      size="sm" 
+                      [fullWidth]="true"
+                      [routerLink]="['/teleconsulta', appt.id]">
+                      <app-icon name="video" [size]="16" />
+                      Entrar
+                    </app-button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma consulta agendada.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Bloqueios de Agenda -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Solicitações de Bloqueio</h3>
+          <app-icon name="clock" [size]="20" />
+        </div>
+        
+        @if (scheduleBlocks.length > 0) {
+          <div class="appointment-list">
+            @for (block of scheduleBlocks; track block.id) {
+              <div class="appointment-item">
+                <div class="appointment-item__date">
+                  @if (block.type === 'single') {
+                    <span class="day">{{ block.date | date:'dd' }}</span>
+                    <span class="month">{{ block.date | date:'MMM' }}</span>
+                  } @else {
+                    <span class="day">{{ block.startDate | date:'dd' }}</span>
+                    <span class="month">{{ block.startDate | date:'MMM' }}</span>
+                  }
+                </div>
+                <div class="appointment-item__info">
+                  <h4 class="name">{{ block.reason }}</h4>
+                  <span class="specialty">
+                    @if (block.type === 'single') {
+                      Dia Único
+                    } @else {
+                      {{ block.startDate | date:'dd/MM' }} até {{ block.endDate | date:'dd/MM' }}
+                    }
+                  </span>
+                </div>
+                <app-badge 
+                  [variant]="block.status === 'aprovada' ? 'success' : (block.status === 'pendente' ? 'warning' : 'error')" 
+                  [label]="getStatusLabel(block.status)" 
+                  size="sm" 
+                />
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma solicitação de bloqueio recente.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Notificações -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Notificações</h3>
+          <app-icon name="bell" [size]="20" />
+        </div>
+        
+        @if (notifications.length > 0) {
+          <div class="appointment-list">
+            @for (notification of notifications; track notification.id) {
+              <div class="appointment-item">
+                <div class="appointment-item__date">
+                   <app-icon [name]="notification.type === 'Error' ? 'alert-circle' : 'check-circle'" [size]="24" />
+                </div>
+                <div class="appointment-item__info">
+                  <h4 class="name">{{ notification.title }}</h4>
+                  <span class="specialty">{{ notification.message }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma notificação recente.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Acesso Rápido -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Acesso Rápido</h3>
+          <app-icon name="activity" [size]="20" />
+        </div>
+        
+        <div class="shortcuts-grid">
+          <app-button 
+            variant="primary" 
+            [fullWidth]="true"
+            [routerLink]="['/consultas']">
+            Minhas Consultas
+          </app-button>
+          
+          <app-button 
+            variant="outline" 
+            [fullWidth]="true"
+            [routerLink]="['/bloqueios-agenda']">
+            Minhas solicitações de bloqueio
+          </app-button>
+        </div>
+      </div>
+    </div>
+  } @else if (isAssistant()) {
+    <div class="dashboard__content-grid">
+      <!-- Card: Próximas Consultas -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Próximas Consultas</h3>
+          <app-icon name="calendar" [size]="20" />
+        </div>
+        
+        @if (nextAppointments.length > 0) {
+          <div class="appointment-list">
+            @for (appt of nextAppointments; track appt.id) {
+              <div class="appointment-item appointment-item--with-actions">
+                <div class="appointment-item__main">
+                  <div class="appointment-item__date">
+                    <span class="day">{{ appt.date | date:'dd' }}</span>
+                    <span class="month">{{ appt.date | date:'MMM':'':'pt-BR' }}</span>
+                  </div>
+                  <div class="appointment-card__time">
+                    <span class="time">{{ appt.time }}</span>
+                    <h4 class="name">{{ appt.patientName }}</h4>
+                    <span class="specialty">{{ appt.specialtyName }}</span>
+                  </div>
+                </div>
+                
+                <div class="appointment-item__actions">
+                  <app-button 
+                    variant="outline" 
+                    size="sm" 
+                    [fullWidth]="true"
+                    [routerLink]="['/consultorio-digital']" 
+                    [queryParams]="{id: appt.id}">
+                    Ver Detalhes
+                  </app-button>
+                  @if (appt.status === 'Scheduled' || appt.status === 'Confirmed' || appt.status === 'InProgress') {
+                    <app-button 
+                      variant="primary" 
+                      size="sm" 
+                      [fullWidth]="true"
+                      [routerLink]="['/teleconsulta', appt.id]">
+                      <app-icon name="video" [size]="16" />
+                      Entrar
+                    </app-button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma consulta agendada.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Notificações -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Notificações</h3>
+          <app-icon name="bell" [size]="20" />
+        </div>
+        
+        @if (notifications.length > 0) {
+          <div class="appointment-list">
+            @for (notification of notifications; track notification.id) {
+              <div class="appointment-item">
+                <div class="appointment-item__date">
+                   <app-icon [name]="notification.type === 'Error' ? 'alert-circle' : 'check-circle'" [size]="24" />
+                </div>
+                <div class="appointment-item__info">
+                  <h4 class="name">{{ notification.title }}</h4>
+                  <span class="specialty">{{ notification.message }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma notificação recente.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Acesso Rápido -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Acesso Rápido</h3>
+          <app-icon name="activity" [size]="20" />
+        </div>
+        
+        <div class="shortcuts-grid">
+          <app-button 
+            variant="primary" 
+            [fullWidth]="true"
+            [routerLink]="['/consultorio-digital']">
+            <app-icon name="monitor" [size]="16" />
+            Consultório Digital
+          </app-button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="dashboard__content-grid">
+      <!-- Card: Próximas Consultas -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Próximas Consultas</h3>
+          <app-icon name="calendar" [size]="20" />
+        </div>
+        
+        @if (nextAppointments.length > 0) {
+          <div class="appointment-list">
+            @for (appt of nextAppointments; track appt.id) {
+              <div class="appointment-item appointment-item--with-actions">
+                <div class="appointment-item__main">
+                  <div class="appointment-item__date">
+                    <span class="day">{{ appt.date | date:'dd' }}</span>
+                    <span class="month">{{ appt.date | date:'MMM':'':'pt-BR' }}</span>
+                  </div>
+                  <div class="appointment-card__time">
+                    <span class="time">{{ appt.time }}</span>
+                    <h4 class="name">
+                      {{ isPatient() ? appt.professionalName : appt.patientName }}
+                    </h4>
+                    <span class="specialty">{{ appt.specialtyName }}</span>
+                  </div>
+                </div>
+                
+                <div class="appointment-item__actions">
+                  <app-button 
+                    variant="outline" 
+                    size="sm" 
+                    [fullWidth]="true"
+                    [routerLink]="['/consultas']" 
+                    [queryParams]="{id: appt.id}">
+                    Ver Detalhes
+                  </app-button>
+                  @if (appt.status === 'Scheduled' || appt.status === 'Confirmed' || appt.status === 'InProgress') {
+                    <app-button 
+                      variant="primary" 
+                      size="sm" 
+                      [fullWidth]="true"
+                      [routerLink]="['/teleconsulta', appt.id]">
+                      <app-icon name="video" [size]="16" />
+                      Entrar
+                    </app-button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma consulta agendada.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Notificações -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Notificações</h3>
+          <app-icon name="bell" [size]="20" />
+        </div>
+        
+        @if (notifications.length > 0) {
+          <div class="appointment-list">
+            @for (notification of notifications; track notification.id) {
+              <div class="appointment-item">
+                <div class="appointment-item__date">
+                   <app-icon [name]="notification.type === 'Error' ? 'alert-circle' : 'check-circle'" [size]="24" />
+                </div>
+                <div class="appointment-item__info">
+                  <h4 class="name">{{ notification.title }}</h4>
+                  <span class="specialty">{{ notification.message }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Nenhuma notificação recente.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Card: Acesso Rápido -->
+      <div class="content-card">
+        <div class="content-card__header">
+          <h3 class="content-card__title">Acesso Rápido</h3>
+          <app-icon name="activity" [size]="20" />
+        </div>
+        
+        <div class="shortcuts-grid">
+          <app-button 
+            variant="primary" 
+            [fullWidth]="true"
+            [routerLink]="['/consultas']">
+            Minhas Consultas
+          </app-button>
+          
+          @if (isPatient()) {
+            <app-button 
+              variant="outline" 
+              [fullWidth]="true"
+              [routerLink]="['/agendar']">
+              Agendar Nova Consulta
+            </app-button>
+          } @else if (isProfessional()) {
+            <app-button 
+              variant="outline" 
+              [fullWidth]="true"
+              [routerLink]="['/bloqueios-agenda']">
+              Meus Bloqueios de Agenda
+            </app-button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

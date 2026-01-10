@@ -1,0 +1,16 @@
+<div 
+  class="table-header__content"
+  [class.table-header__content--sortable]="sortable"
+  [class.table-header__content--active]="isActive"
+  (click)="onHeaderClick()"
+>
+  <span class="table-header__label">{{ label }}</span>
+  @if (sortable) {
+    <app-icon 
+      [name]="sortIcon" 
+      [size]="16" 
+      class="table-header__icon"
+      [class.table-header__icon--active]="isActive"
+    />
+  }
+</div>

@@ -1,0 +1,56 @@
+<div class="cropper">
+  <div class="cropper__header">
+    <h3 class="cropper__title">Ajustar Imagem</h3>
+    <p class="cropper__subtitle">Arraste e redimensione a área de seleção</p>
+  </div>
+
+  <div class="cropper__canvas-container">
+    <canvas 
+      #canvas
+      (mousedown)="onMouseDown($event)"
+      (mousemove)="onMouseMove($event)"
+      (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()"
+      (wheel)="onMouseWheel($event)"
+    ></canvas>
+  </div>
+
+  <div class="cropper__controls">
+    <div class="cropper__zoom">
+      <button 
+        type="button"
+        class="cropper__control-btn"
+        (click)="onZoomOut()"
+        [disabled]="scale <= minScale"
+        aria-label="Diminuir zoom"
+      >
+        <app-icon name="minus" [size]="20" />
+      </button>
+      <span class="cropper__zoom-value">{{ (scale * 100) | number:'1.0-0' }}%</span>
+      <button 
+        type="button"
+        class="cropper__control-btn"
+        (click)="onZoomIn()"
+        [disabled]="scale >= maxScale"
+        aria-label="Aumentar zoom"
+      >
+        <app-icon name="plus" [size]="20" />
+      </button>
+    </div>
+
+    <div class="cropper__actions">
+      <app-button
+        variant="outline"
+        (click)="onCancel()"
+      >
+        Cancelar
+      </app-button>
+      <app-button
+        variant="primary"
+        (click)="onConfirm()"
+      >
+        Confirmar
+      </app-button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,444 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: var(--surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Header
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  app-icon {
+    color: var(--primary-500);
+  }
+  
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: background 0.2s, color 0.2s;
+  
+  &:hover {
+    background: var(--background);
+    color: var(--text-primary);
+  }
+}
+
+// Body
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// Loading
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary-500);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.75rem;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Mode Selector
+.mode-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  background: var(--background);
+  border-radius: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+  }
+  
+  &.active {
+    background: var(--surface);
+    color: var(--primary-600);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Error Message
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--error-50);
+  border: 1px solid var(--error-200);
+  border-radius: 8px;
+  color: var(--error-700);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+// Mode Content
+.mode-content {
+  animation: fadeIn 0.2s ease;
+}
+
+// Form Group
+.form-group {
+  margin-bottom: 1rem;
+  
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    
+    input {
+      flex: 1;
+      padding-right: 2.5rem;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      background: none;
+      border: none;
+      padding: 0.25rem;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      
+      &:hover:not(:disabled) {
+        color: var(--text-primary);
+      }
+      
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+  }
+  
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--surface);
+    transition: border-color 0.2s;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(var(--primary-500-rgb), 0.1);
+    }
+    
+    &:disabled {
+      background: var(--background);
+      cursor: not-allowed;
+    }
+  }
+  
+  &--switch {
+    .switch-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      
+      input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .switch-toggle {
+        position: relative;
+        width: 40px;
+        height: 22px;
+        background: var(--neutral-400);
+        border-radius: 11px;
+        transition: background 0.2s;
+        flex-shrink: 0;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 18px;
+          height: 18px;
+          background: var(--surface);
+          border-radius: 50%;
+          transition: transform 0.2s;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+      }
+      
+      input:checked + .switch-toggle {
+        background: var(--primary-500);
+        
+        &::after {
+          transform: translateX(18px);
+        }
+      }
+    }
+  }
+}
+
+// Certificates List
+.certificates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.certificate-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  
+  &:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+  }
+  
+  &.selected {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+  }
+  
+  input[type="radio"] {
+    accent-color: var(--primary-500);
+  }
+  
+  .certificate-info {
+    flex: 1;
+    
+    strong {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+    }
+    
+    span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
+    .expiry {
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+// File Input
+.file-input-wrapper {
+  margin-bottom: 0.5rem;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  
+  &:hover {
+    border-color: var(--primary-400);
+    background: var(--primary-50);
+  }
+  
+  app-icon {
+    color: var(--text-tertiary);
+  }
+}
+
+// Hint Text
+.hint-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+  
+  app-icon {
+    color: var(--text-tertiary);
+  }
+}
+
+// Validation Success
+.validation-success {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--success-50);
+  border: 1px solid var(--success-200);
+  border-radius: 8px;
+  color: var(--success-700);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+// Empty Notice
+.empty-notice {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  
+  p {
+    margin: 0.25rem 0;
+  }
+}
+
+// Footer
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--background);
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .mode-selector {
+    flex-direction: column;
+  }
+  
+  .modal-footer {
+    flex-direction: column-reverse;
+    
+    app-button {
+      width: 100%;
+    }
+  }
+}

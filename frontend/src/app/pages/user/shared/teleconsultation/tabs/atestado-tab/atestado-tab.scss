@@ -1,0 +1,556 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.atestado-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px;
+    color: var(--text-secondary);
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .atestado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    background-color: var(--background);
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+
+    app-icon {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      max-width: 300px;
+    }
+  }
+
+  // Formulário
+  .certificate-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+
+    h4 {
+      margin: 0 0 $spacing-lg 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .form-row {
+      margin-bottom: $spacing-md;
+
+      &.two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: $spacing-md;
+
+        @include mobile {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+
+      label {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        color: var(--text-secondary);
+      }
+
+      input, select, textarea {
+        padding: $spacing-sm $spacing-md;
+        border: 1px solid var(--border);
+        border-radius: $radius-md;
+        font-size: $font-size-base;
+        font-family: $font-primary;
+        background: var(--surface);
+        color: var(--text-primary);
+        transition: border-color $transition-fast;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-500);
+        }
+
+        &::placeholder {
+          color: var(--text-secondary);
+          opacity: 0.7;
+        }
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: $spacing-md;
+      margin-top: $spacing-lg;
+      padding-top: $spacing-lg;
+      border-top: 1px solid var(--border);
+    }
+  }
+
+  // Lista de atestados
+  .certificates-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  .certificate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    overflow: hidden;
+    transition: box-shadow $transition-fast;
+
+    &:hover {
+      box-shadow: $shadow-md;
+    }
+
+    &.signed {
+      border-color: var(--green-300);
+      background: linear-gradient(to right, var(--green-50) 0%, var(--surface) 100%);
+    }
+
+    .certificate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: $spacing-md;
+      background: var(--background);
+      border-bottom: 1px solid var(--border);
+
+      .certificate-type {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        font-weight: $font-weight-semibold;
+        color: var(--text-primary);
+      }
+
+      .signed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background-color: var(--green-100);
+        color: var(--green-700);
+        border-radius: 20px;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+      }
+    }
+
+    .certificate-content {
+      padding: $spacing-md;
+
+      .certificate-text {
+        margin: 0 0 $spacing-md 0;
+        color: var(--text-primary);
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+
+      .certificate-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm $spacing-lg;
+        padding: $spacing-sm;
+        background: var(--background);
+        border-radius: $radius-md;
+        margin-bottom: $spacing-sm;
+
+        .detail {
+          font-size: $font-size-sm;
+          color: var(--text-secondary);
+
+          strong {
+            color: var(--text-primary);
+          }
+        }
+      }
+
+      .certificate-obs {
+        margin: 0;
+        font-size: $font-size-sm;
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+    }
+
+    .certificate-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: $spacing-sm $spacing-md;
+      background: var(--background);
+      border-top: 1px solid var(--border);
+
+      .certificate-date {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        font-size: $font-size-sm;
+        color: var(--text-secondary);
+      }
+
+      .certificate-actions {
+        display: flex;
+        gap: $spacing-xs;
+
+        .action-btn {
+          display: flex;
+          align-items: center;
+          gap: $spacing-xs;
+          padding: $spacing-xs $spacing-sm;
+          border: none;
+          border-radius: $radius-sm;
+          background: transparent;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all $transition-fast;
+          font-size: $font-size-sm;
+
+          &:hover {
+            background: var(--neutral-100);
+          }
+
+          &.edit:hover {
+            color: var(--primary-600);
+          }
+
+          &.delete:hover {
+            color: var(--red-600);
+          }
+
+          &.pdf:hover {
+            color: var(--blue-600);
+          }
+
+          &.pdf.signed {
+            background: var(--green-50);
+            color: var(--green-600);
+            font-weight: $font-weight-medium;
+
+            &:hover {
+              background: var(--green-100);
+              color: var(--green-700);
+            }
+          }
+
+          &.sign {
+            background: var(--primary-50);
+            color: var(--primary-600);
+            font-weight: $font-weight-medium;
+
+            &:hover {
+              background: var(--primary-100);
+            }
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Modais
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $spacing-lg;
+}
+
+.modal-content {
+  background: var(--surface);
+  border-radius: $radius-lg;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: $shadow-xl;
+
+  &.small {
+    max-width: 400px;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-md $spacing-lg;
+    border-bottom: 1px solid var(--border);
+
+    h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: $radius-full;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        background: var(--neutral-100);
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $spacing-lg;
+
+    .modal-description {
+      margin: 0 0 $spacing-lg 0;
+      color: var(--text-secondary);
+    }
+
+    .file-name {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      margin: 0 0 $spacing-md 0;
+      padding: $spacing-sm;
+      background: var(--background);
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+
+      label {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        color: var(--text-secondary);
+      }
+
+      input {
+        padding: $spacing-sm $spacing-md;
+        border: 1px solid var(--border);
+        border-radius: $radius-md;
+        font-size: $font-size-base;
+        background: var(--surface);
+        color: var(--text-primary);
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-500);
+        }
+      }
+    }
+
+    .signature-options {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-lg;
+
+      .option-section {
+        h5 {
+          margin: 0 0 $spacing-sm 0;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-semibold;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .saved-certs-list {
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-sm;
+
+          .saved-cert-btn {
+            display: flex;
+            align-items: center;
+            gap: $spacing-md;
+            padding: $spacing-md;
+            border: 1px solid var(--border);
+            border-radius: $radius-md;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all $transition-fast;
+            text-align: left;
+
+            &:hover {
+              border-color: var(--primary-300);
+              background: var(--primary-50);
+            }
+
+            app-icon {
+              color: var(--green-500);
+            }
+
+            .cert-info {
+              display: flex;
+              flex-direction: column;
+              gap: 2px;
+
+              .cert-name {
+                font-weight: $font-weight-medium;
+                color: var(--text-primary);
+              }
+
+              .cert-subject {
+                font-size: $font-size-sm;
+                color: var(--text-secondary);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    border-top: 1px solid var(--border);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Info de assinatura digital
+.signature-info {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, var(--green-50), var(--success-50, #ecfdf5));
+  border: 1px solid var(--green-200);
+  border-radius: $radius-md;
+  margin-top: $spacing-md;
+
+  app-icon {
+    color: var(--green-600);
+    flex-shrink: 0;
+  }
+
+  .signature-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      color: var(--green-700);
+      font-size: $font-size-sm;
+    }
+
+    p {
+      margin: 0;
+      font-size: $font-size-sm;
+      color: var(--text-secondary);
+
+      &.hash {
+        font-family: monospace;
+        font-size: $font-size-xs;
+        color: var(--text-tertiary);
+        word-break: break-all;
+      }
+    }
+  }
+}

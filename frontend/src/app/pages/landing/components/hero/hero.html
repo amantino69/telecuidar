@@ -1,0 +1,56 @@
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero__content">
+      <div class="hero__text">
+        <h1 class="hero__title">
+          Revolucionando o Atendimento de Saúde com
+          <span class="hero__title--gradient">Tecnologia</span> e
+          <span class="hero__title--gradient">Humanização</span>
+        </h1>
+
+        <p class="hero__description">
+          Plataforma moderna de telesaúde pública que combina IA, IoT (Internet das Coisas) e cuidado humano para levar 
+          atendimento médico especializado a todos os cantos do Brasil.
+        </p>
+
+        <div class="hero__buttons">
+          <app-button variant="primary" size="lg" (click)="scrollToSection('solution')">
+            Conheça Nossa Solução
+            <app-icon name="arrow-right" [size]="20"></app-icon>
+          </app-button>
+          <app-button variant="outline" size="lg" (click)="scrollToSection('contact')">
+            Fale Conosco
+          </app-button>
+        </div>
+
+        <div class="hero__stats">
+          @for (stat of stats; track stat.label) {
+            <app-stat-card
+              [value]="stat.value"
+              [label]="stat.label"
+              [color]="stat.color"
+            ></app-stat-card>
+          }
+        </div>
+
+        <div class="hero__badges">
+          <app-badge variant="primary">100% DIGITAL</app-badge>
+          <app-badge variant="info">24/7 DISPONÍVEL</app-badge>
+          <app-badge variant="success">IA + IoT</app-badge>
+          <app-badge variant="error">ADERÊNCIA À LGPD</app-badge>
+        </div>
+      </div>
+
+      <div class="hero__visual">
+        <div class="hero__image">
+          <img 
+            src="images/landing/hero-telemedicine.jpg" 
+            alt="Médico realizando atendimento de telemedicina" 
+            class="hero__img"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,250 @@
+// ========================================
+// DESIGN TOKENS - TeleCuidar
+// ========================================
+
+// Breakpoints
+$breakpoint-mobile: 320px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop-hd: 1366px;
+$breakpoint-desktop-full-hd: 1920px;
+
+// Spacing Scale
+$spacing-xs: 0.25rem;    // 4px
+$spacing-sm: 0.5rem;     // 8px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+$spacing-3xl: 4rem;      // 64px
+$spacing-4xl: 6rem;      // 96px
+
+// Font Families
+$font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+$font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+$font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+// Font Sizes
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+$font-size-4xl: 2.25rem;   // 36px
+$font-size-5xl: 3rem;      // 48px
+$font-size-6xl: 3.75rem;   // 60px
+
+// Font Weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+// Line Heights
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// Border Radius
+$radius-xs: 0.125rem;   // 2px
+$radius-sm: 0.25rem;    // 4px
+$radius-md: 0.5rem;     // 8px
+$radius-lg: 0.75rem;    // 12px
+$radius-xl: 1rem;       // 16px
+$radius-2xl: 1.5rem;    // 24px
+$radius-full: 9999px;
+
+// Border Radius Aliases
+$border-radius-sm: $radius-sm;
+$border-radius-md: $radius-md;
+$border-radius-lg: $radius-lg;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+// Z-Index Scale
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 2000;
+$z-index-modal: 2010;
+$z-index-popover: 2020;
+$z-index-tooltip: 2030;
+
+// Transitions
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ========================================
+// THEME COLORS - Light Mode
+// ========================================
+$light-primary-50: #f0f9ff;
+$light-primary-100: #e0f2fe;
+$light-primary-200: #bae6fd;
+$light-primary-300: #7dd3fc;
+$light-primary-400: #38bdf8;
+$light-primary-500: #0ea5e9;
+$light-primary-600: #0284c7;
+$light-primary-700: #0369a1;
+$light-primary-800: #075985;
+$light-primary-900: #0c4a6e;
+
+// Secondary Colors - Red
+$light-red-50: #fef2f2;
+$light-red-100: #fee2e2;
+$light-red-200: #fecaca;
+$light-red-300: #fca5a5;
+$light-red-400: #f87171;
+$light-red-500: #ef4444;
+$light-red-600: #dc2626;
+$light-red-700: #b91c1c;
+$light-red-800: #991b1b;
+$light-red-900: #7f1d1d;
+
+// Secondary Colors - Green
+$light-green-50: #f0fdf4;
+$light-green-100: #dcfce7;
+$light-green-200: #bbf7d0;
+$light-green-300: #86efac;
+$light-green-400: #4ade80;
+$light-green-500: #22c55e;
+$light-green-600: #16a34a;
+$light-green-700: #15803d;
+$light-green-800: #166534;
+$light-green-900: #14532d;
+
+// Secondary Colors - Blue
+$light-blue-50: #eff6ff;
+$light-blue-100: #dbeafe;
+$light-blue-200: #bfdbfe;
+$light-blue-300: #93c5fd;
+$light-blue-400: #60a5fa;
+$light-blue-500: #3b82f6;
+$light-blue-600: #2563eb;
+$light-blue-700: #1d4ed8;
+$light-blue-800: #1e40af;
+$light-blue-900: #1e3a8a;
+
+// Secondary Colors - Amber
+$light-amber-50: #fffbeb;
+$light-amber-100: #fef3c7;
+$light-amber-200: #fde68a;
+$light-amber-300: #fcd34d;
+$light-amber-400: #fbbf24;
+$light-amber-500: #f59e0b;
+$light-amber-600: #d97706;
+$light-amber-700: #b45309;
+$light-amber-800: #92400e;
+$light-amber-900: #78350f;
+
+// Neutral Colors - Light
+$light-neutral-50: #fafafa;
+$light-neutral-100: #f5f5f5;
+$light-neutral-200: #e5e5e5;
+$light-neutral-300: #d4d4d4;
+$light-neutral-400: #a3a3a3;
+$light-neutral-500: #737373;
+$light-neutral-600: #525252;
+$light-neutral-700: #404040;
+$light-neutral-800: #262626;
+$light-neutral-900: #171717;
+
+$light-background: #fefefe;
+$light-surface: #ffffff;
+$light-text-primary: #0a0a0a;
+$light-text-secondary: #525252;
+$light-border: #e5e5e5;
+
+// ========================================
+// THEME COLORS - Dark Mode
+// ========================================
+$dark-primary-50: #0c4a6e;
+$dark-primary-100: #075985;
+$dark-primary-200: #0369a1;
+$dark-primary-300: #0284c7;
+$dark-primary-400: #0ea5e9;
+$dark-primary-500: #38bdf8;
+$dark-primary-600: #7dd3fc;
+$dark-primary-700: #bae6fd;
+$dark-primary-800: #e0f2fe;
+$dark-primary-900: #f0f9ff;
+
+// Secondary Colors - Red (Dark)
+$dark-red-50: #7f1d1d;
+$dark-red-100: #991b1b;
+$dark-red-200: #b91c1c;
+$dark-red-300: #dc2626;
+$dark-red-400: #ef4444;
+$dark-red-500: #f87171;
+$dark-red-600: #fca5a5;
+$dark-red-700: #fecaca;
+$dark-red-800: #fee2e2;
+$dark-red-900: #fef2f2;
+
+// Secondary Colors - Green (Dark)
+$dark-green-50: #14532d;
+$dark-green-100: #166534;
+$dark-green-200: #15803d;
+$dark-green-300: #16a34a;
+$dark-green-400: #22c55e;
+$dark-green-500: #4ade80;
+$dark-green-600: #86efac;
+$dark-green-700: #bbf7d0;
+$dark-green-800: #dcfce7;
+$dark-green-900: #f0fdf4;
+
+// Secondary Colors - Blue (Dark)
+$dark-blue-50: #1e3a8a;
+$dark-blue-100: #1e40af;
+$dark-blue-200: #1d4ed8;
+$dark-blue-300: #2563eb;
+$dark-blue-400: #3b82f6;
+$dark-blue-500: #60a5fa;
+$dark-blue-600: #93c5fd;
+$dark-blue-700: #bfdbfe;
+$dark-blue-800: #dbeafe;
+$dark-blue-900: #eff6ff;
+
+// Secondary Colors - Amber (Dark)
+$dark-amber-50: #78350f;
+$dark-amber-100: #92400e;
+$dark-amber-200: #b45309;
+$dark-amber-300: #d97706;
+$dark-amber-400: #f59e0b;
+$dark-amber-500: #fbbf24;
+$dark-amber-600: #fcd34d;
+$dark-amber-700: #fde68a;
+$dark-amber-800: #fef3c7;
+$dark-amber-900: #fffbeb;
+
+// Neutral Colors - Dark
+$dark-neutral-50: #171717;
+$dark-neutral-100: #262626;
+$dark-neutral-200: #404040;
+$dark-neutral-300: #525252;
+$dark-neutral-400: #737373;
+$dark-neutral-500: #a3a3a3;
+$dark-neutral-600: #d4d4d4;
+$dark-neutral-700: #e5e5e5;
+$dark-neutral-800: #f5f5f5;
+$dark-neutral-900: #fafafa;
+
+$dark-background: #1a1a1a;
+$dark-surface: #242424;
+$dark-text-primary: #f5f5f5;
+$dark-text-secondary: #a3a3a3;
+$dark-border: #404040;
+
+// Amber RGBA
+$light-amber-400-rgba-10: rgba(251, 191, 36, 0.1);
+$light-amber-400-rgba-20: rgba(251, 191, 36, 0.2);
+$light-amber-400-rgba-30: rgba(251, 191, 36, 0.3);
+$light-amber-400-rgba-50: rgba(251, 191, 36, 0.5);

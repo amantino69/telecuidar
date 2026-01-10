@@ -1,0 +1,416 @@
+<div class="my-schedule-container">
+  <div class="header">
+    <div class="header-content">
+      <app-icon name="clock" [size]="32" />
+      <div>
+        <h1>Minha Agenda</h1>
+        <p class="subtitle">Visualize a configuração atual da sua agenda de atendimentos</p>
+      </div>
+    </div>
+    
+    <!-- View Mode Toggle -->
+    @if (schedules && schedules.length > 0) {
+      <div class="view-toggle">
+        <button 
+          class="toggle-btn" 
+          [class.active]="viewMode === 'config'"
+          (click)="setViewMode('config')">
+          <app-icon name="settings" [size]="18" />
+          Configuração
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="viewMode === 'week'"
+          (click)="setViewMode('week')">
+          <app-icon name="calendar" [size]="18" />
+          Semana
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="viewMode === 'month'"
+          (click)="setViewMode('month')">
+          <app-icon name="calendar" [size]="18" />
+          Mês
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <p>Carregando agenda...</p>
+    </div>
+  } @else if (schedules && schedules.length > 0) {
+    <!-- Configuration View -->
+    @if (viewMode === 'config') {
+      <div class="schedule-content">
+        @for (schedule of schedules; track schedule.id) {
+          <div class="section-card">
+            <div class="schedule-header-section">
+              <div>
+                <h3 class="section-title">Configuração de Agenda</h3>
+                <p class="schedule-subtitle">Dias de trabalho: {{ schedule.daysConfig | scheduleDays }}</p>
+              </div>
+              <span class="schedule-badge" [class.schedule-badge--active]="isScheduleActive(schedule)">
+                {{ isScheduleActive(schedule) ? 'Ativa' : 'Inativa' }}
+              </span>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Configuração Global</span>
+                <span class="value">{{ schedule.globalConfig.timeRange.startTime }} - {{ schedule.globalConfig.timeRange.endTime }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Duração da Consulta</span>
+                <span class="value">{{ schedule.globalConfig.consultationDuration }} minutos</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Intervalo entre Consultas</span>
+                <span class="value">{{ schedule.globalConfig.intervalBetweenConsultations }} minutos</span>
+              </div>
+              @if (schedule.globalConfig.breakTime) {
+                <div class="info-item">
+                  <span class="label">Horário de Pausa</span>
+                  <span class="value">{{ schedule.globalConfig.breakTime.startTime }} - {{ schedule.globalConfig.breakTime.endTime }}</span>
+                </div>
+              }
+              <div class="info-item">
+                <span class="label">Validade</span>
+                <span class="value">
+                  {{ schedule.validityStartDate | date: 'dd/MM/yyyy' }}
+                  @if (schedule.validityEndDate) {
+                    - {{ schedule.validityEndDate | date: 'dd/MM/yyyy' }}
+                  }
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="label">Criado em</span>
+                <span class="value">{{ schedule.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+
+            @if (hasCustomizedDays(schedule)) {
+              <div class="customized-days-section">
+                <h4 class="subsection-title">Dias com Configurações Personalizadas</h4>
+                <div class="days-list">
+                  @for (dayDetail of getWorkingDaysWithDetails(schedule); track dayDetail.day) {
+                    @if (dayDetail.isCustomized) {
+                      <div class="day-item">
+                        <div class="day-header">
+                          <h5 class="day-title">{{ dayDetail.day }}</h5>
+                          <span class="day-badge">Personalizado</span>
+                        </div>
+                        <div class="day-info">
+                          <div class="info-row">
+                            <span class="label">Horário:</span>
+                            <span class="value">{{ dayDetail.timeRange.startTime }} - {{ dayDetail.timeRange.endTime }}</span>
+                          </div>
+                          <div class="info-row">
+                            <span class="label">Duração:</span>
+                            <span class="value">{{ dayDetail.consultationDuration }} min</span>
+                          </div>
+                          <div class="info-row">
+                            <span class="label">Intervalo:</span>
+                            <span class="value">{{ dayDetail.intervalBetweenConsultations }} min</span>
+                          </div>
+                          @if (dayDetail.breakTime) {
+                            <div class="info-row">
+                              <span class="label">Pausa:</span>
+                              <span class="value">{{ dayDetail.breakTime.startTime }} - {{ dayDetail.breakTime.endTime }}</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="all-days-section">
+              <h4 class="subsection-title">Todos os Dias de Trabalho</h4>
+              <div class="days-list">
+                @for (dayDetail of getWorkingDaysWithDetails(schedule); track dayDetail.day) {
+                  <div class="day-item" [class.day-item--customized]="dayDetail.isCustomized">
+                    <div class="day-header">
+                      <h5 class="day-title">{{ dayDetail.day }}</h5>
+                      @if (dayDetail.isCustomized) {
+                        <span class="day-badge day-badge--custom">Personalizado</span>
+                      } @else {
+                        <span class="day-badge day-badge--global">Padrão</span>
+                      }
+                    </div>
+                    <div class="day-info">
+                      <div class="info-row">
+                        <span class="label">Horário:</span>
+                        <span class="value">{{ dayDetail.timeRange.startTime }} - {{ dayDetail.timeRange.endTime }}</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">Duração da Consulta:</span>
+                        <span class="value">{{ dayDetail.consultationDuration }} min</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">Intervalo entre Consultas:</span>
+                        <span class="value">{{ dayDetail.intervalBetweenConsultations }} min</span>
+                      </div>
+                      @if (dayDetail.breakTime) {
+                        <div class="info-row">
+                          <span class="label">Horário de Pausa:</span>
+                          <span class="value">{{ dayDetail.breakTime.startTime }} - {{ dayDetail.breakTime.endTime }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Week View -->
+    @if (viewMode === 'week') {
+      <div class="calendar-view">
+        <div class="calendar-header">
+          <div class="calendar-nav-group">
+            <div class="calendar-nav month-nav">
+              <app-button variant="ghost" size="sm" (click)="changeWeekMonth(-1)" title="Mês anterior">
+                <app-icon name="arrow-left" [size]="14" /><app-icon name="arrow-left" [size]="14" />
+              </app-button>
+            </div>
+            <div class="calendar-nav">
+              <app-button variant="ghost" size="sm" (click)="changeWeek(-1)" title="Semana anterior">
+                <app-icon name="arrow-left" [size]="16" />
+              </app-button>
+              <app-button variant="ghost" size="sm" (click)="goToToday()">
+                Hoje
+              </app-button>
+              <app-button variant="ghost" size="sm" (click)="changeWeek(1)" title="Próxima semana">
+                <app-icon name="arrow-right" [size]="16" />
+              </app-button>
+            </div>
+            <div class="calendar-nav month-nav">
+              <app-button variant="ghost" size="sm" (click)="changeWeekMonth(1)" title="Próximo mês">
+                <app-icon name="arrow-right" [size]="14" /><app-icon name="arrow-right" [size]="14" />
+              </app-button>
+            </div>
+          </div>
+          <h3 class="calendar-title">{{ getWeekRangeDisplay() }}</h3>
+          <div class="calendar-legend">
+            <span class="legend-item legend-available"><span class="dot"></span> Disponível</span>
+            <span class="legend-item legend-scheduled"><span class="dot"></span> Agendado</span>
+            <span class="legend-item legend-break"><span class="dot"></span> Intervalo</span>
+          </div>
+        </div>
+
+        @if (isLoadingAppointments) {
+          <div class="calendar-loading">
+            <p>Carregando consultas...</p>
+          </div>
+        } @else {
+          <div class="week-grid">
+            <!-- Day headers -->
+            @for (day of calendarDays; track day.date) {
+              <div class="day-column" [class.day-column--today]="day.isToday" [class.day-column--off]="!day.isWorkingDay">
+                <div class="day-header-calendar">
+                  <span class="day-name">{{ day.dayName }}</span>
+                  <span class="day-number-calendar" [class.today]="day.isToday">{{ day.dayNumber }}</span>
+                </div>
+
+                <div class="time-slots-container">
+                  @if (!day.isWorkingDay) {
+                    <div class="day-off-message">
+                      <app-icon name="x-circle" [size]="24" />
+                      <span>Dia de folga</span>
+                    </div>
+                  } @else {
+                    @for (slot of day.timeSlots; track slot.time) {
+                      <div 
+                        class="time-slot"
+                        [class.time-slot--break]="slot.isBreak"
+                        [class.time-slot--past]="slot.isPast"
+                        [class.time-slot--scheduled]="slot.appointment"
+                        [class.time-slot--available]="!slot.isBreak && !slot.appointment && !slot.isPast"
+                        [class.time-slot--clickable]="slot.appointment"
+                        (click)="onSlotClick(slot, $event)">
+                        <span class="slot-time">{{ slot.time }}</span>
+                        @if (slot.isBreak) {
+                          <span class="slot-label">Intervalo</span>
+                        } @else if (slot.appointment) {
+                          <div class="appointment-info">
+                            <span class="patient-name">{{ slot.appointment.patientName }}</span>
+                            <span class="status-badge" [class]="getAppointmentStatusClass(slot.appointment.status)">
+                              {{ getAppointmentStatusLabel(slot.appointment.status) }}
+                            </span>
+                          </div>
+                        } @else if (!slot.isPast) {
+                          <span class="slot-label available">Disponível</span>
+                        } @else {
+                          <span class="slot-label past">--</span>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+
+                <!-- Day Footer Stats -->
+                @if (day.isWorkingDay) {
+                  <div class="day-footer">
+                    <div class="day-stat">
+                      <span class="stat-value">{{ day.stats.total }}</span>
+                      <span class="stat-label">Total</span>
+                    </div>
+                    <div class="day-stat day-stat--available">
+                      <span class="stat-value">{{ day.stats.available }}</span>
+                      <span class="stat-label">Livres</span>
+                    </div>
+                    <div class="day-stat day-stat--scheduled">
+                      <span class="stat-value">{{ day.stats.scheduled }}</span>
+                      <span class="stat-label">Agend.</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Week Summary Footer -->
+          <div class="week-summary">
+            <div class="summary-item">
+              <app-icon name="calendar" [size]="20" />
+              <span class="summary-value">{{ getWeekTotalSlots() }}</span>
+              <span class="summary-label">Vagas Totais</span>
+            </div>
+            <div class="summary-item summary-item--available">
+              <app-icon name="check-circle" [size]="20" />
+              <span class="summary-value">{{ getWeekAvailableSlots() }}</span>
+              <span class="summary-label">Vagas Livres</span>
+            </div>
+            <div class="summary-item summary-item--scheduled">
+              <app-icon name="user" [size]="20" />
+              <span class="summary-value">{{ getWeekScheduledSlots() }}</span>
+              <span class="summary-label">Agendadas</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Month View -->
+    @if (viewMode === 'month') {
+      <div class="calendar-view month-view">
+        <div class="calendar-header">
+          <div class="calendar-nav">
+            <app-button variant="ghost" size="sm" (click)="changeMonth(-1)">
+              <app-icon name="arrow-left" [size]="16" />
+            </app-button>
+            <app-button variant="ghost" size="sm" (click)="goToCurrentMonth()">
+              Hoje
+            </app-button>
+            <app-button variant="ghost" size="sm" (click)="changeMonth(1)">
+              <app-icon name="arrow-right" [size]="16" />
+            </app-button>
+          </div>
+          <h3 class="calendar-title month-title">{{ getMonthYearDisplay() }}</h3>
+          <div class="calendar-legend">
+            <span class="legend-item legend-available"><span class="dot"></span> Dia de trabalho</span>
+            <span class="legend-item legend-scheduled"><span class="dot"></span> Com consultas</span>
+          </div>
+        </div>
+
+        @if (isLoadingAppointments) {
+          <div class="calendar-loading">
+            <p>Carregando consultas...</p>
+          </div>
+        } @else {
+          <div class="month-calendar">
+            <div class="month-header">
+              @for (dayName of weekDayNames; track dayName) {
+                <div class="month-weekday">{{ dayName }}</div>
+              }
+            </div>
+            <div class="month-grid">
+              @for (day of monthDays; track day.date) {
+                <div 
+                  class="month-day"
+                  [class.month-day--today]="day.isToday"
+                  [class.month-day--other-month]="!day.isCurrentMonth"
+                  [class.month-day--working]="day.isWorkingDay && day.isCurrentMonth && (day.isFuture || day.isToday)"
+                  [class.month-day--has-appointments]="day.appointmentsCount > 0"
+                  [class.month-day--selected]="selectedDay?.date?.getTime() === day.date.getTime()"
+                  (click)="selectDay(day)">
+                  <span class="month-day-number">{{ day.dayNumber }}</span>
+                  @if (day.isCurrentMonth && day.isWorkingDay) {
+                    <div class="month-day-stats">
+                      @if (day.stats.scheduled > 0) {
+                        <span class="mini-stat scheduled">{{ day.stats.scheduled }}</span>
+                      }
+                      @if (day.stats.available > 0 && (day.isFuture || day.isToday)) {
+                        <span class="mini-stat available">{{ day.stats.available }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Selected Day Details -->
+          @if (selectedDay) {
+            <div class="selected-day-panel">
+              <div class="selected-day-header">
+                <h4>{{ selectedDay.date | date:'fullDate':'':'pt-BR' }}</h4>
+                <button class="close-btn" (click)="selectedDay = null">
+                  <app-icon name="close" [size]="20" />
+                </button>
+              </div>
+              
+              @if (!selectedDay.isWorkingDay) {
+                <div class="selected-day-off">
+                  <app-icon name="x-circle" [size]="32" />
+                  <p>Este não é um dia de trabalho</p>
+                </div>
+              } @else {
+                <div class="selected-day-slots">
+                  @for (slot of getSelectedDayTimeSlots(); track slot.time) {
+                    <div 
+                      class="time-slot"
+                      [class.time-slot--break]="slot.isBreak"
+                      [class.time-slot--past]="slot.isPast"
+                      [class.time-slot--scheduled]="slot.appointment"
+                      [class.time-slot--available]="!slot.isBreak && !slot.appointment && !slot.isPast"
+                      [class.time-slot--clickable]="slot.appointment"
+                      (click)="onSlotClick(slot, $event)">
+                      <span class="slot-time">{{ slot.time }}</span>
+                      @if (slot.isBreak) {
+                        <span class="slot-label">Intervalo</span>
+                      } @else if (slot.appointment) {
+                        <div class="appointment-info">
+                          <span class="patient-name">{{ slot.appointment.patientName }}</span>
+                          <span class="status-badge" [class]="getAppointmentStatusClass(slot.appointment.status)">
+                            {{ getAppointmentStatusLabel(slot.appointment.status) }}
+                          </span>
+                        </div>
+                      } @else if (!slot.isPast) {
+                        <span class="slot-label available">Disponível</span>
+                      } @else {
+                        <span class="slot-label past">--</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  } @else {
+    <div class="empty-state">
+      <h3>Nenhuma agenda encontrada</h3>
+      <p>Você ainda não possui uma agenda configurada. Entre em contato com o administrador.</p>
+    </div>
+  }
+</div>

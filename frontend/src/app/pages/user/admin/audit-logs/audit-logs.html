@@ -1,0 +1,172 @@
+<div class="audit-logs">
+  <div class="audit-logs__header">
+    <div class="audit-logs__header-content">
+      <app-icon name="activity" [size]="32" />
+      <div>
+        <h1 class="audit-logs__title">Logs de Auditoria</h1>
+        <p class="audit-logs__subtitle">Histórico de ações realizadas no sistema</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="audit-logs__export-btn"
+      (click)="onExportPDF()"
+      [disabled]="isLoading"
+    >
+      <app-icon name="download" [size]="20" />
+      Exportar PDF
+    </button>
+  </div>
+
+  <div class="audit-logs__filters">
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onFilterChange()"
+      (search)="onSearch($event)"
+      placeholder="Buscar por usuário, descrição, IP..."
+      icon="search"
+    />
+
+    <app-filter-select
+      [(ngModel)]="selectedAction"
+      (change)="onFilterChange()"
+      [options]="actionOptions"
+    />
+
+    <app-filter-select
+      [(ngModel)]="selectedEntityType"
+      (change)="onFilterChange()"
+      [options]="entityTypeOptions"
+    />
+  </div>
+
+  @if (isLoading) {
+    <div class="audit-logs__loading">
+      <p>Carregando logs...</p>
+    </div>
+  } @else {
+    <div class="audit-logs__table-wrapper">
+      <table class="audit-logs-table">
+        <thead class="audit-logs-table__head">
+          <tr>
+            <th class="audit-logs-table__header audit-logs-table__header--sortable">
+              <app-table-header
+                label="DATA/HORA"
+                field="createdAt"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="audit-logs-table__header audit-logs-table__header--sortable">
+              <app-table-header
+                label="USUÁRIO"
+                field="userName"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="audit-logs-table__header audit-logs-table__header--sortable">
+              <app-table-header
+                label="AÇÃO"
+                field="action"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="audit-logs-table__header audit-logs-table__header--sortable">
+              <app-table-header
+                label="TIPO"
+                field="entityType"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="audit-logs-table__header">DESCRIÇÃO</th>
+            <th class="audit-logs-table__header">IP</th>
+            <th class="audit-logs-table__header audit-logs-table__header--actions">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody class="audit-logs-table__body">
+          @if (logs.length === 0) {
+            <tr>
+              <td colspan="7" class="audit-logs-table__cell audit-logs__empty-cell">
+                <div class="audit-logs__empty">
+                  <app-icon name="activity" [size]="48" />
+                  <p>Nenhum log encontrado</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (log of logs; track log.id) {
+            <tr class="audit-logs-table__row">
+              <td class="audit-logs-table__cell">
+                <div class="audit-logs__timestamp">
+                  <span class="audit-logs__date">{{ log.createdAt | date:'dd/MM/yyyy' }}</span>
+                  <span class="audit-logs__time">{{ log.createdAt | date:'HH:mm:ss' }}</span>
+                </div>
+              </td>
+              <td class="audit-logs-table__cell">
+                <div class="audit-logs__user-info">
+                  <span class="audit-logs__user-name">{{ log.userName || 'Sistema' }}</span>
+                  @if (log.userRole) {
+                    <span class="audit-logs__user-email">{{ log.userRole | userRole }}</span>
+                  }
+                </div>
+              </td>
+              <td class="audit-logs-table__cell">
+                <app-badge
+                  [variant]="getActionBadgeVariant(log.action)"
+                  [label]="getActionLabel(log.action)"
+                  size="sm"
+                />
+              </td>
+              <td class="audit-logs-table__cell">{{ getEntityTypeLabel(log.entityType) }}</td>
+              <td class="audit-logs-table__cell">{{ getLogDescription(log) }}</td>
+              <td class="audit-logs-table__cell">
+                <code class="audit-logs__ip">{{ log.ipAddress || 'N/A' }}</code>
+              </td>
+              <td class="audit-logs-table__cell audit-logs-table__cell--actions">
+                <div class="audit-logs__actions">
+                  <button
+                    type="button"
+                    class="audit-logs__action-btn"
+                    (click)="viewDetails(log)"
+                    title="Ver detalhes"
+                  >
+                    <app-icon name="eye" [size]="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>
+
+<!-- Modal de Detalhes -->
+@if (selectedLog) {
+  <app-audit-log-detail-modal
+    [log]="selectedLog"
+    (close)="closeModal()"
+  />
+}

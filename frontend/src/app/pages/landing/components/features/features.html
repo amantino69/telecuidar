@@ -1,0 +1,39 @@
+<section class="features" id="features">
+  <div class="container">
+    <div class="features__header">
+      <h2 class="features__title">Funcionalidades Principais</h2>
+      <p class="features__subtitle">
+        Tudo que você precisa para um atendimento de saúde moderno e eficiente
+      </p>
+    </div>
+
+    <div class="features__grid">
+      @for (feature of patientFeatures; track feature.title) {
+        <app-feature-card
+          [icon]="feature.icon"
+          [title]="feature.title"
+          [description]="feature.description"
+          [color]="feature.color"
+          [clickable]="true"
+          (cardClick)="openModal(feature)"
+        ></app-feature-card>
+      }
+      @for (feature of professionalFeatures; track feature.title) {
+        <app-feature-card
+          [icon]="feature.icon"
+          [title]="feature.title"
+          [description]="feature.description"
+          [color]="feature.color"
+          [clickable]="true"
+          (cardClick)="openModal(feature)"
+        ></app-feature-card>
+      }
+    </div>
+  </div>
+</section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

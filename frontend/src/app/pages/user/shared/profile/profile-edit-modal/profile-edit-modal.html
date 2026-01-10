@@ -1,0 +1,148 @@
+@if (isOpen && user) {
+  <div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__header-content">
+          <app-icon name="edit" [size]="24" />
+          <h2 class="modal__title">Editar Perfil</h2>
+        </div>
+        <button
+          type="button"
+          class="modal__close"
+          (click)="onCancel()"
+          aria-label="Fechar"
+        >
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="modal__avatar-section">
+          <app-avatar-upload
+            [name]="(editedUser.name || '') + ' ' + (editedUser.lastName || '')"
+            [currentAvatar]="editedUser.avatar"
+            [userId]="user.id"
+            (avatarChange)="onAvatarChange($event)"
+          />
+        </div>
+
+        <form class="user-form">
+          <div class="user-form__row">
+            <div class="user-form__field">
+              <label for="profile-name" class="user-form__label">Nome</label>
+              <input
+                id="profile-name"
+                type="text"
+                class="user-form__input"
+                [(ngModel)]="editedUser.name"
+                name="name"
+                placeholder="Digite o nome"
+                required
+              />
+            </div>
+
+            <div class="user-form__field">
+              <label for="profile-lastname" class="user-form__label">Sobrenome</label>
+              <input
+                id="profile-lastname"
+                type="text"
+                class="user-form__input"
+                [(ngModel)]="editedUser.lastName"
+                name="lastName"
+                placeholder="Digite o sobrenome"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="user-form__field">
+            <label for="profile-email" class="user-form__label">
+              E-mail
+              <span class="user-form__label-hint">(não editável)</span>
+            </label>
+            <div class="user-form__readonly-field">
+              <input
+                id="profile-email"
+                type="email"
+                class="user-form__input user-form__input--readonly"
+                [value]="editedUser.email"
+                name="email"
+                readonly
+                disabled
+              />
+              <app-button
+                [variant]="'outline'"
+                [size]="'sm'"
+                (click)="onChangeEmail()"
+                class="user-form__change-btn"
+              >
+                <app-icon name="edit" [size]="14" />
+                Alterar
+              </app-button>
+            </div>
+          </div>
+
+          <div class="user-form__row">
+            <div class="user-form__field">
+              <label for="profile-cpf" class="user-form__label">
+                CPF
+                <span class="user-form__label-hint">(não editável)</span>
+              </label>
+              <input
+                id="profile-cpf"
+                type="text"
+                class="user-form__input user-form__input--readonly"
+                [value]="editedUser.cpf"
+                name="cpf"
+                readonly
+                disabled
+              />
+            </div>
+
+            <div class="user-form__field">
+              <label for="profile-phone" class="user-form__label">Telefone</label>
+              <input
+                id="profile-phone"
+                type="tel"
+                class="user-form__input"
+                [(ngModel)]="editedUser.phone"
+                name="phone"
+                placeholder="(00) 00000-0000"
+                appPhoneMask
+                required
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal__footer">
+        <div class="modal__footer-left">
+          <app-button
+            [variant]="'outline'"
+            (click)="onChangePassword()"
+          >
+            <app-icon name="shield" [size]="18" />
+            Trocar Senha
+          </app-button>
+        </div>
+        <div class="modal__footer-right">
+          <app-button
+            [variant]="'outline'"
+            (click)="onCancel()"
+          >
+            Cancelar
+          </app-button>
+          <app-button
+            [variant]="'primary'"
+            (click)="onSave()"
+            [disabled]="!isFormValid()"
+          >
+            <app-icon name="check" [size]="18" />
+            Salvar Alterações
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

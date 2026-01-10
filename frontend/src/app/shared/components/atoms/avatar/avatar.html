@@ -1,0 +1,14 @@
+<div class="avatar" [ngClass]="sizeClass">
+  @if (imageUrl && !imageLoadError) {
+    <img 
+      [src]="imageUrl" 
+      [alt]="name"
+      class="avatar__image"
+      (error)="onImageError()"
+    />
+  } @else {
+    <div class="avatar__initials">
+      {{ initials }}
+    </div>
+  }
+</div>

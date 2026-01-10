@@ -1,0 +1,62 @@
+<div class="phonocardiogram-tab">
+  <div class="tab-header">
+    <div class="tab-header__title">
+      <app-icon name="headphones" [size]="24"></app-icon>
+      <h3>Fonocardiograma</h3>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stethoscope-visual">
+      <div class="stethoscope-icon">
+        <app-icon name="headphones" [size]="64"></app-icon>
+      </div>
+      <p class="instruction">
+        Conecte um estetoscópio digital para capturar sons cardíacos e pulmonares.
+      </p>
+    </div>
+
+    <div class="recording-controls">
+      @if (!isRecording) {
+        <button 
+          class="btn btn--primary btn--lg"
+          (click)="startRecording()"
+          [disabled]="readonly">
+          <app-icon name="mic" [size]="20"></app-icon>
+          Iniciar Captura
+        </button>
+      } @else {
+        <div class="recording-active">
+          <div class="recording-indicator">
+            <span class="recording-dot"></span>
+            <span>Gravando...</span>
+            <span class="recording-time">{{ formatDuration(recordingDuration) }}</span>
+          </div>
+          <button 
+            class="btn btn--danger btn--lg"
+            (click)="stopRecording()">
+            <app-icon name="square" [size]="20"></app-icon>
+            Parar Captura
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="waveform-placeholder">
+      <div class="waveform-bars">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+          <div class="waveform-bar" [class.active]="isRecording"></div>
+        }
+      </div>
+      <p class="waveform-label">Visualização do áudio</p>
+    </div>
+
+    <div class="info-box">
+      <app-icon name="alert-circle" [size]="20"></app-icon>
+      <p>
+        O fonocardiograma permite a captura e análise de sons cardíacos (S1, S2, sopros) 
+        e pulmonares em tempo real durante a teleconsulta.
+      </p>
+    </div>
+  </div>
+</div>

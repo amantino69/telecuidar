@@ -1,0 +1,27 @@
+@if (isOpen) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Adicionar via Celular</h2>
+        <button type="button" class="close-btn" (click)="onClose()">
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <p class="instruction">Escaneie o QR Code abaixo com a câmera do seu celular para enviar arquivos ou tirar uma foto.</p>
+        
+        <div class="qr-code-wrapper">
+          <canvas #qrCanvas></canvas>
+        </div>
+
+        <div class="actions">
+          <app-button variant="outline" size="sm" type="button" (click)="onRegenerate()">
+            <app-icon name="refresh-cw" [size]="16" />
+            Gerar Novo Código
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

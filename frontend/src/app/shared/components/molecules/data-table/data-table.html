@@ -1,0 +1,55 @@
+<div class="data-table">
+  @if (loading) {
+    <div class="data-table__loading">
+      <p>Carregando...</p>
+    </div>
+  } @else if (data.length === 0) {
+    <div class="data-table__empty">
+      <p>{{ emptyMessage }}</p>
+    </div>
+  } @else {
+    <div class="data-table__wrapper">
+      <table class="data-table__table">
+        <ng-container *ngTemplateOutlet="headerTemplate || defaultHeader"></ng-container>
+        <ng-container *ngTemplateOutlet="rowTemplate || defaultRow"></ng-container>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Template padrão para header (se não fornecido) -->
+<ng-template #defaultHeader>
+  <thead class="data-table__head">
+    <tr>
+      @for (column of columns; track column.field) {
+        <th 
+          class="data-table__header"
+          [style.width]="column.width"
+          [class.data-table__header--center]="column.align === 'center'"
+          [class.data-table__header--right]="column.align === 'right'"
+        >
+          {{ column.label }}
+        </th>
+      }
+    </tr>
+  </thead>
+</ng-template>
+
+<!-- Template padrão para linhas (se não fornecido) -->
+<ng-template #defaultRow>
+  <tbody class="data-table__body">
+    @for (item of data; track trackByFn($index, item)) {
+      <tr class="data-table__row">
+        @for (column of columns; track column.field) {
+          <td 
+            class="data-table__cell"
+            [class.data-table__cell--center]="column.align === 'center'"
+            [class.data-table__cell--right]="column.align === 'right'"
+          >
+            {{ item[column.field] }}
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</ng-template>

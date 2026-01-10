@@ -1,0 +1,296 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-header__title-section">
+        <app-icon name="activity" [size]="32" class="modal-header__icon" />
+        <div>
+          <h2 class="modal-header__title">Detalhes do Log de Auditoria</h2>
+          <p class="modal-header__subtitle">Informações completas da ação registrada</p>
+        </div>
+      </div>
+      <app-button
+        variant="ghost"
+        size="sm"
+        (click)="onClose()"
+        class="modal-header__close"
+      >
+        <app-icon name="close" [size]="24" />
+      </app-button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <!-- Informações Principais -->
+      <section class="modal-section">
+        <h3 class="modal-section__title">
+          <app-icon name="file" [size]="20" />
+          Informações Principais
+        </h3>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label class="modal-field__label">ID do Log</label>
+            <div class="modal-field__value modal-field__value--code">
+              <code>{{ log().id }}</code>
+              <button 
+                type="button"
+                class="modal-field__copy"
+                (click)="copyToClipboard(log().id)"
+                title="Copiar ID"
+              >
+                <app-icon name="file" [size]="16" />
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-field__label">Data e Hora</label>
+            <div class="modal-field__value">
+              <app-icon name="calendar" [size]="16" />
+              {{ log().createdAt | date:'dd/MM/yyyy \'às\' HH:mm:ss' }}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-field__label">Ação Realizada</label>
+            <div class="modal-field__value">
+              <app-badge
+                [variant]="getActionBadgeVariant(log().action)"
+                [label]="getActionLabel(log().action)"
+              />
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-field__label">Tipo de Entidade</label>
+            <div class="modal-field__value modal-field__value--highlight">
+              {{ getEntityTypeLabel(log().entityType) }}
+            </div>
+          </div>
+
+          <div class="modal-field modal-field--full">
+            <label class="modal-field__label">ID da Entidade</label>
+            <div class="modal-field__value modal-field__value--code">
+              <code>{{ log().entityId }}</code>
+              <button 
+                type="button"
+                class="modal-field__copy"
+                (click)="copyToClipboard(log().entityId)"
+                title="Copiar ID"
+              >
+                <app-icon name="file" [size]="16" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Informações do Usuário que Realizou a Ação -->
+      <section class="modal-section">
+        <h3 class="modal-section__title">
+          <app-icon name="user" [size]="20" />
+          Usuário que Realizou a Ação
+        </h3>
+        <div class="modal-grid">
+          @if (log().userId) {
+            <div class="modal-field">
+              <label class="modal-field__label">ID do Usuário</label>
+              <div class="modal-field__value modal-field__value--code">
+                <code>{{ log().userId }}</code>
+                <button 
+                  type="button"
+                  class="modal-field__copy"
+                  (click)="copyToClipboard(log().userId!)"
+                  title="Copiar ID"
+                >
+                  <app-icon name="file" [size]="16" />
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="modal-field">
+            <label class="modal-field__label">Nome do Usuário</label>
+            <div class="modal-field__value modal-field__value--strong">
+              {{ log().userName || 'Sistema' }}
+            </div>
+          </div>
+
+          @if (log().userRole) {
+            <div class="modal-field">
+              <label class="modal-field__label">Função</label>
+              <div class="modal-field__value">
+                <app-badge
+                  variant="neutral"
+                  [label]="log().userRole! | userRole"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Usuário que Sofreu a Ação (Alvo) -->
+      @if (hasTargetUserInfo()) {
+        <section class="modal-section modal-section--target">
+          <h3 class="modal-section__title">
+            <app-icon name="users" [size]="20" />
+            Usuário Alvo da Ação
+          </h3>
+          <div class="modal-grid">
+            @if (getTargetUserInfo()?.name) {
+              <div class="modal-field">
+                <label class="modal-field__label">Nome</label>
+                <div class="modal-field__value modal-field__value--highlight">
+                  {{ getTargetUserInfo()?.name }}
+                </div>
+              </div>
+            }
+
+            @if (getTargetUserInfo()?.email) {
+              <div class="modal-field">
+                <label class="modal-field__label">Email</label>
+                <div class="modal-field__value">
+                  <app-icon name="mail" [size]="16" />
+                  {{ getTargetUserInfo()?.email }}
+                </div>
+              </div>
+            }
+
+            @if (getTargetUserInfo()?.role) {
+              <div class="modal-field">
+                <label class="modal-field__label">Função</label>
+                <div class="modal-field__value">
+                  <app-badge
+                    variant="info"
+                    [label]="getTargetUserInfo()?.role! | userRole"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Informações Técnicas -->
+      <section class="modal-section">
+        <h3 class="modal-section__title">
+          <app-icon name="settings" [size]="20" />
+          Informações Técnicas
+        </h3>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label class="modal-field__label">Endereço IP</label>
+            <div class="modal-field__value modal-field__value--code">
+              <app-icon name="activity" [size]="16" />
+              <code>{{ log().ipAddress || 'N/A' }}</code>
+              @if (log().ipAddress) {
+                <button 
+                  type="button"
+                  class="modal-field__copy"
+                  (click)="copyToClipboard(log().ipAddress!)"
+                  title="Copiar IP"
+                >
+                  <app-icon name="file" [size]="16" />
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (log().userAgent) {
+            <div class="modal-field modal-field--full">
+              <label class="modal-field__label">User Agent</label>
+              <div class="modal-field__value modal-field__value--code modal-field__value--wrap">
+                <code>{{ log().userAgent }}</code>
+                <button 
+                  type="button"
+                  class="modal-field__copy"
+                  (click)="copyToClipboard(log().userAgent!)"
+                  title="Copiar User Agent"
+                >
+                  <app-icon name="file" [size]="16" />
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Valores Anteriores (Old Values) -->
+      @if (hasOldValues()) {
+        <section class="modal-section">
+          <h3 class="modal-section__title">
+            <app-icon name="minus" [size]="20" />
+            Valores Anteriores
+          </h3>
+          <div class="modal-json">
+            <div class="modal-json__header">
+              <span class="modal-json__label">JSON</span>
+              <button 
+                type="button"
+                class="modal-json__copy"
+                (click)="copyToClipboard(getFormattedJSON(getOldValues()))"
+                title="Copiar JSON"
+              >
+                <app-icon name="file" [size]="16" />
+                Copiar
+              </button>
+            </div>
+            <pre class="modal-json__content"><code>{{ getFormattedJSON(getOldValues()) }}</code></pre>
+          </div>
+        </section>
+      }
+
+      <!-- Valores Novos (New Values) -->
+      @if (hasNewValues()) {
+        <section class="modal-section">
+          <h3 class="modal-section__title">
+            <app-icon name="plus" [size]="20" />
+            Valores Novos
+          </h3>
+          <div class="modal-json">
+            <div class="modal-json__header">
+              <span class="modal-json__label">JSON</span>
+              <button 
+                type="button"
+                class="modal-json__copy"
+                (click)="copyToClipboard(getFormattedJSON(getNewValues()))"
+                title="Copiar JSON"
+              >
+                <app-icon name="file" [size]="16" />
+                Copiar
+              </button>
+            </div>
+            <pre class="modal-json__content"><code>{{ getFormattedJSON(getNewValues()) }}</code></pre>
+          </div>
+        </section>
+      }
+
+      <!-- Comparação de Mudanças -->
+      @if (hasOldValues() && hasNewValues()) {
+        <section class="modal-section">
+          <h3 class="modal-section__title">
+            <app-icon name="refresh-cw" [size]="20" />
+            Resumo das Mudanças
+          </h3>
+          <div class="modal-changes">
+            <p class="modal-changes__info">
+              <app-icon name="alert-circle" [size]="16" />
+              Os campos foram modificados nesta ação. Verifique os valores anteriores e novos acima para detalhes completos.
+            </p>
+          </div>
+        </section>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <app-button
+        variant="secondary"
+        (click)="onClose()"
+      >
+        Fechar
+      </app-button>
+    </div>
+  </div>
+</div>

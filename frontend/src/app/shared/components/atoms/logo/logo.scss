@@ -1,0 +1,52 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.logo {
+  @include flex-center;
+  justify-content: flex-start;
+  gap: $spacing-md;
+
+  &-icon {
+    flex-shrink: 0;
+  }
+
+  &-text {
+    font-family: $font-heading;
+    font-weight: $font-weight-bold;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  &-sm {
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &-md {
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-text {
+      font-size: $font-size-xl;
+    }
+  }
+
+  &-lg {
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+    }
+
+    .logo-text {
+      font-size: $font-size-3xl;
+    }
+  }
+}

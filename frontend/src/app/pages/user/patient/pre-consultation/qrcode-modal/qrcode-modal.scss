@@ -1,0 +1,93 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: $spacing-md;
+}
+
+.modal-container {
+  background: var(--surface);
+  border-radius: $radius-xl;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-xl;
+  animation: scaleIn 0.2s ease-out;
+}
+
+.modal-header {
+  padding: $spacing-lg;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include heading-4;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-md;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--background);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.modal-content {
+  padding: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-lg;
+  text-align: center;
+
+  .instruction {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: $font-size-sm;
+  }
+
+  .qr-code-wrapper {
+    background: white;
+    padding: $spacing-md;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,250 @@
+<div class="schedules">
+  <div class="schedules__header">
+    <div class="schedules__header-content">
+      <app-icon name="calendar" [size]="32" />
+      <div>
+        <h1 class="schedules__title">Agendas de Profissionais</h1>
+        <p class="schedules__subtitle">Gerencie agendas, horários e disponibilidades</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="schedules__create-btn"
+      (click)="openCreateModal()"
+      [disabled]="isLoading"
+    >
+      <app-icon name="plus" [size]="20" />
+      Nova Agenda
+    </button>
+  </div>
+
+  <div class="schedules__filters">
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+      (search)="onSearch($event)"
+      placeholder="Buscar por profissional ou email..."
+      icon="search"
+    />
+
+    <app-filter-select
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
+      [options]="statusOptions"
+    />
+  </div>
+
+  @if (isLoading) {
+    <div class="schedules__loading">
+      <p>Carregando agendas...</p>
+    </div>
+  } @else {
+    <div class="schedules__table-wrapper">
+      <table class="schedules__table">
+        <thead>
+          <tr>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Profissional"
+                field="professionalName"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Dias de Atendimento"
+                [sortable]="false"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Horário"
+                [sortable]="false"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Pausa"
+                [sortable]="false"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Intervalo"
+                [sortable]="false"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Duração"
+                [sortable]="false"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Validade"
+                field="validityStartDate"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="schedules__table-header">
+              <app-table-header
+                label="Status"
+                field="status"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="schedules__table-header schedules__table-header--actions">
+              <app-table-header
+                label="Ações"
+                [sortable]="false"
+              />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (schedules.length === 0) {
+            <tr>
+              <td colspan="8" class="schedules__table-cell schedules__empty-cell">
+                <div class="schedules__empty">
+                  <app-icon name="calendar" [size]="48" />
+                  <p>Nenhuma agenda encontrada</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (schedule of schedules; track schedule.id) {
+            <tr class="schedules__table-row" [class.schedules__table-row--inactive]="schedule.status === 'Inactive'">
+              <td class="schedules__table-cell schedules__table-cell--professional">
+                <div class="schedules__professional-info">
+                  <p class="schedules__professional-name">{{ schedule.professionalName }}</p>
+                  <p class="schedules__professional-email">{{ schedule.professionalEmail }}</p>
+                </div>
+              </td>
+              <td class="schedules__table-cell">
+                <div class="schedules__cell-content">
+                  {{ schedule.daysConfig | scheduleDays }}
+                  @if (hasCustomizedDays(schedule)) {
+                    <span class="schedules__warning-badge" title="Esta agenda tem configurações personalizadas">
+                      <app-icon name="alert-circle" [size]="16" />
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="schedules__table-cell">
+                <div class="schedules__cell-content">
+                  {{ getTimeRange(schedule) }}
+                  @if (hasCustomizedTimeRange(schedule)) {
+                    <span class="schedules__warning-badge" title="Alguns dias têm horários personalizados">
+                      <app-icon name="alert-circle" [size]="16" />
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="schedules__table-cell">
+                <div class="schedules__cell-content">
+                  {{ getBreakTime(schedule) }}
+                  @if (hasCustomizedBreak(schedule)) {
+                    <span class="schedules__warning-badge" title="Alguns dias têm pausas personalizadas">
+                      <app-icon name="alert-circle" [size]="16" />
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="schedules__table-cell">
+                {{ getInterval(schedule) }}
+              </td>
+              <td class="schedules__table-cell">
+                {{ getDuration(schedule) }}
+              </td>
+              <td class="schedules__table-cell">
+                {{ getValidity(schedule) }}
+              </td>
+              <td class="schedules__table-cell">
+                <app-badge
+                  [variant]="schedule.status === 'Active' ? 'success' : 'neutral'"
+                  [label]="schedule.status === 'Active' ? 'Ativa' : 'Inativa'"
+                  size="sm"
+                />
+              </td>
+              <td class="schedules__table-cell schedules__table-cell--actions">
+                <div class="schedules__actions">
+                  <button
+                    type="button"
+                    class="schedules__action-btn schedules__action-btn--view"
+                    title="Visualizar"
+                    (click)="openViewModal(schedule)"
+                    [disabled]="isLoading"
+                  >
+                    <app-icon name="eye" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="schedules__action-btn schedules__action-btn--toggle"
+                    [title]="schedule.status === 'Active' ? 'Desativar' : 'Ativar'"
+                    (click)="toggleScheduleStatus(schedule)"
+                    [disabled]="isLoading"
+                  >
+                    <app-icon [name]="schedule.status === 'Active' ? 'check-circle' : 'x-circle'" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="schedules__action-btn schedules__action-btn--edit"
+                    title="Editar"
+                    (click)="openEditModal(schedule)"
+                    [disabled]="isLoading"
+                  >
+                    <app-icon name="edit" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="schedules__action-btn schedules__action-btn--delete"
+                    title="Excluir"
+                    (click)="deleteSchedule(schedule)"
+                    [disabled]="isLoading"
+                  >
+                    <app-icon name="trash" [size]="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>
+
+<!-- Modal de Criar/Editar Agenda -->
+<app-schedule-create-modal
+  [isOpen]="isCreateModalOpen"
+  [editingSchedule]="selectedSchedule"
+  (close)="onCreateModalClose()"
+  (save)="selectedSchedule ? onScheduleUpdated($event) : onScheduleCreated($event)"
+/>
+
+<!-- Modal de Visualizar Agenda -->
+<app-schedule-view-modal
+  [isOpen]="isViewModalOpen"
+  [schedule]="selectedSchedule"
+  (close)="onViewModalClose()"
+/>

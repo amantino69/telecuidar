@@ -1,0 +1,21 @@
+<div class="search-input">
+  <app-icon [name]="icon" [size]="iconSize" class="search-input__icon search-input__icon--left" />
+  <input
+    type="text"
+    class="search-input__field"
+    [placeholder]="placeholder"
+    [(ngModel)]="value"
+    (ngModelChange)="onInput($event)"
+    (keypress)="onKeyPress($event)"
+    [disabled]="disabled"
+  />
+  <button
+    type="button"
+    class="search-input__button"
+    (click)="onSearchClick()"
+    [disabled]="disabled"
+    aria-label="Buscar"
+  >
+    <app-icon name="search" [size]="18" />
+  </button>
+</div>

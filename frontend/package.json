@@ -1,0 +1,74 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "prestart": "node scripts/generate-env.js",
+    "start": "ng serve",
+    "prebuild": "node scripts/generate-env.js",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "serve:ssr:frontend": "node dist/frontend/server/server.mjs",
+    "generate-env": "node scripts/generate-env.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "packageManager": "npm@11.6.4",
+  "overrides": {
+    "glob": "^13.0.0",
+    "test-exclude": "^7.0.1"
+  },
+  "dependencies": {
+    "@angular/common": "^21.0.6",
+    "@angular/compiler": "^21.0.6",
+    "@angular/core": "^21.0.6",
+    "@angular/forms": "^21.0.6",
+    "@angular/platform-browser": "^21.0.6",
+    "@angular/platform-browser-dynamic": "^21.0.6",
+    "@angular/platform-server": "^21.0.6",
+    "@angular/router": "^21.0.6",
+    "@angular/ssr": "^21.0.2",
+    "@microsoft/signalr": "^10.0.0",
+    "@types/qrcode": "^1.5.6",
+    "chart.js": "^4.5.1",
+    "express": "^5.1.0",
+    "glob": "^13.0.0",
+    "marked": "^17.0.1",
+    "ngx-markdown": "^21.0.1",
+    "qrcode": "^1.5.4",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "web-pki": "^2.16.5",
+    "zone.js": "^0.16.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.0.2",
+    "@angular/cli": "^21.0.2",
+    "@angular/compiler-cli": "^21.0.6",
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@playwright/test": "^1.49.0",
+    "@types/express": "^5.0.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.3",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "jest-preset-angular": "^16.0.0",
+    "typescript": "~5.9.2"
+  }
+}

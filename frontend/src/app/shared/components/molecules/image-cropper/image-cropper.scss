@@ -1,0 +1,123 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.cropper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+
+  &__header {
+    text-align: center;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  &__canvas-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: var(--neutral-100);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow: hidden;
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      cursor: default;
+    }
+  }
+
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__zoom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  &__control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--neutral-100);
+      border-color: var(--primary-500);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__zoom-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  @include mobile {
+    &__canvas-container {
+      padding: 0.5rem;
+
+      canvas {
+        max-width: 100%;
+      }
+    }
+
+    &__controls {
+      gap: 0.75rem;
+    }
+
+    &__actions {
+      flex-direction: column;
+
+      app-button {
+        width: 100%;
+      }
+    }
+  }
+}

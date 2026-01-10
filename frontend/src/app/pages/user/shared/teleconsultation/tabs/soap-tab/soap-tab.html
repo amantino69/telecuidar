@@ -1,0 +1,69 @@
+<div class="soap-container">
+  <div class="soap-header">
+    <h3>Registro SOAP</h3>
+    <span class="last-saved" *ngIf="lastSaved">
+      Salvo às {{ lastSaved | date:'HH:mm' }}
+    </span>
+  </div>
+
+  <form [formGroup]="soapForm" class="soap-form">
+    <div class="form-group">
+      <label for="subjective" class="section-label subjective">
+        <span class="letter">S</span> Subjetivo
+      </label>
+      <textarea 
+        id="subjective" 
+        formControlName="subjective" 
+        placeholder="Queixa principal, história da moléstia atual, histórico..."
+        rows="4">
+      </textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="objective" class="section-label objective">
+        <span class="letter">O</span> Objetivo
+      </label>
+      <textarea 
+        id="objective" 
+        formControlName="objective" 
+        placeholder="Exame físico, sinais vitais, exames complementares..."
+        rows="4">
+      </textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="assessment" class="section-label assessment">
+        <span class="letter">A</span> Avaliação
+      </label>
+      <textarea 
+        id="assessment" 
+        formControlName="assessment" 
+        placeholder="Hipóteses diagnósticas, raciocínio clínico..."
+        rows="4">
+      </textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="plan" class="section-label plan">
+        <span class="letter">P</span> Plano
+      </label>
+      <textarea 
+        id="plan" 
+        formControlName="plan" 
+        placeholder="Conduta, prescrição, orientações, encaminhamentos..."
+        rows="4">
+      </textarea>
+    </div>
+
+    @if (!readonly) {
+      <div class="form-actions">
+        <app-button 
+          variant="primary" 
+          (click)="saveSoap()" 
+          [disabled]="isSaving || soapForm.pristine">
+          {{ isSaving ? 'Salvando...' : 'Salvar Registro' }}
+        </app-button>
+      </div>
+    }
+  </form>
+</div>

@@ -1,0 +1,197 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'table-standard' as *;
+
+.schedules {
+  @include page-container;
+
+  &__header {
+    @include page-header;
+  }
+
+  &__header-content {
+    @include page-header-content;
+  }
+
+  &__title {
+    @include page-title;
+  }
+
+  &__subtitle {
+    @include page-subtitle;
+  }
+
+  &__create-btn {
+    @include page-action-btn;
+  }
+
+  &__filters {
+    @include page-filters;
+  }
+
+  &__loading,
+  &__empty {
+    @include page-loading-empty;
+  }
+
+  &__empty-btn {
+    @include page-action-btn;
+    display: inline-flex;
+  }
+
+  &__table-wrapper {
+    @include page-table-wrapper;
+  }
+
+  &__table {
+    @include standard-table;
+
+    thead {
+      @include table-head;
+    }
+
+    &-header {
+      @include table-header;
+
+      &--actions {
+        text-align: center;
+        width: 180px;
+        min-width: 180px;
+      }
+    }
+
+    &-row {
+      @include table-row;
+
+      &--inactive {
+        opacity: 0.6;
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+      }
+    }
+
+    &-cell {
+      @include table-cell;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  &__professional-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__professional-name {
+    margin: 0;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  &__professional-email {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: #64748b;
+  }
+
+  &__actions {
+    @include table-actions;
+    flex-wrap: wrap;
+  }
+
+  &__action-btn {
+    @include table-action-btn;
+
+    &--view:hover {
+      background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #2563eb;
+    }
+
+    &--toggle:hover {
+      background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #d97706;
+    }
+
+    &--edit:hover {
+      background: linear-gradient(145deg, #f5f3ff 0%, #ede9fe 100%);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #7c3aed;
+    }
+  }
+
+  &__empty-cell {
+    text-align: center;
+    padding: $spacing-3xl !important;
+  }
+}
+
+// === TEMA ESCURO ===
+:host-context([data-theme='dark']) {
+  .schedules {
+    &__title {
+      @include page-title-dark;
+    }
+
+    &__subtitle {
+      color: #94a3b8;
+    }
+
+    &__table-wrapper {
+      @include page-table-wrapper-dark;
+    }
+
+    &__table {
+      thead {
+        @include table-head-dark;
+      }
+
+      &-header {
+        @include table-header-dark;
+      }
+
+      &-row {
+        @include table-row-dark;
+
+        &--inactive {
+          background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+        }
+      }
+
+      &-cell {
+        @include table-cell-dark;
+        border-bottom-color: rgba(255, 255, 255, 0.04);
+      }
+    }
+
+    &__professional-name {
+      color: #f1f5f9;
+    }
+
+    &__professional-email {
+      color: #94a3b8;
+    }
+
+    &__action-btn {
+      @include table-action-btn-dark;
+
+      &--view:hover {
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+        border-color: rgba(59, 130, 246, 0.25);
+        color: #60a5fa;
+      }
+
+      &--toggle:hover {
+        background: linear-gradient(145deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+        border-color: rgba(245, 158, 11, 0.25);
+        color: #fbbf24;
+      }
+
+      &--edit:hover {
+        background: linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+        border-color: rgba(139, 92, 246, 0.25);
+        color: #a78bfa;
+      }
+    }
+  }
+}

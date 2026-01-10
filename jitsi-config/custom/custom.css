@@ -1,0 +1,55 @@
+﻿/* TeleCuidar - CSS Customizado para Jitsi Meet */
+/* Remove completamente watermarks, logos e branding do Jitsi */
+
+/* Esconder todas as watermarks */
+.watermark,
+.leftwatermark,
+.rightwatermark,
+.watermark-img,
+.jitsi-watermark,
+a.watermark,
+div.watermark,
+.oknj7u,
+.oknj7u-wrapper,
+[class*="oknj"],
+[class*="watermark"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* Esconder link da watermark */
+a[href="https://jitsi.org"],
+a[href*="jitsi.org"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Esconder powered by */
+.oknj-wrapper,
+.powered-by,
+[class*="branding"],
+[class*="poweredby"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Esconder logo no header */
+.oknj7u,
+.oknj7u-wrapper,
+.oknj7u > div,
+.oknj7u > a {
+    display: none !important;
+}
+
+/* Esconder qualquer imagem de watermark */
+img[src*="watermark"],
+div[style*="watermark"] {
+    display: none !important;
+    visibility: hidden !important;
+}

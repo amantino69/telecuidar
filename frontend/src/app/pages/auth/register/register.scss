@@ -1,0 +1,195 @@
+@use 'auth-shared' as *;
+
+// Register specific styles - Layout compacto para caber na tela
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
+}
+
+.auth-page {
+  min-height: 100dvh;
+  height: auto;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-items: center;
+
+  @media (max-width: 767px) {
+    padding: 12px;
+    padding-top: 50px;
+  }
+
+  @media (min-height: 900px) {
+    padding: 24px;
+  }
+}
+
+.auth-container {
+  max-width: 800px;
+  width: 100%;
+}
+
+.auth-card {
+  padding: 24px 32px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+
+  @media (max-width: 767px) {
+    padding: 20px 16px;
+    max-height: none;
+  }
+
+  @media (min-height: 900px) {
+    padding: 32px 40px;
+  }
+
+  &__header {
+    margin-bottom: 20px;
+
+    app-logo {
+      margin-bottom: 12px;
+
+      ::ng-deep .logo {
+        height: 40px;
+      }
+    }
+  }
+
+  &__title {
+    font-size: 22px;
+    margin-bottom: 4px;
+
+    @media (min-height: 900px) {
+      font-size: 26px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 13px;
+  }
+}
+
+.auth-form {
+  gap: 12px;
+
+  @media (min-height: 900px) {
+    gap: 16px;
+  }
+}
+
+.form-group {
+  gap: 4px;
+}
+
+.form-row {
+  gap: 12px;
+
+  &--two-columns {
+    gap: 12px;
+
+    @media (min-width: 600px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}
+
+.form-label {
+  font-size: 12px;
+  margin-bottom: 2px;
+
+  @media (min-height: 900px) {
+    font-size: 13px;
+  }
+}
+
+.form-input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+
+  @media (min-height: 900px) {
+    padding: 12px 14px;
+  }
+}
+
+// Ajuste do password strength para ser mais compacto
+::ng-deep app-password-strength {
+  .password-strength {
+    padding: 8px 0;
+    
+    &__bars {
+      height: 4px;
+      gap: 4px;
+    }
+
+    &__text {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+  }
+}
+
+// Ajuste do input password para alinhar com os outros inputs
+::ng-deep app-input-password {
+  display: block;
+  width: 100%;
+
+  .input-password {
+    &__field {
+      padding: 10px 44px 10px 12px;
+      font-size: 14px;
+      border-radius: 10px;
+
+      @media (min-height: 900px) {
+        padding: 12px 48px 12px 14px;
+      }
+    }
+  }
+}
+
+// Ajuste do checkbox
+::ng-deep app-checkbox {
+  .checkbox {
+    &__label {
+      font-size: 13px;
+    }
+  }
+}
+
+// Ajuste do botão
+::ng-deep app-button {
+  button {
+    padding: 12px 20px;
+    font-size: 14px;
+
+    @media (min-height: 900px) {
+      padding: 14px 24px;
+      font-size: 15px;
+    }
+  }
+}
+
+.auth-footer {
+  margin-top: 4px;
+  padding-top: 12px;
+  gap: 8px;
+
+  &__text {
+    font-size: 13px;
+  }
+
+  &__back {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+.auth-alert {
+  padding: 10px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}

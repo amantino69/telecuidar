@@ -1,0 +1,479 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  @include flex-center;
+  z-index: $z-index-modal;
+  padding: $spacing-lg;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: $radius-2xl;
+  box-shadow: $shadow-2xl;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+
+  @include mobile {
+    max-height: 95vh;
+  }
+
+  &__header {
+    @include flex-between;
+    align-items: center;
+    padding: $spacing-xl;
+    border-bottom: 1px solid var(--border);
+    gap: $spacing-md;
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  &__back {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-md;
+    @include transition(all);
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background: var(--neutral-100);
+      color: var(--text-primary);
+    }
+  }
+
+  &__header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-lg;
+    @include flex-center;
+
+    &--patient {
+      background: var(--blue-50);
+      color: var(--blue-600);
+    }
+
+    &--professional {
+      background: var(--primary-50);
+      color: var(--primary-600);
+    }
+
+    &--admin {
+      background: var(--amber-100);
+      color: var(--amber-500);
+    }
+
+    &--assistant {
+      background: var(--purple-50);
+      color: var(--purple-600);
+    }
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: var(--text-primary);
+    margin: 0;
+
+    @include mobile {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-md;
+    @include transition(all);
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--neutral-100);
+      color: var(--text-primary);
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-xl;
+
+    @include mobile {
+      padding: $spacing-lg;
+    }
+  }
+
+  &__description {
+    color: var(--text-secondary);
+    font-size: $font-size-base;
+    margin: 0 0 $spacing-xl 0;
+    text-align: center;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-md;
+    padding: $spacing-xl;
+    border-top: 1px solid var(--border);
+
+    &--multi {
+      @include flex-between;
+      align-items: flex-start;
+
+      @include mobile {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    @include mobile {
+      flex-direction: column-reverse;
+
+      app-button {
+        width: 100%;
+      }
+    }
+  }
+
+  &__footer-actions {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+
+    @include mobile {
+      flex-direction: column;
+      width: 100%;
+
+      app-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-lg;
+
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.role-card {
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  @include flex-column;
+  align-items: center;
+  gap: $spacing-md;
+  cursor: pointer;
+  @include transition(all);
+  text-align: center;
+
+  &:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: $radius-xl;
+    @include flex-center;
+    margin-bottom: $spacing-sm;
+
+    &--patient {
+      background: var(--blue-50);
+      color: var(--blue-600);
+    }
+
+    &--professional {
+      background: var(--primary-50);
+      color: var(--primary-600);
+    }
+
+    &--admin {
+      background: var(--amber-100);
+      color: var(--amber-500);
+    }
+
+    &--assistant {
+      background: var(--purple-50);
+      color: var(--purple-600);
+    }
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  &__description {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: $line-height-relaxed;
+  }
+}
+
+.user-form {
+  @include flex-column;
+  gap: $spacing-lg;
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &__label-badge {
+    background: var(--green-50);
+    color: var(--green-700);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+
+  &__label-error {
+    background: var(--red-50);
+    color: var(--red-700);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+
+  &__error {
+    font-size: $font-size-xs;
+    color: var(--red-600);
+    margin-top: $spacing-xs;
+  }
+
+  &__password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    
+    .user-form__input {
+      flex: 1;
+      padding-right: 2.75rem;
+    }
+  }
+  
+  &__password-toggle {
+    position: absolute;
+    right: $spacing-md;
+    background: none;
+    border: none;
+    padding: $spacing-xs;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  &__input {
+    padding: $spacing-md $spacing-lg;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    color: var(--text-primary);
+    font-size: $font-size-base;
+    @include transition(all);
+
+    &:hover {
+      border-color: var(--neutral-300);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    &--error {
+      border-color: var(--red-500);
+
+      &:focus {
+        border-color: var(--red-600);
+        box-shadow: 0 0 0 3px rgba(var(--red-rgb), 0.1);
+      }
+    }
+
+    &.invalid {
+      border-color: var(--red-500);
+
+      &:focus {
+        border-color: var(--red-600);
+        box-shadow: 0 0 0 3px rgba(var(--red-rgb), 0.1);
+      }
+    }
+  }
+
+  &__select {
+    cursor: pointer;
+  }
+
+  &__hint {
+    font-size: $font-size-xs;
+    color: var(--text-secondary);
+    margin-top: -$spacing-xs;
+  }
+
+  &__password-strength {
+    grid-column: 1 / -1;
+    
+    app-password-strength {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  &__mode-switch {
+    padding: $spacing-lg 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: $spacing-md 0;
+  }
+}
+
+.mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-md;
+  cursor: pointer;
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--text-secondary);
+    @include transition(color);
+
+    &--active {
+      color: var(--primary-600);
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &__toggle {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    background: var(--neutral-200);
+    border: none;
+    border-radius: $radius-full;
+    cursor: pointer;
+    @include transition(background);
+
+    &:hover {
+      background: var(--neutral-300);
+    }
+
+    &--active {
+      background: var(--primary-600);
+
+      &:hover {
+        background: var(--primary-700);
+      }
+
+      .mode-switch__slider {
+        transform: translateX(24px);
+      }
+    }
+  }
+
+  &__slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 24px;
+    height: 24px;
+    background: var(--surface);
+    border-radius: $radius-full;
+    box-shadow: $shadow-sm;
+    @include transition(transform);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

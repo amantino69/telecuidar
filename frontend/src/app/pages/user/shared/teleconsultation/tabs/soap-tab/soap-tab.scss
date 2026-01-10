@@ -1,0 +1,96 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.soap-container {
+  padding: $spacing-md;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .soap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: var(--text-primary);
+    }
+
+    .last-saved {
+      font-size: $font-size-xs;
+      color: var(--text-secondary);
+    }
+  }
+
+  .soap-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+
+      .section-label {
+        font-weight: $font-weight-medium;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        color: var(--text-secondary);
+
+        .letter {
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: $radius-sm;
+          font-weight: $font-weight-bold;
+          font-size: $font-size-sm;
+          color: var(--neutral-50);
+        }
+
+        &.subjective .letter { background-color: var(--blue-500); }
+        &.objective .letter { background-color: var(--green-500); }
+        &.assessment .letter { background-color: var(--amber-500); }
+        &.plan .letter { background-color: var(--primary-700); }
+      }
+
+      textarea {
+        width: 100%;
+        padding: $spacing-sm;
+        border: 1px solid var(--border);
+        border-radius: $radius-md;
+        background: var(--surface);
+        color: var(--text-primary);
+        resize: vertical;
+        font-family: inherit;
+        
+        &:focus {
+          outline: none;
+          border-color: var(--primary-500);
+          box-shadow: 0 0 0 2px var(--primary-100);
+        }
+        
+        &:disabled {
+          background: var(--neutral-100);
+          cursor: not-allowed;
+          opacity: 0.7;
+          color: var(--text-secondary);
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: $spacing-sm;
+    }
+  }
+}

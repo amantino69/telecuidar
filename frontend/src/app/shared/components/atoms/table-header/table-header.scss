@@ -1,0 +1,54 @@
+.table-header {
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    width: 100%;
+
+    &--sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--text-primary);
+
+        .table-header__icon {
+          opacity: 0.7;
+        }
+      }
+    }
+
+    &--active {
+      color: var(--primary);
+    }
+  }
+
+  &__label {
+    flex-shrink: 0;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+
+    &--active {
+      opacity: 1;
+      color: var(--primary);
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .table-header {
+    padding: 10px 12px;
+    font-size: 0.6875rem;
+
+    &__icon {
+      display: none;
+    }
+  }
+}

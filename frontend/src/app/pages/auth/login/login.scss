@@ -1,0 +1,22 @@
+@use 'auth-shared' as *;
+
+// Login specific styles - Sem scroll
+:host {
+  display: block;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.auth-page {
+  height: 100vh;
+  min-height: auto;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .auth-page {
+    align-items: center;
+    padding-top: 16px;
+  }
+}
