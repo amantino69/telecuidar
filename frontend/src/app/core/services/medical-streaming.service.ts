@@ -168,15 +168,18 @@ export class MedicalStreamingService {
     console.log('[MedicalStreaming] Iniciando stream de exame:', type, { deviceId });
 
     try {
-      // Se tem deviceId específico, usa ideal em vez de exact para mais flexibilidade
+      // IMPORTANTE: Usa exact para forçar a câmera específica selecionada
+      // ideal não funciona bem - navegador ignora e usa câmera padrão
       const videoConstraints: MediaTrackConstraints = {
         width: { ideal: 1920, min: 640 },
         height: { ideal: 1080, min: 480 },
         frameRate: { ideal: 30, min: 15 }
       };
 
-      if (deviceId) {
-        videoConstraints.deviceId = { ideal: deviceId };
+      // Força câmera específica com exact (não ideal!)
+      if (deviceId && deviceId !== 'default' && deviceId !== '') {
+        videoConstraints.deviceId = { exact: deviceId };
+        console.log('[MedicalStreaming] Forçando câmera específica:', deviceId);
       }
 
       const constraints: MediaStreamConstraints = {
@@ -184,7 +187,7 @@ export class MedicalStreamingService {
         video: videoConstraints
       };
 
-      console.log('[MedicalStreaming] Solicitando getUserMedia com constraints:', constraints);
+      console.log('[MedicalStreaming] Solicitando getUserMedia com constraints:', JSON.stringify(constraints));
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('[MedicalStreaming] Stream de vídeo obtido com tracks:', stream.getVideoTracks().length);
 
