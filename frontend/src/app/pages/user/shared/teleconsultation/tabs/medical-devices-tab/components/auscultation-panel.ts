@@ -1251,6 +1251,9 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
     }
 
     try {
+      // Garante conexão ao hub antes de transmitir
+      await this.syncService.connect(this.appointmentId);
+      
       // Inicia streaming via WebRTC
       await this.syncService.startStreaming(activeStream, 'auscultation', this.selectedArea);
       this.isStreaming = true;

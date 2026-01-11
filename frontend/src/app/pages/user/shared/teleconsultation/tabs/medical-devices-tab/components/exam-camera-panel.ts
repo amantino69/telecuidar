@@ -592,7 +592,7 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   examTypes: Array<{id: ExamType; label: string; icon: IconName}> = [
     { id: 'otoscope' as ExamType, label: 'Otoscópio', icon: 'ear' },
     { id: 'dermatoscope' as ExamType, label: 'Dermatoscópio', icon: 'scan' },
-    { id: 'laryngoscope' as ExamType, label: 'Lagosta', icon: 'mic' }
+    { id: 'laryngoscope' as ExamType, label: 'Laringoscópio', icon: 'mic' }
   ];
 
   selectedType: ExamType = 'otoscope';
@@ -727,6 +727,8 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
         // Se tem appointmentId, inicia streaming via WebRTC para o médico
         if (this.appointmentId) {
           try {
+            // Garante conexão ao hub antes de transmitir
+            await this.syncService.connect(this.appointmentId);
             await this.syncService.startStreaming(session.stream, 'video');
             console.log('[ExamCamera] Streaming para médico iniciado');
           } catch (syncError: any) {

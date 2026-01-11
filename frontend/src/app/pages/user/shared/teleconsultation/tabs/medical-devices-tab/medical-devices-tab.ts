@@ -34,7 +34,7 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
       <div class="tab-header">
         <div class="header-title">
           <app-icon name="activity" [size]="18" />
-          <span>Dispositivos IoMT</span>
+          <span>Sinais Vitais</span>
         </div>
         <div class="connection-badge" [class.connected]="isConnected">
           <span class="dot"></span>
@@ -42,93 +42,20 @@ type SubTab = 'vitals' | 'auscultation' | 'exam';
         </div>
       </div>
 
-      <!-- Navegação Accordion -->
-      <div class="accordion-nav">
-        <!-- Sinais Vitais -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'vitals'">
-          <button class="accordion-header" (click)="setActiveSubTab('vitals')">
-            <div class="accordion-title">
-              <app-icon name="heart" [size]="16" />
-              <span>Sinais Vitais</span>
-            </div>
-            <app-icon name="chevron-down" [size]="16" class="chevron" />
-          </button>
-        </div>
-
-        <!-- Ausculta -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'auscultation'">
-          <button class="accordion-header" (click)="setActiveSubTab('auscultation')">
-            <div class="accordion-title">
-              <app-icon name="mic" [size]="16" />
-              <span>Ausculta</span>
-            </div>
-            <app-icon name="chevron-down" [size]="16" class="chevron" />
-          </button>
-        </div>
-
-        <!-- Câmera de Exame -->
-        <div class="accordion-item" [class.expanded]="activeSubTab === 'exam'">
-          <button class="accordion-header" (click)="setActiveSubTab('exam')">
-            <div class="accordion-title">
-              <app-icon name="video" [size]="16" />
-              <span>Câmera de Exame</span>
-            </div>
-            <div class="accordion-status">
-              @if (activeSubTab === 'exam') {
-                <span class="status-badge">Transmitindo</span>
-              }
-              <app-icon name="chevron-down" [size]="16" class="chevron" />
-            </div>
-          </button>
-        </div>
-      </div>
-
       <!-- Conteúdo baseado no papel do usuário -->
       <div class="tab-content">
         @if (isOperator) {
           <!-- Interface do Paciente/Assistente/Admin (quem opera os dispositivos) -->
-          @switch (activeSubTab) {
-            @case ('vitals') {
-              <app-device-connection-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-device-connection-panel>
-            }
-            @case ('auscultation') {
-              <app-auscultation-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-auscultation-panel>
-            }
-            @case ('exam') {
-              <app-exam-camera-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-exam-camera-panel>
-            }
-          }
+          <app-device-connection-panel
+            [appointmentId]="appointmentId"
+            [userrole]="userrole">
+          </app-device-connection-panel>
         } @else {
           <!-- Interface do Médico (quem recebe os dados) -->
-          @switch (activeSubTab) {
-            @case ('vitals') {
-              <app-vital-signs-panel
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-vital-signs-panel>
-            }
-            @case ('auscultation') {
-              <app-doctor-stream-receiver
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-doctor-stream-receiver>
-            }
-            @case ('exam') {
-              <app-doctor-stream-receiver
-                [appointmentId]="appointmentId"
-                [userrole]="userrole">
-              </app-doctor-stream-receiver>
-            }
-          }
+          <app-vital-signs-panel
+            [appointmentId]="appointmentId"
+            [userrole]="userrole">
+          </app-vital-signs-panel>
         }
       </div>
     </div>
