@@ -592,7 +592,7 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   examTypes: Array<{id: ExamType; label: string; icon: IconName}> = [
     { id: 'otoscope' as ExamType, label: 'Otoscópio', icon: 'ear' },
     { id: 'dermatoscope' as ExamType, label: 'Dermatoscópio', icon: 'scan' },
-    { id: 'laryngoscope' as ExamType, label: 'Laringoscópio', icon: 'mic' }
+    { id: 'laryngoscope' as ExamType, label: 'Lagosta', icon: 'mic' }
   ];
 
   selectedType: ExamType = 'otoscope';
@@ -622,6 +622,9 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   ngOnInit(): void {
     this.refreshDevices();
 
+    // Verifica se já existe um stream de vídeo ativo (restauração após mudança de aba)
+    this.restoreExistingStream();
+
     // Observa dispositivos de vídeo
     this.subscriptions.add(
       this.streamingService.availableVideoDevices$.subscribe(devices => {
@@ -642,9 +645,65 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
           this.selectedDeviceId = usbCamera?.deviceId || devices[0].deviceId;
           console.log('[ExamCamera] Câmera selecionada automaticamente:', 
             usbCamera?.label || devices[0].label);
+          
+          // AUTO-INICIAR: Se não há stream ativo e temos dispositivo, inicia automaticamente
+          if (!this.isStreaming && this.selectedDeviceId && !this.syncService.isVideoCurrentlyActive) {
+            console.log('[ExamCamera] Auto-iniciando câmera de exame...');
+            setTimeout(() => this.startStream(), 500);
+          }
         }
       })
     );
+
+    // Observa stream de vídeo persistente
+    this.subscriptions.add(
+      this.syncService.localVideoStream$.subscribe(stream => {
+        if (stream && !this.isStreaming) {
+          console.log('[ExamCamera] Stream persistente detectado, restaurando...');
+          this.restoreStreamToVideo(stream);
+        }
+      })
+    );
+
+    // Observa estado de transmissão
+    this.subscriptions.add(
+      this.syncService.isVideoTransmitting$.subscribe(isTransmitting => {
+        // Não sobrescreve isStreaming se temos stream local ativo
+        if (isTransmitting || !this.syncService.isVideoCurrentlyActive) {
+          this.isStreaming = isTransmitting || this.syncService.isVideoCurrentlyActive;
+        }
+      })
+    );
+  }
+
+  /**
+   * Restaura stream existente (após mudança de aba)
+   */
+  private restoreExistingStream(): void {
+    const existingStream = this.syncService.currentLocalVideoStream;
+    if (existingStream) {
+      console.log('[ExamCamera] Restaurando stream de vídeo existente');
+      this.restoreStreamToVideo(existingStream);
+    }
+  }
+
+  /**
+   * Conecta stream ao elemento de vídeo
+   */
+  private restoreStreamToVideo(stream: MediaStream): void {
+    this.isStreaming = true;
+    
+    // Aguarda o videoElement estar disponível
+    setTimeout(() => {
+      if (this.videoElement) {
+        this.videoElement.nativeElement.srcObject = stream;
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          this.activeCameraLabel = track.label;
+        }
+        console.log('[ExamCamera] Stream restaurado para videoElement');
+      }
+    }, 100);
   }
 
   ngAfterViewInit(): void {
@@ -689,6 +748,13 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   async startStream(): Promise<void> {
+    // Se já existe stream ativo, apenas restaura
+    if (this.syncService.isVideoCurrentlyActive) {
+      console.log('[ExamCamera] Stream já ativo, restaurando...');
+      this.restoreExistingStream();
+      return;
+    }
+
     if (!this.selectedDeviceId) {
       console.warn('[ExamCamera] Nenhuma câmera selecionada');
       this.errorMessage = 'Por favor, selecione uma câmera antes de iniciar.';
@@ -735,6 +801,9 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
         
         this.videoElement.nativeElement.srcObject = session.stream;
         this.isStreaming = true;
+        
+        // REGISTRA STREAM PERSISTENTE no sync service
+        this.syncService.setLocalVideoStream(session.stream, false);
 
         // Se tem appointmentId, inicia streaming via WebRTC para o médico
         if (this.appointmentId) {
@@ -742,6 +811,7 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
             // Garante conexão ao hub antes de transmitir
             await this.syncService.connect(this.appointmentId);
             await this.syncService.startStreaming(session.stream, 'video');
+            this.syncService.setVideoTransmitting(true);
             console.log('[ExamCamera] Streaming para médico iniciado');
           } catch (syncError: any) {
             console.error('[ExamCamera] Erro ao enviar stream para médico:', syncError);
@@ -782,6 +852,9 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
     console.log('[ExamCamera] Parando stream...');
     this.streamingService.stopStream();
     this.syncService.stopStreaming();
+    
+    // Remove stream do sync service
+    this.syncService.setLocalVideoStream(null, false);
     
     if (this.videoElement) {
       this.videoElement.nativeElement.srcObject = null;
@@ -829,7 +902,15 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngOnDestroy(): void {
-    this.stopStream();
+    // NÃO paramos o stream aqui - ele continua ativo no serviço
+    // Apenas limpamos recursos locais do componente
+    console.log('[ExamCamera] ngOnDestroy - mantendo stream ativo no serviço');
+    
+    // Remove a referência do elemento de vídeo mas NÃO para o stream
+    // O stream será reconectado quando o componente for recriado
+    
     this.subscriptions.unsubscribe();
+    
+    // NÃO chamamos stopStream() para manter o stream ativo
   }
 }

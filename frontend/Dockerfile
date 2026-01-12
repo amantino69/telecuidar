@@ -52,7 +52,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Copiar build de produção (do novo caminho)
-COPY --from=build /telecuidar/frontend/dist ./dist
+COPY --from=build /telecuidar/frontend/dist/frontend ./dist
 
 # Ajustar permissões
 RUN chown -R appuser:appuser /app
@@ -72,4 +72,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:4000 || exit 1
 
 # Entrypoint - Rodar o servidor SSR
-CMD ["node", "dist/frontend/server/server.mjs"]
+CMD ["node", "dist/server/server.mjs"]

@@ -320,6 +320,23 @@ export class MedicalStreamingService {
   }
 
   /**
+   * Reconecta análise de áudio para um stream existente
+   * Usado quando o componente é recriado mas o stream persiste
+   */
+  reconnectAudioAnalysis(stream: MediaStream): void {
+    console.log('[MedicalStreaming] Reconectando análise de áudio...');
+    
+    // Para análise anterior se existir
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    
+    // Reconecta
+    this.startAudioAnalysis(stream);
+  }
+
+  /**
    * Loop de análise de áudio
    */
   private analyzeAudio(): void {

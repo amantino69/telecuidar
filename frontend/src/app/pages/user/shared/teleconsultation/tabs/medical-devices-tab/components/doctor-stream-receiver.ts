@@ -13,21 +13,66 @@ import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sy
     <div class="doctor-stream-receiver">
       <div class="panel-header">
         <h4>
-          <app-icon [name]="streamType === 'auscultation' ? 'mic' : 'video'" [size]="20" />
-          {{ getStreamTitle() }}
+          <app-icon [name]="expectedStreamType === 'auscultation' ? 'mic' : 'video'" [size]="20" />
+          {{ getStreamTitle() }} (Lagosta v2)
         </h4>
-        <span class="stream-status" [class.active]="hasActiveStream">
-          {{ hasActiveStream ? 'Recebendo' : 'Aguardando' }}
+        <span class="stream-status" 
+              [class.active]="hasActiveStream" 
+              [class.loading]="isLoading"
+              [class.connecting]="isConnecting">
+          @if (isConnecting) {
+            <span class="status-dot connecting"></span> Conectando...
+          } @else if (isLoading) {
+            <span class="status-dot loading"></span> Carregando...
+          } @else if (hasActiveStream) {
+            <span class="status-dot active"></span> Recebendo
+          } @else {
+            <span class="status-dot waiting"></span> Aguardando
+          }
         </span>
       </div>
 
-      @if (!hasActiveStream) {
+      <!-- Log Visual de Debug -->
+      @if (debugLogs.length > 0) {
+        <div class="debug-log-panel">
+          <div class="debug-header">
+            <strong>📋 Log de Conexão (Médico)</strong>
+            <button class="btn-clear-log" (click)="clearDebugLogs()">Limpar</button>
+          </div>
+          <div class="debug-content">
+            @for (log of debugLogs; track log.time) {
+              <div class="log-entry" [class]="log.type">
+                <span class="log-time">{{ log.time }}</span>
+                <span class="log-msg">{{ log.message }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (isConnecting) {
+        <div class="loading-state">
+          <div class="spinner-container">
+            <div class="spinner"></div>
+          </div>
+          <h5>Conectando ao hub...</h5>
+          <p>Estabelecendo conexão segura</p>
+        </div>
+      } @else if (isLoading) {
+        <div class="loading-state">
+          <div class="spinner-container">
+            <div class="spinner"></div>
+          </div>
+          <h5>Carregando stream...</h5>
+          <p>Aguarde enquanto carregamos a {{ expectedStreamType === 'auscultation' ? 'ausculta' : 'imagem' }}</p>
+        </div>
+      } @else if (!hasActiveStream) {
         <div class="waiting-state">
           <div class="waiting-icon">
             <app-icon name="cast" [size]="48" />
           </div>
           <h5>Aguardando transmissão...</h5>
-          <p>O paciente iniciará o streaming de {{ streamType === 'auscultation' ? 'ausculta' : 'exame visual' }}</p>
+          <p>O paciente iniciará o streaming de {{ expectedStreamType === 'auscultation' ? 'ausculta' : 'exame visual' }}</p>
         </div>
       } @else {
         <div class="stream-container">
@@ -116,6 +161,64 @@ import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sy
       flex-direction: column;
     }
 
+    /* Log Visual de Debug */
+    .debug-log-panel {
+      background: #1a1a2e;
+      border: 1px solid #2d2d44;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 150px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #2d2d44;
+      color: #fff;
+    }
+
+    .btn-clear-log {
+      background: transparent;
+      border: 1px solid #666;
+      color: #aaa;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .debug-content {
+      max-height: 110px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 8px;
+      padding: 2px 0;
+      border-bottom: 1px solid #2d2d44;
+    }
+
+    .log-time {
+      color: #888;
+      flex-shrink: 0;
+    }
+
+    .log-msg {
+      color: #ddd;
+    }
+
+    .log-entry.success .log-msg { color: #10b981; }
+    .log-entry.error .log-msg { color: #ef4444; }
+    .log-entry.warning .log-msg { color: #f59e0b; }
+    .log-entry.info .log-msg { color: #60a5fa; }
+
     .panel-header {
       display: flex;
       justify-content: space-between;
@@ -133,17 +236,85 @@ import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sy
       }
 
       .stream-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
         font-size: 12px;
         padding: 4px 10px;
         border-radius: 12px;
         background: var(--bg-secondary);
         color: var(--text-secondary);
 
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          
+          &.waiting {
+            background: var(--text-tertiary, #888);
+          }
+          
+          &.connecting, &.loading {
+            background: var(--color-warning, #f59e0b);
+            animation: blink 1s infinite;
+          }
+          
+          &.active {
+            background: var(--color-success, #10b981);
+            animation: pulse-dot 2s infinite;
+          }
+        }
+
         &.active {
           background: var(--bg-success);
           color: var(--text-success);
-          animation: pulse 2s infinite;
         }
+        
+        &.loading, &.connecting {
+          background: var(--bg-warning, rgba(245, 158, 11, 0.1));
+          color: var(--color-warning, #f59e0b);
+        }
+      }
+    }
+
+    .loading-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+
+      .spinner-container {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid var(--bg-secondary);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      h5 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        color: var(--text-primary);
+      }
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-secondary);
+        max-width: 280px;
       }
     }
 
@@ -398,6 +569,20 @@ import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sy
       0%, 100% { opacity: 0.5; transform: scale(1); }
       50% { opacity: 1; transform: scale(1.05); }
     }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+    }
   `]
 })
 export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -414,6 +599,10 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
   streamType: 'auscultation' | 'video' | null = null;
   streamArea: string | null = null;
   
+  // Estados de loading
+  isConnecting = false;
+  isLoading = false;
+  
   isMuted = false;
   volume = 1;
   isFullscreen = false;
@@ -422,6 +611,9 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
   captures: Array<{ id: string; dataUrl: string }> = [];
 
+  // Log visual de debug
+  debugLogs: Array<{time: string; message: string; type: 'info' | 'success' | 'error' | 'warning'}> = [];
+
   private subscriptions = new Subscription();
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
@@ -429,11 +621,33 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
   constructor(private syncService: MedicalDevicesSyncService) {}
 
-  ngOnInit(): void {
-    // Conecta ao hub
+  async ngOnInit(): Promise<void> {
+    this.addDebugLog('Inicializando receptor de stream...', 'info');
+    
+    // Sempre chama connect - o service sabe reutilizar se for o mesmo appointmentId
     if (this.appointmentId) {
-      this.syncService.connect(this.appointmentId);
+      this.isConnecting = true;
+      this.addDebugLog('Conectando ao hub SignalR...', 'info');
+      try {
+        await this.syncService.connect(this.appointmentId);
+        this.addDebugLog('✓ Conectado ao hub!', 'success');
+      } catch (error: any) {
+        this.addDebugLog(`ERRO ao conectar: ${error.message}`, 'error');
+        return; // Não continua se não conectou
+      } finally {
+        this.isConnecting = false;
+      }
+    } else {
+      this.addDebugLog('ERRO: appointmentId não definido!', 'error');
+      return;
     }
+
+    // Verifica imediatamente se já existe um stream ativo
+    this.checkExistingStream();
+
+    // Solicita o stream do paciente automaticamente
+    // Isso faz o paciente reenviar a oferta se já estiver transmitindo
+    await this.requestStreamFromPatient();
 
     // Observa stream remoto
     this.subscriptions.add(
@@ -446,6 +660,9 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
     this.subscriptions.add(
       this.syncService.streamType$.subscribe(type => {
         this.streamType = type;
+        if (type) {
+          this.addDebugLog(`Tipo de stream: ${type}`, 'info');
+        }
       })
     );
 
@@ -455,6 +672,81 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
         this.streamArea = area;
       })
     );
+
+    // Observa logs de debug do serviço
+    this.subscriptions.add(
+      this.syncService.debugLog$.subscribe(log => {
+        this.addDebugLog(log.message, log.type);
+      })
+    );
+  }
+
+  /**
+   * Adiciona log visual para debug
+   */
+  addDebugLog(message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info'): void {
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    this.debugLogs.unshift({ time, message, type });
+    if (this.debugLogs.length > 20) {
+      this.debugLogs.pop();
+    }
+  }
+
+  clearDebugLogs(): void {
+    this.debugLogs = [];
+  }
+
+  /**
+   * Verifica se o serviço já está conectado
+   */
+  private async checkConnection(): Promise<boolean> {
+    // Usa getter síncrono para verificação imediata
+    return this.syncService.isCurrentlyConnected;
+  }
+
+  /**
+   * Verifica se já existe um stream ativo no serviço (cache)
+   * Usa getters síncronos para resposta imediata
+   */
+  private checkExistingStream(): void {
+    // Verifica cache de tipo de stream primeiro
+    const cachedType = this.syncService.currentStreamTypeValue;
+    if (cachedType) {
+      this.streamType = cachedType;
+      console.log('[DoctorStreamReceiver] Tipo de stream do cache:', cachedType);
+    }
+
+    // Verifica cache de área
+    const cachedArea = this.syncService.currentStreamAreaValue;
+    if (cachedArea) {
+      this.streamArea = cachedArea;
+      console.log('[DoctorStreamReceiver] Área do cache:', cachedArea);
+    }
+
+    // Verifica cache de stream
+    const cachedStream = this.syncService.currentRemoteStream;
+    if (cachedStream) {
+      console.log('[DoctorStreamReceiver] Stream encontrado no cache, aplicando imediatamente');
+      this.handleRemoteStream(cachedStream);
+    }
+  }
+
+  /**
+   * Solicita o stream do paciente
+   * Útil quando o médico entra na sala depois que o paciente já iniciou a transmissão
+   */
+  private async requestStreamFromPatient(): Promise<void> {
+    if (!this.expectedStreamType) return;
+    
+    console.log('[DoctorStreamReceiver] Solicitando stream do paciente:', this.expectedStreamType);
+    this.addDebugLog(`Solicitando stream ${this.expectedStreamType} do paciente...`, 'info');
+    
+    try {
+      await this.syncService.requestStream(this.expectedStreamType!);
+    } catch (error: any) {
+      this.addDebugLog(`ERRO ao solicitar stream: ${error.message}`, 'error');
+    }
   }
 
   ngAfterViewInit(): void {
@@ -481,18 +773,27 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
       tracks: stream?.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState, label: t.label }))
     });
 
+    // Se estamos recebendo um stream, entramos em estado de loading brevemente
+    if (stream) {
+      this.isLoading = true;
+      this.addDebugLog(`✓ STREAM RECEBIDO! ${stream.getTracks().length} track(s)`, 'success');
+    }
+
     // Se temos um tipo esperado e o stream é de outro tipo, ignoramos
     if (this.expectedStreamType && this.streamType && this.expectedStreamType !== this.streamType) {
       console.log('[DoctorStreamReceiver] Ignorando stream - tipo não corresponde:', {
         expected: this.expectedStreamType,
         received: this.streamType
       });
+      this.addDebugLog(`Ignorando stream tipo ${this.streamType} (esperado: ${this.expectedStreamType})`, 'warning');
       // Mantemos hasActiveStream false para este componente
       this.hasActiveStream = false;
+      this.isLoading = false;
       return;
     }
 
     this.hasActiveStream = !!stream;
+    this.isLoading = false;
 
     if (!stream) {
       this.stopAudioVisualization();

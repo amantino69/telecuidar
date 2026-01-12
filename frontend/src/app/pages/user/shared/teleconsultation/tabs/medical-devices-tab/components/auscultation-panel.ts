@@ -31,13 +31,31 @@ export interface AuscultationPosition {
       <div class="panel-header">
         <h4>
           <app-icon name="mic" [size]="20" />
-          Ausculta Digital
+          Ausculta Digital (Lagosta v2)
         </h4>
         <span class="stream-status" [class]="getStatusClass()">
           <span class="status-dot"></span>
           {{ getStatusText() }}
         </span>
       </div>
+
+      <!-- Log Visual de Debug -->
+      @if (debugLogs.length > 0) {
+        <div class="debug-log-panel">
+          <div class="debug-header">
+            <strong>📋 Log de Conexão</strong>
+            <button class="btn-clear-log" (click)="clearDebugLogs()">Limpar</button>
+          </div>
+          <div class="debug-content">
+            @for (log of debugLogs; track log.time) {
+              <div class="log-entry" [class]="log.type">
+                <span class="log-time">{{ log.time }}</span>
+                <span class="log-msg">{{ log.message }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
 
       <!-- Seleção de área -->
       <div class="area-selector">
@@ -281,6 +299,63 @@ export interface AuscultationPosition {
       gap: 10px;
       overflow-y: auto;
     }
+
+    /* Log Visual de Debug */
+    .debug-log-panel {
+      background: #1a1a2e;
+      border: 1px solid #2d2d44;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 150px;
+      overflow: hidden;
+    }
+
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #2d2d44;
+      color: #fff;
+    }
+
+    .btn-clear-log {
+      background: transparent;
+      border: 1px solid #666;
+      color: #aaa;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .debug-content {
+      max-height: 110px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 8px;
+      padding: 2px 0;
+      border-bottom: 1px solid #2d2d44;
+    }
+
+    .log-time {
+      color: #888;
+      flex-shrink: 0;
+    }
+
+    .log-msg {
+      color: #ddd;
+    }
+
+    .log-entry.success .log-msg { color: #10b981; }
+    .log-entry.error .log-msg { color: #ef4444; }
+    .log-entry.warning .log-msg { color: #f59e0b; }
+    .log-entry.info .log-msg { color: #60a5fa; }
 
     .panel-header {
       display: flex;
@@ -945,6 +1020,9 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   
   @ViewChild('waveformCanvas') waveformCanvas!: ElementRef<HTMLCanvasElement>;
 
+  // Log visual de debug
+  debugLogs: Array<{time: string; message: string; type: 'info' | 'success' | 'error' | 'warning'}> = [];
+
   // Áreas principais
   areas: Array<{id: AuscultationArea; label: string; icon: IconName}> = [
     { id: 'cardiac' as AuscultationArea, label: 'Cardíaco', icon: 'heart' },
@@ -1022,6 +1100,9 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   ngOnInit(): void {
     this.refreshDevices();
 
+    // Verifica se já existe um stream de ausculta ativo (restauração após mudança de aba)
+    this.restoreExistingStream();
+
     // Observa dispositivos de áudio
     this.subscriptions.add(
       this.streamingService.availableAudioDevices$.subscribe(devices => {
@@ -1051,7 +1132,39 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
           
           console.log('[Auscultation] Dispositivo selecionado automaticamente:', 
             auscultaDevice?.label || stethoscope?.label || externalMic?.label || devices[0].label);
+          
+          // AUTO-INICIAR: Se não há stream ativo e temos dispositivo, inicia automaticamente
+          if (!this.isAuscultationActive && this.selectedDeviceId) {
+            console.log('[Auscultation] Auto-iniciando captura de ausculta...');
+            setTimeout(() => this.startAuscultationPreview(), 500);
+          }
         }
+      })
+    );
+
+    // Observa stream de ausculta persistente
+    this.subscriptions.add(
+      this.syncService.localAuscultationStream$.subscribe(stream => {
+        if (stream && !this.localStream) {
+          console.log('[Auscultation] Stream persistente detectado, restaurando...');
+          this.localStream = stream;
+          this.isAuscultationActive = true;
+          this.startAuscultationTimer();
+        }
+      })
+    );
+
+    // Observa estado de transmissão
+    this.subscriptions.add(
+      this.syncService.isAuscultationTransmitting$.subscribe(isTransmitting => {
+        this.isStreaming = isTransmitting;
+      })
+    );
+
+    // Observa logs de debug do serviço de sincronização
+    this.subscriptions.add(
+      this.syncService.debugLog$.subscribe(log => {
+        this.addDebugLog(log.message, log.type);
       })
     );
 
@@ -1142,9 +1255,67 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   /**
+   * Adiciona log visual para debug
+   */
+  addDebugLog(message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info'): void {
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    this.debugLogs.unshift({ time, message, type });
+    // Mantém apenas os últimos 20 logs
+    if (this.debugLogs.length > 20) {
+      this.debugLogs.pop();
+    }
+  }
+
+  clearDebugLogs(): void {
+    this.debugLogs = [];
+  }
+
+  /**
+   * Restaura stream existente (após mudança de aba)
+   */
+  private restoreExistingStream(): void {
+    const existingStream = this.syncService.currentLocalAuscultationStream;
+    if (existingStream) {
+      console.log('[Auscultation] Restaurando stream existente');
+      this.localStream = existingStream;
+      this.isAuscultationActive = true;
+      this.isStreaming = this.syncService.isAuscultationCurrentlyTransmitting;
+      
+      // Configura áudio local
+      this.setupLocalAudio(existingStream);
+      
+      // Reconecta ao analisador de áudio
+      this.streamingService.reconnectAudioAnalysis(existingStream);
+      
+      // Reinicia timer
+      this.startAuscultationTimer();
+    }
+  }
+
+  /**
+   * Inicia o timer de ausculta
+   */
+  private startAuscultationTimer(): void {
+    if (this.auscultationInterval) {
+      clearInterval(this.auscultationInterval);
+    }
+    this.auscultationInterval = setInterval(() => {
+      this.auscultationDuration++;
+    }, 1000);
+  }
+
+  /**
    * Inicia preview de ausculta local (sem transmitir ao médico)
    */
   async startAuscultationPreview(): Promise<void> {
+    // Se já existe stream ativo, não inicia novamente
+    if (this.syncService.isAuscultationCurrentlyActive) {
+      console.log('[Auscultation] Stream já ativo, ignorando...');
+      this.restoreExistingStream();
+      return;
+    }
+
     this.deviceError = '';
     this.auscultationDuration = 0;
     this.waveformHistory = []; // Limpa histórico do waveform
@@ -1161,15 +1332,16 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
         this.localStream = session.stream;
         this.isAuscultationActive = true;
         
+        // REGISTRA STREAM PERSISTENTE no sync service
+        this.syncService.setLocalAuscultationStream(session.stream, false);
+        
         // Cria elemento de áudio para ouvir localmente
         this.setupLocalAudio(session.stream);
         
         // Contador de tempo
-        this.auscultationInterval = setInterval(() => {
-          this.auscultationDuration++;
-        }, 1000);
+        this.startAuscultationTimer();
 
-        console.log('[Auscultation] Preview de ausculta iniciado');
+        console.log('[Auscultation] Preview de ausculta iniciado e registrado');
       } else {
         this.deviceError = 'Não foi possível acessar o microfone. Verifique as permissões.';
       }
@@ -1219,11 +1391,12 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
       this.localAudioElement = null;
     }
     
-    // Para o stream local
+    // Para o stream local E remove do sync service
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => track.stop());
       this.localStream = null;
     }
+    this.syncService.setLocalAuscultationStream(null, false);
     
     this.isAuscultationActive = false;
     this.isCapturing = false;
@@ -1250,29 +1423,43 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
    * Inicia transmissão ao médico (WebRTC)
    */
   async startTransmissionToDoctor(): Promise<void> {
+    this.addDebugLog('Iniciando transmissão ao médico...', 'info');
+    
     if (!this.appointmentId) {
       this.deviceError = 'ID da consulta não definido';
+      this.addDebugLog('ERRO: ID da consulta não definido', 'error');
       return;
     }
 
     if (!this.isAuscultationActive) {
       this.deviceError = 'Inicie a ausculta primeiro';
+      this.addDebugLog('ERRO: Ausculta não ativa', 'error');
       return;
     }
 
     const activeStream = this.streamingService.getActiveStream();
     if (!activeStream) {
       this.deviceError = 'Stream de áudio não disponível';
+      this.addDebugLog('ERRO: Stream não disponível', 'error');
       return;
     }
 
+    this.addDebugLog(`Stream OK: ${activeStream.getTracks().length} track(s)`, 'success');
+
     try {
       // Garante conexão ao hub antes de transmitir
+      this.addDebugLog('Conectando ao hub SignalR...', 'info');
       await this.syncService.connect(this.appointmentId);
+      this.addDebugLog('✓ Hub conectado!', 'success');
       
       // Inicia streaming via WebRTC
+      this.addDebugLog('Enviando oferta WebRTC...', 'info');
       await this.syncService.startStreaming(activeStream, 'auscultation', this.selectedArea);
+      this.addDebugLog('✓ Oferta enviada! Aguardando resposta do médico...', 'success');
       this.isStreaming = true;
+      
+      // Atualiza estado de transmissão no serviço
+      this.syncService.setAuscultationTransmitting(true);
       
       // Inicia contador de streaming
       this.streamDuration = 0;
@@ -1293,6 +1480,9 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   stopTransmissionToDoctor(): void {
     this.syncService.stopStreaming();
     this.isStreaming = false;
+    
+    // Atualiza estado de transmissão no serviço
+    this.syncService.setAuscultationTransmitting(false);
     
     if (this.streamInterval) {
       clearInterval(this.streamInterval);
@@ -1760,12 +1950,23 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   ngOnDestroy(): void {
-    this.stopAuscultation();
+    // NÃO paramos a ausculta aqui - ela continua ativa no serviço
+    // Apenas limpamos recursos locais do componente
+    console.log('[Auscultation] ngOnDestroy - mantendo stream ativo no serviço');
+    
     this.stopAudioTest();
     this.subscriptions.unsubscribe();
+    
+    // Limpa timer local (o timer será restaurado quando o componente for recriado)
+    if (this.auscultationInterval) {
+      clearInterval(this.auscultationInterval);
+      this.auscultationInterval = null;
+    }
     
     if (this.currentAudio) {
       this.currentAudio.pause();
     }
+    
+    // NÃO chamamos stopAuscultation() para manter o stream ativo
   }
 }
