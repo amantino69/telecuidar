@@ -1,9 +1,11 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
 
 import { IconComponent, IconName } from '@shared/components/atoms/icon/icon';
+import { TransmissionStatusComponent } from '@shared/components/molecules/transmission-status/transmission-status';
 import { 
   MedicalStreamingService, 
   MediaDeviceInfo,
@@ -11,6 +13,7 @@ import {
   AuscultationArea 
 } from '@app/core/services/medical-streaming.service';
 import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sync.service';
+import { IoMTService, AuscultationData } from '@app/core/services/iomt.service';
 
 // Posições cardíacas específicas
 export type CardiacPosition = 'mitral' | 'aortic' | 'pulmonary' | 'tricuspid' | 'erb';
@@ -25,13 +28,13 @@ export interface AuscultationPosition {
 @Component({
   selector: 'app-auscultation-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, TransmissionStatusComponent],
   template: `
     <div class="auscultation-panel">
       <div class="panel-header">
         <h4>
           <app-icon name="mic" [size]="20" />
-          Ausculta Digital (Lagosta v2)
+          Ausculta Digital (desisto v2)
         </h4>
         <span class="stream-status" [class]="getStatusClass()">
           <span class="status-dot"></span>
@@ -191,6 +194,26 @@ export interface AuscultationPosition {
           }
           <div class="time-badge">{{ formatTime(auscultationDuration) }}</div>
         </div>
+      }
+
+      <!-- Indicador de Transmissão IoMT em Tempo Real -->
+      @if (isStreaming && isIoMTTransmitting) {
+        <div class="iomt-transmission-status">
+          <div class="transmission-indicator active">
+            <span class="pulse-dot"></span>
+            <span>Transmitindo fonocardiograma em tempo real...</span>
+          </div>
+          <div class="transmission-stats">
+            <span>📤 Enviados: {{ iomtPacketsSent }}</span>
+            <span>✅ Confirmados: {{ iomtPacketsConfirmed }}</span>
+            <span>📊 Latência: {{ iomtLatencyMs }}ms</span>
+          </div>
+        </div>
+      }
+
+      <!-- Status de transmissão IoMT -->
+      @if (isStreaming) {
+        <app-transmission-status type="auscultation" [compact]="false" />
       }
 
       <!-- Visualização do áudio com waveform -->
@@ -356,6 +379,62 @@ export interface AuscultationPosition {
     .log-entry.error .log-msg { color: #ef4444; }
     .log-entry.warning .log-msg { color: #f59e0b; }
     .log-entry.info .log-msg { color: #60a5fa; }
+
+    /* IoMT Transmission Status */
+    .iomt-transmission-status {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .transmission-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .transmission-indicator.active {
+      color: #10b981;
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse-iomt 0.8s infinite;
+    }
+
+    @keyframes pulse-iomt {
+      0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+      }
+      50% { 
+        opacity: 0.6; 
+        transform: scale(1.2);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+    }
+
+    .transmission-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .transmission-stats span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
     .panel-header {
       display: flex;
@@ -1087,10 +1166,20 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
   private localStream: MediaStream | null = null; // Novo: stream local
   private canvasCtx: CanvasRenderingContext2D | null = null;
   private bpmHistory: number[] = [];
+  
+  // IoMT Streaming - Envio de fonocardiograma em tempo real
+  private iomtStreamingInterval: any = null;
+  private iomtPacketNumber = 0;
+  private readonly IOMT_STREAMING_INTERVAL_MS = 2000; // Enviar a cada 2 segundos
+  isIoMTTransmitting = false;
+  iomtPacketsSent = 0;
+  iomtPacketsConfirmed = 0;
+  iomtLatencyMs = 0;
 
   constructor(
     private streamingService: MedicalStreamingService,
-    private syncService: MedicalDevicesSyncService
+    private syncService: MedicalDevicesSyncService,
+    private iomtService: IoMTService
   ) {}
 
   get selectedPositionInfo(): AuscultationPosition | undefined {
@@ -1186,6 +1275,20 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
           this.deviceError = error.error;
           this.isStreaming = false;
           this.isCapturing = false;
+        }
+      })
+    );
+
+    // Observa status de streaming IoMT
+    this.subscriptions.add(
+      this.iomtService.streamingStatus$.subscribe(status => {
+        if (status.type === 'auscultation') {
+          if (status.status === 'received' && status.packetNumber) {
+            this.iomtPacketsConfirmed = status.packetNumber;
+          }
+          if (status.latencyMs) {
+            this.iomtLatencyMs = status.latencyMs;
+          }
         }
       })
     );
@@ -1467,6 +1570,9 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
         this.streamDuration++;
       }, 1000);
       
+      // ⭐ NOVO: Inicia streaming IoMT do fonocardiograma (imagem + FFT a cada 2s)
+      await this.startIoMTStreaming();
+      
       console.log('[Auscultation] Transmissão ao médico iniciada');
     } catch (error: any) {
       console.error('[Auscultation] Erro ao iniciar transmissão:', error);
@@ -1489,7 +1595,118 @@ export class AuscultationPanelComponent implements OnInit, OnDestroy, AfterViewI
       this.streamInterval = null;
     }
     
+    // ⭐ NOVO: Para streaming IoMT
+    this.stopIoMTStreaming();
+    
     console.log('[Auscultation] Transmissão ao médico parada');
+  }
+
+  // ========== IoMT STREAMING - Fonocardiograma em tempo real ==========
+
+  /**
+   * Inicia streaming do fonocardiograma via IoMT a cada 2 segundos
+   */
+  private async startIoMTStreaming(): Promise<void> {
+    if (!this.appointmentId) return;
+
+    try {
+      // Conecta ao hub IoMT
+      this.addDebugLog('Conectando ao hub IoMT...', 'info');
+      await this.iomtService.connect(this.appointmentId);
+      this.addDebugLog('✓ Hub IoMT conectado!', 'success');
+
+      // Reseta contadores
+      this.iomtPacketNumber = 0;
+      this.iomtPacketsSent = 0;
+      this.iomtPacketsConfirmed = 0;
+      this.isIoMTTransmitting = true;
+
+      // Inicia intervalo de streaming a cada 2 segundos
+      this.iomtStreamingInterval = setInterval(() => {
+        this.sendIoMTPacket();
+      }, this.IOMT_STREAMING_INTERVAL_MS);
+
+      this.addDebugLog('✓ Streaming IoMT iniciado (a cada 2s)', 'success');
+
+    } catch (error: any) {
+      console.error('[Auscultation] Erro ao iniciar IoMT:', error);
+      this.addDebugLog(`Erro IoMT: ${error.message}`, 'error');
+      // Não bloqueia a transmissão WebRTC se IoMT falhar
+    }
+  }
+
+  /**
+   * Envia um pacote IoMT com imagem do fonocardiograma e dados FFT
+   */
+  private async sendIoMTPacket(): Promise<void> {
+    if (!this.isIoMTTransmitting || !this.appointmentId) return;
+
+    try {
+      this.iomtPacketNumber++;
+
+      // Captura imagem do canvas (fonocardiograma)
+      const canvas = this.waveformCanvas?.nativeElement;
+      const phonogramImage = canvas ? canvas.toDataURL('image/png', 0.7) : '';
+
+      // Prepara dados para envio
+      const data: AuscultationData = {
+        orderId: this.appointmentId,
+        recipientUserId: '', // O hub distribui para todos na sala
+        timestamp: new Date().toISOString(),
+        phonogramImage: phonogramImage,
+        frequency: this.frequency,
+        estimatedBPM: this.estimatedBPM,
+        duration: this.auscultationDuration,
+        isStreaming: true,
+        packetNumber: this.iomtPacketNumber
+      };
+
+      // Envia via IoMT Service
+      await this.iomtService.sendAuscultationStream(data);
+
+      this.iomtPacketsSent++;
+      this.addDebugLog(`📤 Pacote IoMT #${this.iomtPacketNumber} enviado`, 'info');
+
+    } catch (error: any) {
+      console.error('[Auscultation] Erro ao enviar pacote IoMT:', error);
+      // Continua tentando nos próximos intervalos
+    }
+  }
+
+  /**
+   * Para streaming IoMT e envia gravação final
+   */
+  private async stopIoMTStreaming(): Promise<void> {
+    this.isIoMTTransmitting = false;
+
+    if (this.iomtStreamingInterval) {
+      clearInterval(this.iomtStreamingInterval);
+      this.iomtStreamingInterval = null;
+    }
+
+    // Envia pacote final com resumo
+    if (this.appointmentId && this.iomtPacketsSent > 0) {
+      try {
+        const canvas = this.waveformCanvas?.nativeElement;
+        const finalImage = canvas ? canvas.toDataURL('image/png') : '';
+
+        await this.iomtService.sendAuscultationFinal({
+          orderId: this.appointmentId,
+          recipientUserId: '',
+          timestamp: new Date().toISOString(),
+          phonogramImage: finalImage,
+          estimatedBPM: this.estimatedBPM,
+          duration: this.auscultationDuration,
+          isStreaming: false,
+          totalPackets: this.iomtPacketsSent
+        });
+
+        this.addDebugLog(`✅ Ausculta finalizada - ${this.iomtPacketsSent} pacotes enviados`, 'success');
+
+      } catch (error) {
+        console.error('[Auscultation] Erro ao enviar gravação final:', error);
+      }
+    }
   }
 
   /**

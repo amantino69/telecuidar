@@ -14,7 +14,7 @@ import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sy
       <div class="panel-header">
         <h4>
           <app-icon [name]="expectedStreamType === 'auscultation' ? 'mic' : 'video'" [size]="20" />
-          {{ getStreamTitle() }} (Lagosta v2)
+          {{ getStreamTitle() }} (desisto v2)
         </h4>
         <span class="stream-status" 
               [class.active]="hasActiveStream" 

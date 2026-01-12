@@ -147,10 +147,31 @@ export class MedicalDevicesSyncService implements OnDestroy {
     return this._isVideoTransmitting$.getValue();
   }
 
-  // ICE Servers para WebRTC - Configuração SIMPLES (versão que funcionava!)
+  // ICE Servers para WebRTC - Com TURN servers para garantir conexão
+  // STUN: descobre IP público (gratuito, rápido)
+  // TURN: relay de mídia quando P2P falha (necessário para NAT restritivo)
   private iceServers: RTCIceServer[] = [
+    // STUN servers (descoberta de IP)
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    // TURN servers públicos (relay quando P2P falha)
+    // OpenRelay - serviço gratuito confiável
+    { 
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    { 
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    { 
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
   ];
 
   constructor(

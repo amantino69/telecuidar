@@ -118,7 +118,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     label: 'Ausculta',
     icon: 'mic',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
-    showInTeleconsultation: true,
+    showInTeleconsultation: false, // DESATIVADO - Removido do sistema
     showInDetails: false,
     order: 1,
     group: 'exame-fisico'
@@ -128,7 +128,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     label: 'Câmera de Exame',
     icon: 'video',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
-    showInTeleconsultation: true,
+    showInTeleconsultation: false, // DESATIVADO - Focando apenas em ausculta
     showInDetails: false,
     order: 2,
     group: 'exame-fisico'

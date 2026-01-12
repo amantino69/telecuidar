@@ -246,5 +246,6 @@ app.MapHub<SchedulingHub>("/hubs/scheduling");
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapHub<TeleconsultationHub>("/hubs/teleconsultation");
 app.MapHub<MedicalDevicesHub>("/hubs/medical-devices");
+app.MapHub<IoMTHub>("/hubs/iomt");
 
 app.Run();

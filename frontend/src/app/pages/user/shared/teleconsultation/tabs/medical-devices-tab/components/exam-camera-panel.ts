@@ -4,19 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 import { IconComponent, IconName } from '@shared/components/atoms/icon/icon';
+import { TransmissionStatusComponent } from '@shared/components/molecules/transmission-status/transmission-status';
 import { 
   MedicalStreamingService, 
   MediaDeviceInfo,
   StreamType 
 } from '@app/core/services/medical-streaming.service';
 import { MedicalDevicesSyncService } from '@app/core/services/medical-devices-sync.service';
+import { IoMTService, ExamCameraData } from '@app/core/services/iomt.service';
 
 type ExamType = 'otoscope' | 'dermatoscope' | 'laryngoscope';
 
 @Component({
   selector: 'app-exam-camera-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, TransmissionStatusComponent],
   template: `
     <div class="exam-camera-panel">
       <div class="panel-header">
@@ -146,6 +148,26 @@ type ExamType = 'otoscope' | 'dermatoscope' | 'laryngoscope';
           </button>
         }
       </div>
+
+      <!-- Indicador de Transmissão IoMT -->
+      @if (isStreaming && isIoMTTransmitting) {
+        <div class="iomt-status">
+          <div class="status-row">
+            <span class="pulse-indicator"></span>
+            <span>Transmitindo frames em tempo real...</span>
+          </div>
+          <div class="stats-row">
+            <span>📤 {{ iomtFramesSent }} frames</span>
+            <span>✅ {{ iomtFramesConfirmed }} confirmados</span>
+            <span>📊 {{ iomtLatencyMs }}ms</span>
+          </div>
+        </div>
+      }
+
+      <!-- Status de transmissão IoMT -->
+      @if (isStreaming) {
+        <app-transmission-status type="examCamera" [compact]="true" />
+      }
 
       <!-- Capturas salvas -->
       @if (captures.length > 0) {
@@ -511,6 +533,44 @@ type ExamType = 'otoscope' | 'dermatoscope' | 'laryngoscope';
       }
     }
 
+    /* IoMT Status Indicator */
+    .iomt-status {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #3b82f6;
+      margin-bottom: 6px;
+    }
+
+    .pulse-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse-cam 0.8s infinite;
+    }
+
+    @keyframes pulse-cam {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
     .captures-section {
       padding-top: 16px;
       border-top: 1px solid var(--border-color);
@@ -592,7 +652,7 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   examTypes: Array<{id: ExamType; label: string; icon: IconName}> = [
     { id: 'otoscope' as ExamType, label: 'Otoscópio', icon: 'ear' },
     { id: 'dermatoscope' as ExamType, label: 'Dermatoscópio', icon: 'scan' },
-    { id: 'laryngoscope' as ExamType, label: 'Lagosta', icon: 'mic' }
+    { id: 'laryngoscope' as ExamType, label: 'Alfaiate', icon: 'mic' }
   ];
 
   selectedType: ExamType = 'otoscope';
@@ -613,10 +673,20 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
   activeCameraLabel: string | null = null;
 
   private subscriptions = new Subscription();
+  
+  // IoMT Streaming - Envio de frames em tempo real
+  private iomtStreamingInterval: any = null;
+  private iomtFrameNumber = 0;
+  private readonly IOMT_STREAMING_INTERVAL_MS = 1000; // Enviar frame a cada 1 segundo
+  isIoMTTransmitting = false;
+  iomtFramesSent = 0;
+  iomtFramesConfirmed = 0;
+  iomtLatencyMs = 0;
 
   constructor(
     private streamingService: MedicalStreamingService,
-    private syncService: MedicalDevicesSyncService
+    private syncService: MedicalDevicesSyncService,
+    private iomtService: IoMTService
   ) {}
 
   ngOnInit(): void {
@@ -671,6 +741,20 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
         // Não sobrescreve isStreaming se temos stream local ativo
         if (isTransmitting || !this.syncService.isVideoCurrentlyActive) {
           this.isStreaming = isTransmitting || this.syncService.isVideoCurrentlyActive;
+        }
+      })
+    );
+
+    // Observa status de streaming IoMT
+    this.subscriptions.add(
+      this.iomtService.streamingStatus$.subscribe(status => {
+        if (status.type === 'examCamera') {
+          if (status.status === 'received' && status.packetNumber) {
+            this.iomtFramesConfirmed = status.packetNumber;
+          }
+          if (status.latencyMs) {
+            this.iomtLatencyMs = status.latencyMs;
+          }
         }
       })
     );
@@ -812,7 +896,11 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
             await this.syncService.connect(this.appointmentId);
             await this.syncService.startStreaming(session.stream, 'video');
             this.syncService.setVideoTransmitting(true);
-            console.log('[ExamCamera] Streaming para médico iniciado');
+            console.log('[ExamCamera] Streaming WebRTC para médico iniciado');
+            
+            // ⭐ NOVO: Inicia streaming IoMT para enviar frames a cada 1s
+            await this.startIoMTStreaming();
+            
           } catch (syncError: any) {
             console.error('[ExamCamera] Erro ao enviar stream para médico:', syncError);
             // Não para o stream local, apenas notifica
@@ -853,6 +941,9 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
     this.streamingService.stopStream();
     this.syncService.stopStreaming();
     
+    // ⭐ NOVO: Para streaming IoMT
+    this.stopIoMTStreaming();
+    
     // Remove stream do sync service
     this.syncService.setLocalVideoStream(null, false);
     
@@ -863,6 +954,107 @@ export class ExamCameraPanelComponent implements OnInit, OnDestroy, AfterViewIni
     this.isStreaming = false;
     this.errorMessage = null;
     this.activeCameraLabel = null;
+  }
+
+  // ========== IoMT STREAMING - Frames de câmera em tempo real ==========
+
+  /**
+   * Inicia streaming de frames via IoMT a cada 1 segundo
+   */
+  private async startIoMTStreaming(): Promise<void> {
+    if (!this.appointmentId) return;
+
+    try {
+      // Conecta ao hub IoMT
+      console.log('[ExamCamera] Conectando ao hub IoMT...');
+      await this.iomtService.connect(this.appointmentId);
+      console.log('[ExamCamera] Hub IoMT conectado!');
+
+      // Reseta contadores
+      this.iomtFrameNumber = 0;
+      this.iomtFramesSent = 0;
+      this.iomtFramesConfirmed = 0;
+      this.isIoMTTransmitting = true;
+
+      // Inicia intervalo de streaming a cada 1 segundo
+      this.iomtStreamingInterval = setInterval(() => {
+        this.sendIoMTFrame();
+      }, this.IOMT_STREAMING_INTERVAL_MS);
+
+      console.log('[ExamCamera] Streaming IoMT iniciado (a cada 1s)');
+
+    } catch (error: any) {
+      console.error('[ExamCamera] Erro ao iniciar IoMT:', error);
+      // Não bloqueia a transmissão WebRTC se IoMT falhar
+    }
+  }
+
+  /**
+   * Captura e envia um frame via IoMT
+   * Otimizado para baixa latência: resolução reduzida e alta compressão
+   */
+  private async sendIoMTFrame(): Promise<void> {
+    if (!this.isIoMTTransmitting || !this.appointmentId || !this.videoElement) return;
+
+    try {
+      this.iomtFrameNumber++;
+
+      // Captura frame do vídeo - OTIMIZADO para baixa latência
+      const video = this.videoElement.nativeElement;
+      const canvas = document.createElement('canvas');
+      
+      // Resolução reduzida para transmissão rápida (máx 480p)
+      // Mantém aspect ratio original
+      const maxWidth = 640;
+      const maxHeight = 480;
+      const videoWidth = video.videoWidth || 640;
+      const videoHeight = video.videoHeight || 480;
+      const scale = Math.min(maxWidth / videoWidth, maxHeight / videoHeight, 1);
+      
+      canvas.width = Math.round(videoWidth * scale);
+      canvas.height = Math.round(videoHeight * scale);
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Compressão agressiva (40%) para transmissão rápida via SignalR
+      const imageData = canvas.toDataURL('image/jpeg', 0.4);
+
+      // Prepara dados para envio
+      const data: ExamCameraData = {
+        orderId: this.appointmentId,
+        recipientUserId: '',
+        timestamp: new Date().toISOString(),
+        imageData: imageData,
+        frameNumber: this.iomtFrameNumber,
+        isStreaming: true,
+        deviceType: this.selectedType
+      };
+
+      // Envia via IoMT Service
+      await this.iomtService.sendExamCameraStream(data);
+
+      this.iomtFramesSent++;
+
+    } catch (error: any) {
+      console.error('[ExamCamera] Erro ao enviar frame IoMT:', error);
+      // Continua tentando nos próximos intervalos
+    }
+  }
+
+  /**
+   * Para streaming IoMT
+   */
+  private stopIoMTStreaming(): void {
+    this.isIoMTTransmitting = false;
+
+    if (this.iomtStreamingInterval) {
+      clearInterval(this.iomtStreamingInterval);
+      this.iomtStreamingInterval = null;
+    }
+
+    console.log(`[ExamCamera] Streaming IoMT parado - ${this.iomtFramesSent} frames enviados`);
   }
 
   toggleMirror(): void {
