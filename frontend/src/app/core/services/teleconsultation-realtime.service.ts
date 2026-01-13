@@ -205,6 +205,11 @@ export class TeleconsultationRealTimeService implements OnDestroy {
 
     // Fonocardiograma em tempo real
     this.hubConnection.on('ReceivePhonocardiogramFrame', (frame: PhonocardiogramFrame) => {
+      console.log('[SignalR] ReceivePhonocardiogramFrame:', {
+        hasFrame: !!frame,
+        heartRate: frame?.heartRate,
+        waveformLength: frame?.waveform?.length
+      });
       this.ngZone.run(() => {
         this._phonocardiogramFrame$.next(frame);
         if (this.phonocardiogramCallback) {

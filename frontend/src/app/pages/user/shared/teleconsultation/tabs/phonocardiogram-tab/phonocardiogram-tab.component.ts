@@ -135,6 +135,21 @@ import { TeleconsultationRealTimeService } from '@core/services/teleconsultation
             <span>Transmitindo para o médico via SignalR (~3KB/s)</span>
           </div>
         }
+
+        <!-- DEBUG LOG - ÁREA VISÍVEL -->
+        <div class="debug-area">
+          <div class="debug-header">
+            <strong>🔧 DEBUG LOG (copie e envie para análise):</strong>
+            <button class="btn-copy" (click)="copyDebugLog()">📋 Copiar</button>
+            <button class="btn-clear" (click)="clearDebugLog()">🗑️ Limpar</button>
+          </div>
+          <textarea 
+            class="debug-log" 
+            readonly 
+            [value]="debugLogText"
+            #debugTextarea
+          ></textarea>
+        </div>
       </div>
     </div>
   `,
@@ -386,10 +401,59 @@ import { TeleconsultationRealTimeService } from '@core/services/teleconsultation
       color: #22c55e;
       font-size: 11px;
     }
+
+    .debug-area {
+      margin-top: 16px;
+      padding: 12px;
+      background: #1a1a2e;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+
+    .debug-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: #fbbf24;
+      font-size: 12px;
+    }
+
+    .btn-copy, .btn-clear {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-copy {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-clear {
+      background: #6b7280;
+      color: white;
+    }
+
+    .debug-log {
+      width: 100%;
+      height: 120px;
+      padding: 8px;
+      background: #0d0d1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #22c55e;
+      font-family: monospace;
+      font-size: 10px;
+      resize: vertical;
+    }
   `]
 })
 export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('waveformCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('debugTextarea', { static: false }) debugTextareaRef!: ElementRef<HTMLTextAreaElement>;
   
   @Input() appointmentId: string | null = null;
   @Input() userrole: 'PATIENT' | 'PROFESSIONAL' | 'ADMIN' | 'ASSISTANT' = 'PATIENT';
@@ -401,6 +465,11 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
   s1Amplitude = 0;
   s2Amplitude = 0;
 
+  // DEBUG
+  debugLogText = '';
+  private debugLogs: string[] = [];
+  private startTime = Date.now();
+
   // Microfones
   availableMicrophones: MediaDeviceInfo[] = [];
   selectedMicrophone = '';
@@ -408,7 +477,7 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
   // Canvas
   private ctx: CanvasRenderingContext2D | null = null;
   private waveformHistory: number[][] = [];
-  private maxHistory = 300; // ~5 segundos
+  private maxHistory = 100; // ~3 segundos a 30fps (reduzido para melhor performance)
   private animationFrameId: number | null = null;
   private isBrowser: boolean;
 
@@ -430,6 +499,7 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
 
   ngOnInit(): void {
     if (this.isBrowser) {
+      this.addDebugLog('INIT', `Componente iniciado | Role: ${this.userrole} | AppointmentId: ${this.appointmentId}`);
       this.loadMicrophones();
       this.setupSubscriptions();
     }
@@ -438,6 +508,7 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
   ngAfterViewInit(): void {
     if (this.isBrowser && this.canvasRef) {
       this.ctx = this.canvasRef.nativeElement.getContext('2d');
+      this.addDebugLog('CANVAS', `Canvas inicializado: ${this.ctx ? 'OK' : 'FALHOU'}`);
       this.startAnimation();
     }
   }
@@ -462,10 +533,25 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
     }
   }
 
+  private remoteFrameCount = 0;
+  private localFrameCount = 0;
+  private lastFrameTime = 0;
+
   private setupSubscriptions(): void {
+    this.addDebugLog('SUB', 'Configurando subscriptions...');
+
     // Frames locais (paciente)
     this.subscriptions.push(
       this.phonoService.localFrame$.subscribe(frame => {
+        this.localFrameCount++;
+        const now = Date.now();
+        const delta = this.lastFrameTime ? now - this.lastFrameTime : 0;
+        this.lastFrameTime = now;
+        
+        // Log a cada 30 frames (~1 segundo)
+        if (this.localFrameCount % 30 === 0) {
+          this.addDebugLog('LOCAL', `Frame #${this.localFrameCount} | BPM: ${frame.heartRate} | Delta: ${delta}ms | History: ${this.waveformHistory.length}`);
+        }
         this.processFrame(frame);
       })
     );
@@ -474,6 +560,16 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
     this.subscriptions.push(
       this.realtimeService.phonocardiogramFrame$.subscribe(frame => {
         this.isReceiving = true;
+        this.remoteFrameCount++;
+        const now = Date.now();
+        const delta = this.lastFrameTime ? now - this.lastFrameTime : 0;
+        this.lastFrameTime = now;
+        
+        // Log a cada frame nos primeiros 10, depois a cada 30
+        if (this.remoteFrameCount <= 10 || this.remoteFrameCount % 30 === 0) {
+          this.addDebugLog('REMOTE', `Frame #${this.remoteFrameCount} | BPM: ${frame.heartRate} | Waveform: ${frame.waveform?.length || 0}pts | Delta: ${delta}ms | History: ${this.waveformHistory.length}`);
+        }
+        
         this.processFrame(frame);
         this.cdr.detectChanges();
       })
@@ -483,9 +579,12 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
     this.subscriptions.push(
       this.phonoService.isCapturing$.subscribe(capturing => {
         this.isCapturing = capturing;
+        this.addDebugLog('STATUS', `Captura: ${capturing ? 'ATIVA' : 'PARADA'}`);
         this.cdr.detectChanges();
       })
     );
+
+    this.addDebugLog('SUB', 'Subscriptions configuradas OK');
   }
 
   private processFrame(frame: PhonocardiogramFrame): void {
@@ -589,5 +688,44 @@ export class PhonocardiogramTabComponent implements OnInit, OnDestroy, AfterView
     ctx.shadowBlur = 8;
     ctx.stroke();
     ctx.shadowBlur = 0;
+  }
+
+  // ======== DEBUG METHODS ========
+  
+  private addDebugLog(tag: string, message: string): void {
+    const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
+    const timestamp = new Date().toLocaleTimeString('pt-BR');
+    const logLine = `[${timestamp}][+${elapsed}s][${tag}] ${message}`;
+    
+    this.debugLogs.push(logLine);
+    
+    // Manter apenas os últimos 50 logs
+    if (this.debugLogs.length > 50) {
+      this.debugLogs.shift();
+    }
+    
+    this.debugLogText = this.debugLogs.join('\n');
+    
+    // Auto-scroll para o final
+    setTimeout(() => {
+      if (this.debugTextareaRef?.nativeElement) {
+        this.debugTextareaRef.nativeElement.scrollTop = this.debugTextareaRef.nativeElement.scrollHeight;
+      }
+    });
+  }
+
+  copyDebugLog(): void {
+    if (this.isBrowser && navigator.clipboard) {
+      const header = `=== FONO DEBUG LOG ===\nData: ${new Date().toISOString()}\nRole: ${this.userrole}\nAppointmentId: ${this.appointmentId}\nFrames Locais: ${this.localFrameCount}\nFrames Remotos: ${this.remoteFrameCount}\nHistory Size: ${this.waveformHistory.length}\n\n`;
+      navigator.clipboard.writeText(header + this.debugLogText);
+      this.addDebugLog('COPY', 'Log copiado para clipboard!');
+    }
+  }
+
+  clearDebugLog(): void {
+    this.debugLogs = [];
+    this.debugLogText = '';
+    this.startTime = Date.now();
+    this.addDebugLog('CLEAR', 'Log limpo');
   }
 }

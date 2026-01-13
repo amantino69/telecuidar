@@ -46,6 +46,11 @@ export class PhonocardiogramService {
   private lastPeakTime = 0;
   private heartRates: number[] = [];
   
+  // Controle de taxa de envio (30fps para SignalR, 60fps local)
+  private lastSendTime = 0;
+  private readonly SEND_INTERVAL = 33; // ~30fps
+  private frameCount = 0;
+  
   // Estados observáveis
   private _isCapturing$ = new BehaviorSubject<boolean>(false);
   public isCapturing$ = this._isCapturing$.asObservable();
@@ -166,14 +171,23 @@ export class PhonocardiogramService {
       // Processar e criar frame
       const frame = this.createFrame(dataArray);
       
-      // Emitir localmente para preview
+      // Emitir localmente para preview (60fps)
       this.localFrame$.next(frame);
       
       // Atualizar BPM
       this._currentHeartRate$.next(frame.heartRate);
       
-      // Enviar via SignalR
-      if (this.consultaId) {
+      // Enviar via SignalR com rate limiting (30fps)
+      const now = Date.now();
+      if (this.consultaId && (now - this.lastSendTime) >= this.SEND_INTERVAL) {
+        this.lastSendTime = now;
+        this.frameCount++;
+        
+        // Log a cada 30 frames (~1 segundo)
+        if (this.frameCount % 30 === 0) {
+          console.log('[Fono] Enviando frame #' + this.frameCount + ' via SignalR');
+        }
+        
         this.sendFrame(this.consultaId, frame);
       }
       
