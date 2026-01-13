@@ -88,22 +88,6 @@ import { TeleconsultationRealTimeService } from '@core/services/teleconsultation
 
         <!-- Visualização do Fonocardiograma -->
         <div class="visualization-section">
-          <!-- Indicadores de BPM e Sons -->
-          <div class="metrics-row">
-            <div class="metric-card bpm">
-              <div class="metric-value">{{ currentHeartRate || '--' }}</div>
-              <div class="metric-label">BPM</div>
-            </div>
-            <div class="metric-card s1">
-              <div class="metric-value">{{ (s1Amplitude * 100).toFixed(0) }}%</div>
-              <div class="metric-label">S1</div>
-            </div>
-            <div class="metric-card s2">
-              <div class="metric-value">{{ (s2Amplitude * 100).toFixed(0) }}%</div>
-              <div class="metric-label">S2</div>
-            </div>
-          </div>
-
           <!-- Canvas do Traçado -->
           <div class="waveform-container">
             <canvas #waveformCanvas width="600" height="180"></canvas>
@@ -114,25 +98,13 @@ import { TeleconsultationRealTimeService } from '@core/services/teleconsultation
               </div>
             }
           </div>
-
-          <!-- Legenda -->
-          <div class="waveform-legend">
-            <span class="legend-item">
-              <span class="legend-color s1"></span>
-              S1 (Fechamento mitral/tricúspide)
-            </span>
-            <span class="legend-item">
-              <span class="legend-color s2"></span>
-              S2 (Fechamento aórtica/pulmonar)
-            </span>
-          </div>
         </div>
 
         <!-- Status de Conexão -->
         @if (isOperator && isCapturing) {
           <div class="connection-status">
             <app-icon name="activity" [size]="14" />
-            <span>Transmitindo para o médico via SignalR (~3KB/s)</span>
+            <span>Transmitindo para o médico via SignalR</span>
           </div>
         }
 
