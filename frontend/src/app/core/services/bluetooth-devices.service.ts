@@ -531,11 +531,26 @@ export class BluetoothDevicesService {
   }
 
   /**
-   * Leituras do monitor de pressão
+   * Leituras do monitor de pressão (compatível com OMRON HEM-7156T e outros)
+   * 
+   * Formato Blood Pressure Measurement (0x2a35):
+   * - Byte 0: Flags
+   *   - Bit 0: Unidade (0 = mmHg, 1 = kPa)
+   *   - Bit 1: Timestamp presente
+   *   - Bit 2: Pulse Rate presente
+   *   - Bit 3: User ID presente
+   *   - Bit 4: Measurement Status presente
+   * - Bytes 1-2: Sistólica (SFLOAT)
+   * - Bytes 3-4: Diastólica (SFLOAT)
+   * - Bytes 5-6: MAP (SFLOAT)
+   * - Bytes 7-13: Timestamp (se presente - 7 bytes)
+   * - Bytes após timestamp: Pulse Rate (2 bytes, se presente)
    */
   private async startBloodPressureReadings(server: BluetoothRemoteGATTServer, deviceId: string): Promise<void> {
     const service = await server.getPrimaryService(GATT_SERVICES.BLOOD_PRESSURE);
     const char = await service.getCharacteristic(GATT_SERVICES.BLOOD_PRESSURE_MEASUREMENT);
+    
+    console.log('[BluetoothDevices] Blood Pressure - Iniciando notificações...');
     
     await char.startNotifications();
     char.addEventListener('characteristicvaluechanged', (event: Event) => {
@@ -543,24 +558,39 @@ export class BluetoothDevicesService {
       const value = target.value!;
       
       this.ngZone.run(() => {
+        // Log raw data para debug
+        const bytes = Array.from(new Uint8Array(value.buffer));
+        console.log('[BluetoothDevices] BP Raw:', bytes.map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
+        
         const flags = value.getUint8(0);
         const isKpa = (flags & 0x01) !== 0;
+        const hasTimestamp = (flags & 0x02) !== 0;
+        const hasPulseRate = (flags & 0x04) !== 0;
         
+        // Lê valores de pressão (sempre nos mesmos offsets)
         let systolic = value.getUint16(1, true);
         let diastolic = value.getUint16(3, true);
         let map = value.getUint16(5, true); // Mean Arterial Pressure
         
         // Converte de kPa para mmHg se necessário
         if (isKpa) {
-          systolic = systolic * 7.5006;
-          diastolic = diastolic * 7.5006;
+          systolic = Math.round(systolic * 7.5006);
+          diastolic = Math.round(diastolic * 7.5006);
+          map = Math.round(map * 7.5006);
         }
         
-        // Pulse rate (se presente)
+        // Pulse rate (offset depende se tem timestamp)
+        // Offset base: 7 (após MAP)
+        // Se tem timestamp: +7 bytes = offset 14
         let heartRate: number | undefined;
-        if ((flags & 0x04) !== 0) {
-          heartRate = value.getUint16(7, true);
+        if (hasPulseRate) {
+          const pulseOffset = hasTimestamp ? 14 : 7;
+          if (value.byteLength > pulseOffset + 1) {
+            heartRate = value.getUint16(pulseOffset, true);
+          }
         }
+        
+        console.log(`[BluetoothDevices] BP Parsed: ${systolic}/${diastolic} mmHg, Pulse: ${heartRate ?? 'N/A'}`);
         
         this._readings$.next({
           deviceId,
@@ -576,6 +606,8 @@ export class BluetoothDevicesService {
         this.updateDeviceLastReading(deviceId);
       });
     });
+    
+    console.log('[BluetoothDevices] Blood Pressure - INICIE A MEDIÇÃO NO APARELHO!');
   }
 
   /**

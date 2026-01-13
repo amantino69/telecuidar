@@ -621,20 +621,29 @@ export class DeviceConnectionPanelComponent implements OnInit, OnDestroy {
 
   private processReading(reading: VitalReading): void {
     const values = reading.values;
+    console.log(`[DeviceConnectionPanel] Leitura Bluetooth (${reading.deviceType}):`, values);
     
     // Preenche os campos do formulário com os dados do Bluetooth
+    // Os dados do Bluetooth sobrescrevem os digitados manualmente
+    
     if (values.spo2 !== undefined) {
       this.vitalsForm.patchValue({ spo2: values.spo2 });
     }
+    
+    // Heart Rate pode vir do oxímetro (pulseRate) ou do medidor de pressão (heartRate)
     if (values.pulseRate !== undefined || values.heartRate !== undefined) {
       this.vitalsForm.patchValue({ heartRate: values.pulseRate ?? values.heartRate });
     }
+    
     if (values.temperature !== undefined) {
       this.vitalsForm.patchValue({ temperature: values.temperature });
     }
+    
     if (values.weight !== undefined) {
       this.vitalsForm.patchValue({ weight: values.weight });
     }
+    
+    // Pressão arterial (OMRON e outros)
     if (values.systolic !== undefined) {
       this.vitalsForm.patchValue({ systolic: values.systolic });
     }
