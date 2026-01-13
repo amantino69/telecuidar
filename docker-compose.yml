@@ -68,16 +68,13 @@ services:
       - XMPP_MUC_DOMAIN=muc.meet.jitsi
       - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
       - TOKEN_AUTH_URL=${JITSI_TOKEN_AUTH_URL:-}
+      - DISABLE_DEEP_LINKING=1
+      - ENABLE_PREJOIN_PAGE=0
+      - ENABLE_WELCOME_PAGE=0
     volumes:
       - jitsi-web-config:/config
       - jitsi-web-certs:/etc/letsencrypt
       - jitsi-transcripts:/usr/share/jitsi-meet/transcripts
-      # Certificados SSL Let's Encrypt - montando diretório de chaves
-      # Os certificados devem ser nomeados: cert.crt e cert.key
-      - ./jitsi-config/keys:/config/keys:ro
-      # Arquivos customizados para remover branding e desabilitar página inicial
-      - ./jitsi-config/custom/custom-interface_config.js:/config/interface_config.js:ro
-      - ./jitsi-config/custom/custom-config.js:/config/config.js:ro
     networks:
       meet.jitsi:
         aliases:

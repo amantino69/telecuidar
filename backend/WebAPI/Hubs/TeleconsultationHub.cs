@@ -165,4 +165,18 @@ public class TeleconsultationHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"mobile_upload_{token}");
         _logger.LogInformation("Cliente {ConnectionId} removido de uploads com token {Token}", Context.ConnectionId, token);
     }
+
+    // ========== FONOCARDIOGRAMA EM TEMPO REAL ==========
+
+    /// <summary>
+    /// Envia frame de fonocardiograma para outros participantes da consulta
+    /// Frame contém: waveform (64 pontos), heartRate, s1Amplitude, s2Amplitude
+    /// Transmissão leve (~200 bytes por frame, 60fps = ~12KB/s)
+    /// </summary>
+    public async Task SendPhonocardiogramFrame(string appointmentId, object frame)
+    {
+        // Enviar para todos exceto o remetente (médico recebe do paciente)
+        await Clients.OthersInGroup($"consultation_{appointmentId}")
+            .SendAsync("ReceivePhonocardiogramFrame", frame);
+    }
 }

@@ -135,13 +135,13 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'phonocardiogram',
-    label: 'Fonocardiograma',
-    icon: 'activity',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: false, // REMOVIDO conforme solicitação
+    label: 'Fono',
+    icon: 'heart',
+    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
+    showInTeleconsultation: true, // HABILITADO - Fonocardiograma em tempo real
     showInDetails: true,
-    order: 5,
-    group: 'standalone'
+    order: 1,
+    group: 'exame-fisico'
   },
   {
     id: 'biometrics',

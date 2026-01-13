@@ -159,6 +159,34 @@
     }
   }
 
+  &__loading,
+  &__empty {
+    @include flex-center;
+    @include flex-column;
+    gap: $spacing-lg;
+    padding: $spacing-4xl;
+    color: var(--text-secondary);
+  }
+
+  // =====================================================================
+  // DESKTOP VIEW - TABLE
+  // =====================================================================
+  &__desktop-view {
+    display: block;
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  &__mobile-view {
+    display: none;
+
+    @include mobile {
+      display: block;
+    }
+  }
+
   &__table-wrapper {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -174,17 +202,11 @@
       margin-right: 0;
     }
   }
-
-  &__loading,
-  &__empty {
-    @include flex-center;
-    @include flex-column;
-    gap: $spacing-lg;
-    padding: $spacing-4xl;
-    color: var(--text-secondary);
-  }
 }
 
+// =====================================================================
+// TABLE STYLES (Desktop)
+// =====================================================================
 .digital-office-table {
   width: 100%;
   border-collapse: collapse;
@@ -214,7 +236,7 @@
 
     &--actions {
       text-align: center;
-      width: 120px;
+      width: 200px;
     }
   }
 
@@ -280,11 +302,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $spacing-xs;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
   }
 
+  // Botão secundário cinza (detalhes)
   &__action-btn {
-    padding: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
     background: none;
     border: 1px solid var(--border);
     border-radius: $radius-md;
@@ -300,17 +324,200 @@
       border-color: var(--neutral-300);
       color: var(--text-primary);
     }
+  }
 
-    &--enter {
-      background: var(--primary-50);
-      border-color: var(--primary-200);
-      color: var(--primary-600);
+  // Botão primário "Entrar na consulta"
+  &__action-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-md;
+    background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(all);
+    box-shadow:
+      0 2px 0 #1d4ed8,
+      0 4px 8px rgba(59, 130, 246, 0.25);
 
-      &:hover {
-        background: var(--primary-100);
-        border-color: var(--primary-300);
-        color: var(--primary-700);
-      }
+    &:hover {
+      background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 100%);
+      transform: translateY(-1px);
+      box-shadow:
+        0 3px 0 #1d4ed8,
+        0 6px 12px rgba(59, 130, 246, 0.35);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 1px 0 #1d4ed8,
+        0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    span {
+      white-space: nowrap;
+    }
+  }
+}
+
+// =====================================================================
+// CARD STYLES (Mobile/Tablet)
+// =====================================================================
+.appointment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  @include transition(all);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-200);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__datetime {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__date {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: var(--text-primary);
+  }
+
+  &__time {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+    font-weight: $font-weight-medium;
+  }
+
+  &__content {
+    margin-bottom: $spacing-lg;
+  }
+
+  &__info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__info-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: var(--text-primary);
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding-top: $spacing-lg;
+    border-top: 1px solid var(--border);
+  }
+
+  // Botão primário grande - "Entrar na Consulta"
+  &__btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: $radius-lg;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(all);
+    box-shadow:
+      0 4px 0 #1d4ed8,
+      0 6px 16px rgba(59, 130, 246, 0.35);
+
+    &:hover {
+      background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 100%);
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 0 #1d4ed8,
+        0 10px 24px rgba(59, 130, 246, 0.45);
+    }
+
+    &:active {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #1d4ed8,
+        0 3px 8px rgba(59, 130, 246, 0.25);
+    }
+
+    app-icon {
+      flex-shrink: 0;
+    }
+  }
+
+  // Botão secundário - "Detalhes"
+  &__btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    background: var(--surface-secondary, #f8fafc);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      background: var(--neutral-100);
+      border-color: var(--neutral-300);
+    }
+
+    &:active {
+      background: var(--neutral-50);
+    }
+
+    app-icon {
+      flex-shrink: 0;
     }
   }
 }

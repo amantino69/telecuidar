@@ -131,79 +131,140 @@
       </p>
     </div>
   } @else {
-    <div class="digital-office__table-wrapper">
-      <table class="digital-office-table">
-        <thead class="digital-office-table__head">
-          <tr>
-            <th class="digital-office-table__header">ID</th>
-            <th class="digital-office-table__header">DATA/HORA</th>
-            <th class="digital-office-table__header">PACIENTE</th>
-            <th class="digital-office-table__header">PROFISSIONAL</th>
-            <th class="digital-office-table__header">ESPECIALIDADE</th>
-            <th class="digital-office-table__header">TIPO</th>
-            <th class="digital-office-table__header">STATUS</th>
-            <th class="digital-office-table__header digital-office-table__header--actions">AÇÕES</th>
-          </tr>
-        </thead>
-        <tbody class="digital-office-table__body">
-          @for (appt of appointments; track appt.id) {
-            <tr class="digital-office-table__row">
-              <td class="digital-office-table__cell">
-                <span class="digital-office-table__id">#{{ appt.id }}</span>
-              </td>
-              <td class="digital-office-table__cell">
-                <div class="digital-office-table__datetime">
-                  <span class="digital-office-table__date">{{ appt.date | date:'dd/MM/yyyy' }}</span>
-                  <span class="digital-office-table__time">{{ formatTime(appt.time) }}</span>
-                </div>
-              </td>
-              <td class="digital-office-table__cell">
-                <div class="digital-office-table__patient">
-                  <span class="digital-office-table__patient-name">{{ appt.patientName }}</span>
-                </div>
-              </td>
-              <td class="digital-office-table__cell">
-                <span>{{ appt.professionalName }}</span>
-              </td>
-              <td class="digital-office-table__cell">
-                <span>{{ appt.specialtyName }}</span>
-              </td>
-              <td class="digital-office-table__cell">
-                <span>{{ getTypeLabel(appt.type) }}</span>
-              </td>
-              <td class="digital-office-table__cell">
-                <app-badge 
-                  [variant]="getStatusBadgeVariant(appt.status)" 
-                  [label]="getStatusLabel(appt.status)" 
-                  size="sm" 
-                />
-              </td>
-              <td class="digital-office-table__cell digital-office-table__cell--actions">
-                <div class="digital-office-table__actions">
-                  <button
-                    type="button"
-                    class="digital-office-table__action-btn"
-                    (click)="openDetails(appt)"
-                    title="Ver detalhes"
-                  >
-                    <app-icon name="eye" [size]="18" />
-                  </button>
-                  @if (canEnterConsultation(appt)) {
+    <!-- Desktop: Table View -->
+    <div class="digital-office__desktop-view">
+      <div class="digital-office__table-wrapper">
+        <table class="digital-office-table">
+          <thead class="digital-office-table__head">
+            <tr>
+              <th class="digital-office-table__header">DATA/HORA</th>
+              <th class="digital-office-table__header">PACIENTE</th>
+              <th class="digital-office-table__header">PROFISSIONAL</th>
+              <th class="digital-office-table__header">ESPECIALIDADE</th>
+              <th class="digital-office-table__header">TIPO</th>
+              <th class="digital-office-table__header">STATUS</th>
+              <th class="digital-office-table__header digital-office-table__header--actions">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody class="digital-office-table__body">
+            @for (appt of appointments; track appt.id) {
+              <tr class="digital-office-table__row">
+                <td class="digital-office-table__cell">
+                  <div class="digital-office-table__datetime">
+                    <span class="digital-office-table__date">{{ appt.date | date:'dd/MM/yyyy' }}</span>
+                    <span class="digital-office-table__time">{{ formatTime(appt.time) }}</span>
+                  </div>
+                </td>
+                <td class="digital-office-table__cell">
+                  <div class="digital-office-table__patient">
+                    <span class="digital-office-table__patient-name">{{ appt.patientName }}</span>
+                  </div>
+                </td>
+                <td class="digital-office-table__cell">
+                  <span>{{ appt.professionalName }}</span>
+                </td>
+                <td class="digital-office-table__cell">
+                  <span>{{ appt.specialtyName }}</span>
+                </td>
+                <td class="digital-office-table__cell">
+                  <span>{{ getTypeLabel(appt.type) }}</span>
+                </td>
+                <td class="digital-office-table__cell">
+                  <app-badge 
+                    [variant]="getStatusBadgeVariant(appt.status)" 
+                    [label]="getStatusLabel(appt.status)" 
+                    size="sm" 
+                  />
+                </td>
+                <td class="digital-office-table__cell digital-office-table__cell--actions">
+                  <div class="digital-office-table__actions">
+                    @if (canEnterConsultation(appt)) {
+                      <button
+                        type="button"
+                        class="digital-office-table__action-btn-primary"
+                        (click)="enterConsultation(appt)"
+                        title="Entrar na consulta"
+                      >
+                        <app-icon name="video" [size]="16" />
+                        <span>Entrar</span>
+                      </button>
+                    }
                     <button
                       type="button"
-                      class="digital-office-table__action-btn digital-office-table__action-btn--enter"
-                      (click)="enterConsultation(appt)"
-                      title="Entrar na consulta"
+                      class="digital-office-table__action-btn"
+                      (click)="openDetails(appt)"
+                      title="Ver detalhes"
                     >
-                      <app-icon name="video" [size]="18" />
+                      <app-icon name="eye" [size]="18" />
                     </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobile/Tablet: Card View -->
+    <div class="digital-office__mobile-view">
+      @for (appt of appointments; track appt.id) {
+        <div class="appointment-card">
+          <div class="appointment-card__header">
+            <div class="appointment-card__datetime">
+              <span class="appointment-card__date">{{ appt.date | date:'dd/MM/yyyy' }}</span>
+              <span class="appointment-card__time">{{ formatTime(appt.time) }}</span>
+            </div>
+            <app-badge 
+              [variant]="getStatusBadgeVariant(appt.status)" 
+              [label]="getStatusLabel(appt.status)" 
+              size="sm" 
+            />
+          </div>
+
+          <div class="appointment-card__content">
+            <div class="appointment-card__info">
+              <div class="appointment-card__info-group">
+                <span class="appointment-card__label">Paciente</span>
+                <span class="appointment-card__value">{{ appt.patientName }}</span>
+              </div>
+              <div class="appointment-card__info-group">
+                <span class="appointment-card__label">Profissional</span>
+                <span class="appointment-card__value">{{ appt.professionalName }}</span>
+              </div>
+              <div class="appointment-card__info-group">
+                <span class="appointment-card__label">Especialidade</span>
+                <span class="appointment-card__value">{{ appt.specialtyName }}</span>
+              </div>
+              <div class="appointment-card__info-group">
+                <span class="appointment-card__label">Tipo</span>
+                <span class="appointment-card__value">{{ getTypeLabel(appt.type) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="appointment-card__actions">
+            @if (canEnterConsultation(appt)) {
+              <button
+                type="button"
+                class="appointment-card__btn-primary"
+                (click)="enterConsultation(appt)"
+              >
+                <app-icon name="video" [size]="18" />
+                <span>Entrar na Consulta</span>
+              </button>
+            }
+            <button
+              type="button"
+              class="appointment-card__btn-secondary"
+              (click)="openDetails(appt)"
+            >
+              <app-icon name="eye" [size]="16" />
+              <span>Detalhes</span>
+            </button>
+          </div>
+        </div>
+      }
     </div>
 
     <app-pagination

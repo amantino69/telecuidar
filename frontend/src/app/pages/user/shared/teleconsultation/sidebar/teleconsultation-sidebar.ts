@@ -16,7 +16,7 @@ import { ReceitaTabComponent } from '../tabs/receita-tab/receita-tab';
 import { AtestadoTabComponent } from '../tabs/atestado-tab/atestado-tab';
 import { ReturnTabComponent } from './../tabs/return-tab/return-tab';
 import { ReferralTabComponent } from './../tabs/referral-tab/referral-tab';
-import { PhonocardiogramTabComponent } from '../tabs/phonocardiogram-tab/phonocardiogram-tab';
+import { PhonocardiogramTabComponent } from '../tabs/phonocardiogram-tab/phonocardiogram-tab.component';
 import { MedicalDevicesTabComponent } from '../tabs/medical-devices-tab/medical-devices-tab';
 // AuscultationTabComponent removido do sistema
 // ExamCameraTabComponent removido do sistema

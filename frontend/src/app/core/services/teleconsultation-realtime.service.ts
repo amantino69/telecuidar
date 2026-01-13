@@ -52,6 +52,14 @@ export interface MobileUploadEvent {
   timestamp: number;
 }
 
+export interface PhonocardiogramFrame {
+  timestamp: number;
+  waveform: number[];
+  heartRate: number;
+  s1Amplitude: number;
+  s2Amplitude: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -91,6 +99,11 @@ export class TeleconsultationRealTimeService implements OnDestroy {
   
   private _mobileUploadReceived$ = new Subject<MobileUploadEvent>();
   public mobileUploadReceived$ = this._mobileUploadReceived$.asObservable();
+
+  private _phonocardiogramFrame$ = new Subject<PhonocardiogramFrame>();
+  public phonocardiogramFrame$ = this._phonocardiogramFrame$.asObservable();
+
+  private phonocardiogramCallback: ((frame: PhonocardiogramFrame) => void) | null = null;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -190,6 +203,16 @@ export class TeleconsultationRealTimeService implements OnDestroy {
       this.ngZone.run(() => this._mobileUploadReceived$.next(event));
     });
 
+    // Fonocardiograma em tempo real
+    this.hubConnection.on('ReceivePhonocardiogramFrame', (frame: PhonocardiogramFrame) => {
+      this.ngZone.run(() => {
+        this._phonocardiogramFrame$.next(frame);
+        if (this.phonocardiogramCallback) {
+          this.phonocardiogramCallback(frame);
+        }
+      });
+    });
+
     // Handle reconnection
     this.hubConnection.onreconnected(() => {
       console.log('[TeleconsultationRealTime] Reconectado ao hub');
@@ -287,5 +310,34 @@ export class TeleconsultationRealTimeService implements OnDestroy {
       });
       return () => subscription.unsubscribe();
     });
+  }
+
+  // ========== FONOCARDIOGRAMA EM TEMPO REAL ==========
+
+  /**
+   * Envia frame de fonocardiograma para o médico
+   */
+  async sendPhonocardiogramFrame(appointmentId: string, frame: PhonocardiogramFrame): Promise<void> {
+    if (this.hubConnection && this.hubConnection.state === 'Connected') {
+      try {
+        await this.hubConnection.invoke('SendPhonocardiogramFrame', appointmentId, frame);
+      } catch (error) {
+        // Silenciar erros de envio para não poluir o console (frames são contínuos)
+      }
+    }
+  }
+
+  /**
+   * Registra callback para receber frames de fonocardiograma
+   */
+  onPhonocardiogramFrame(callback: (frame: PhonocardiogramFrame) => void): void {
+    this.phonocardiogramCallback = callback;
+  }
+
+  /**
+   * Remove callback de fonocardiograma
+   */
+  offPhonocardiogramFrame(): void {
+    this.phonocardiogramCallback = null;
   }
 }
