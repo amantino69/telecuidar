@@ -552,4 +552,89 @@ export class JitsiService {
     if (!this.jitsiApi) return null;
     return this.jitsiApi.getVideoQuality();
   }
+
+  /**
+   * Define o dispositivo de vídeo (câmera) a ser usado
+   */
+  setVideoDevice(deviceId: string): void {
+    if (this.jitsiApi && deviceId) {
+      this.jitsiApi.executeCommand('setVideoInputDevice', deviceId);
+      console.log('[Jitsi] Câmera alterada:', deviceId);
+    }
+  }
+
+  /**
+   * Define o dispositivo de entrada de áudio (microfone) a ser usado
+   */
+  setAudioInputDevice(deviceId: string): void {
+    if (this.jitsiApi && deviceId) {
+      this.jitsiApi.executeCommand('setAudioInputDevice', deviceId);
+      console.log('[Jitsi] Microfone alterado:', deviceId);
+    }
+  }
+
+  /**
+   * Define o dispositivo de saída de áudio (alto-falante) a ser usado
+   */
+  setAudioOutputDevice(deviceId: string): void {
+    if (this.jitsiApi && deviceId) {
+      this.jitsiApi.executeCommand('setAudioOutputDevice', deviceId);
+      console.log('[Jitsi] Alto-falante alterado:', deviceId);
+    }
+  }
+
+  /**
+   * Obtém a lista de dispositivos de vídeo disponíveis
+   */
+  async getAvailableVideoDevices(): Promise<MediaDeviceInfo[]> {
+    if (!this.jitsiApi) return [];
+    try {
+      const devices = await this.jitsiApi.getAvailableDevices();
+      return devices.videoInput || [];
+    } catch (error) {
+      console.error('[Jitsi] Erro ao obter dispositivos de vídeo:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtém a lista de dispositivos de áudio de entrada disponíveis
+   */
+  async getAvailableAudioInputDevices(): Promise<MediaDeviceInfo[]> {
+    if (!this.jitsiApi) return [];
+    try {
+      const devices = await this.jitsiApi.getAvailableDevices();
+      return devices.audioInput || [];
+    } catch (error) {
+      console.error('[Jitsi] Erro ao obter dispositivos de áudio:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtém a lista de dispositivos de áudio de saída disponíveis
+   */
+  async getAvailableAudioOutputDevices(): Promise<MediaDeviceInfo[]> {
+    if (!this.jitsiApi) return [];
+    try {
+      const devices = await this.jitsiApi.getAvailableDevices();
+      return devices.audioOutput || [];
+    } catch (error) {
+      console.error('[Jitsi] Erro ao obter dispositivos de saída de áudio:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtém os dispositivos atualmente selecionados
+   */
+  async getCurrentDevices(): Promise<{ videoInput?: string; audioInput?: string; audioOutput?: string }> {
+    if (!this.jitsiApi) return {};
+    try {
+      return await this.jitsiApi.getCurrentDevices();
+    } catch (error) {
+      console.error('[Jitsi] Erro ao obter dispositivos atuais:', error);
+      return {};
+    }
+  }
 }

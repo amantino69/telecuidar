@@ -114,6 +114,26 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     group: 'exame-fisico'
   },
   {
+    id: 'auscultation',
+    label: 'Ausculta',
+    icon: 'mic',
+    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
+    showInTeleconsultation: false, // DESATIVADO - Removido do sistema
+    showInDetails: false,
+    order: 1,
+    group: 'exame-fisico'
+  },
+  {
+    id: 'exam-camera',
+    label: 'Câmera de Exame',
+    icon: 'video',
+    roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
+    showInTeleconsultation: false, // DESATIVADO - Focando apenas em ausculta
+    showInDetails: false,
+    order: 2,
+    group: 'exame-fisico'
+  },
+  {
     id: 'phonocardiogram',
     label: 'Fonocardiograma',
     icon: 'activity',
@@ -280,6 +300,8 @@ export function getAllDetailsTabs(): TabConfig[] {
  */
 export const TAB_ID_TO_LEGACY_NAME: Record<string, string> = {
   'medical-devices': 'Sinais Vitais',
+  'auscultation': 'Ausculta',
+  'exam-camera': 'Câmera de Exame',
   'patient-data': 'Dados do Paciente',
   'pre-consultation': 'Dados da Pré Consulta',
   'anamnesis': 'Anamnese',

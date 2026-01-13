@@ -103,10 +103,12 @@ export class MedicalStreamingService {
       this._availableAudioDevices$.next(audioDevices);
       this._availableVideoDevices$.next(videoDevices);
 
-      console.log('[MedicalStreaming] Dispositivos encontrados:', {
-        audio: audioDevices.length,
-        video: videoDevices.length
-      });
+      console.log('[MedicalStreaming] Dispositivos de vídeo encontrados:', 
+        videoDevices.map(d => ({ 
+          deviceId: d.deviceId, 
+          label: d.label 
+        }))
+      );
 
     } catch (error) {
       console.error('[MedicalStreaming] Erro ao listar dispositivos:', error);
@@ -165,18 +167,56 @@ export class MedicalStreamingService {
    * Inicia stream de câmera de exame (otoscópio/dermatoscópio)
    */
   async startExamStream(type: 'otoscope' | 'dermatoscope' | 'laryngoscope', deviceId?: string): Promise<StreamSession | null> {
-    console.log('[MedicalStreaming] Iniciando stream de exame:', type, { deviceId });
+    console.log('[MedicalStreaming] ========== INICIANDO STREAM DE EXAME ==========');
+    console.log('[MedicalStreaming] Tipo:', type);
+    console.log('[MedicalStreaming] DeviceId solicitado:', deviceId);
+
+    // Para qualquer stream anterior antes de iniciar um novo
+    this.stopStream();
+    
+    // Aguarda um pouco para garantir que os recursos foram liberados
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Verifica se o deviceId é válido e existe na lista de dispositivos
+    if (deviceId) {
+      const currentDevices = this._availableVideoDevices$.value;
+      const deviceExists = currentDevices.find(d => d.deviceId === deviceId);
+      console.log('[MedicalStreaming] Dispositivo existe na lista?', !!deviceExists);
+      console.log('[MedicalStreaming] Dispositivos disponíveis:', 
+        currentDevices.map(d => ({ id: d.deviceId.slice(0, 12), label: d.label }))
+      );
+      
+      if (!deviceExists) {
+        console.error('[MedicalStreaming] DeviceId não encontrado na lista de dispositivos!');
+        // Tenta atualizar a lista de dispositivos
+        await this.refreshDeviceList();
+        const updatedDevices = this._availableVideoDevices$.value;
+        const deviceExistsNow = updatedDevices.find(d => d.deviceId === deviceId);
+        if (!deviceExistsNow) {
+          throw new Error('Câmera não encontrada. Por favor, reconecte o dispositivo e atualize a lista de câmeras.');
+        }
+      }
+    }
 
     try {
-      // Se tem deviceId específico, usa ideal em vez de exact para mais flexibilidade
+      // Se tem deviceId específico, usa EXACT para garantir a câmera correta
+      // Isso é crucial para câmeras USB que podem demorar a inicializar
       const videoConstraints: MediaTrackConstraints = {
         width: { ideal: 1920, min: 640 },
         height: { ideal: 1080, min: 480 },
         frameRate: { ideal: 30, min: 15 }
       };
 
+      // Encontra o label da câmera solicitada para comparação posterior
+      const requestedDevice = this._availableVideoDevices$.value.find(d => d.deviceId === deviceId);
+      const requestedLabel = requestedDevice?.label || '';
+      console.log('[MedicalStreaming] Câmera solicitada:', { deviceId, label: requestedLabel });
+
       if (deviceId) {
-        videoConstraints.deviceId = { ideal: deviceId };
+        // Usa exact para garantir que a câmera USB selecionada seja usada
+        // Se a câmera não estiver disponível, getUserMedia falhará (comportamento correto)
+        videoConstraints.deviceId = { exact: deviceId };
+        console.log('[MedicalStreaming] Usando deviceId EXACT:', deviceId);
       }
 
       const constraints: MediaStreamConstraints = {
@@ -184,14 +224,50 @@ export class MedicalStreamingService {
         video: videoConstraints
       };
 
-      console.log('[MedicalStreaming] Solicitando getUserMedia com constraints:', constraints);
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('[MedicalStreaming] Constraints completas:', JSON.stringify(constraints, null, 2));
+      
+      // Adiciona timeout para evitar travamento se a câmera não responder
+      const streamPromise = navigator.mediaDevices.getUserMedia(constraints);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout ao acessar a câmera. Verifique se a câmera USB está conectada e funcionando.')), 15000);
+      });
+
+      console.log('[MedicalStreaming] Aguardando getUserMedia...');
+      const stream = await Promise.race([streamPromise, timeoutPromise]);
       console.log('[MedicalStreaming] Stream de vídeo obtido com tracks:', stream.getVideoTracks().length);
 
       // Log info do track obtido
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
         const settings = videoTrack.getSettings();
+        const obtainedLabel = videoTrack.label;
+        
+        console.log('[MedicalStreaming] ===== CÂMERA OBTIDA =====');
+        console.log('[MedicalStreaming] Label obtido:', obtainedLabel);
+        console.log('[MedicalStreaming] Label solicitado:', requestedLabel);
+        console.log('[MedicalStreaming] DeviceId obtido:', settings.deviceId);
+        console.log('[MedicalStreaming] DeviceId solicitado:', deviceId);
+        
+        // Verifica se obtivemos a câmera correta PELO LABEL (mais confiável que deviceId)
+        const labelsMatch = requestedLabel && obtainedLabel && 
+                           (obtainedLabel.toLowerCase().includes(requestedLabel.toLowerCase().split(' ')[0]) ||
+                            requestedLabel.toLowerCase().includes(obtainedLabel.toLowerCase().split(' ')[0]));
+        const deviceIdsMatch = settings.deviceId === deviceId;
+        
+        console.log('[MedicalStreaming] Labels compatíveis?', labelsMatch);
+        console.log('[MedicalStreaming] DeviceIds iguais?', deviceIdsMatch);
+        
+        // Se nem o label nem o deviceId batem, temos a câmera errada
+        if (deviceId && !deviceIdsMatch && !labelsMatch) {
+          console.error('[MedicalStreaming] ERRO CRÍTICO: Câmera obtida diferente da solicitada!');
+          console.error('[MedicalStreaming] Solicitado:', requestedLabel, '(', deviceId, ')');
+          console.error('[MedicalStreaming] Obtido:', obtainedLabel, '(', settings.deviceId, ')');
+          // Para o stream incorreto e retorna erro
+          stream.getTracks().forEach(t => t.stop());
+          throw new Error(`Câmera errada! Solicitou "${requestedLabel}" mas obteve "${obtainedLabel}". A câmera USB pode estar ocupada ou com problema. Tente desconectar e reconectar.`);
+        }
+        
+        console.log('[MedicalStreaming] ✓ Câmera correta obtida:', obtainedLabel);
         console.log('[MedicalStreaming] Video track settings:', {
           deviceId: settings.deviceId,
           width: settings.width,
@@ -241,6 +317,23 @@ export class MedicalStreamingService {
     } catch (error) {
       console.error('[MedicalStreaming] Erro na análise de áudio:', error);
     }
+  }
+
+  /**
+   * Reconecta análise de áudio para um stream existente
+   * Usado quando o componente é recriado mas o stream persiste
+   */
+  reconnectAudioAnalysis(stream: MediaStream): void {
+    console.log('[MedicalStreaming] Reconectando análise de áudio...');
+    
+    // Para análise anterior se existir
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    
+    // Reconecta
+    this.startAudioAnalysis(stream);
   }
 
   /**
@@ -295,17 +388,25 @@ export class MedicalStreamingService {
    * Para stream ativo
    */
   stopStream(sessionId?: string): void {
+    console.log('[MedicalStreaming] stopStream chamado, sessões ativas:', this.activeSessions.size);
+    
     if (sessionId) {
       const session = this.activeSessions.get(sessionId);
       if (session) {
-        session.stream.getTracks().forEach(t => t.stop());
+        session.stream.getTracks().forEach(t => {
+          console.log('[MedicalStreaming] Parando track:', t.kind, t.label);
+          t.stop();
+        });
         this.activeSessions.delete(sessionId);
         console.log('[MedicalStreaming] Sessão encerrada:', sessionId);
       }
     } else {
       // Para todas as sessões
       this.activeSessions.forEach((session, id) => {
-        session.stream.getTracks().forEach(t => t.stop());
+        session.stream.getTracks().forEach(t => {
+          console.log('[MedicalStreaming] Parando track:', t.kind, t.label);
+          t.stop();
+        });
         console.log('[MedicalStreaming] Sessão encerrada:', id);
       });
       this.activeSessions.clear();
@@ -324,6 +425,7 @@ export class MedicalStreamingService {
     }
 
     this._activeStream$.next(null);
+    console.log('[MedicalStreaming] stopStream concluído');
   }
 
   /**
