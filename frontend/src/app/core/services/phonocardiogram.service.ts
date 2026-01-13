@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject, BehaviorSubject } from 'rxjs';
-import { TeleconsultationRealtimeService } from './teleconsultation-realtime.service';
+import { TeleconsultationRealTimeService } from './teleconsultation-realtime.service';
 
 /**
  * Frame de dados do fonocardiograma
@@ -63,7 +63,7 @@ export class PhonocardiogramService {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private realtimeService: TeleconsultationRealtimeService
+    private realtimeService: TeleconsultationRealTimeService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     

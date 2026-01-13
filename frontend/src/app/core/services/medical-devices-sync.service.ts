@@ -97,6 +97,10 @@ export class MedicalDevicesSyncService implements OnDestroy {
   private _connectionError$ = new Subject<string>();
   public connectionError$ = this._connectionError$.asObservable();
 
+  // Audio chunks para streaming de ausculta PCM
+  private _audioChunkReceived$ = new Subject<{appointmentId: string; chunk: any}>();
+  public audioChunkReceived$ = this._audioChunkReceived$.asObservable();
+
   // Log visual para debug
   private _debugLog$ = new Subject<{message: string; type: 'info' | 'success' | 'error' | 'warning'}>();
   public debugLog$ = this._debugLog$.asObservable();
@@ -443,6 +447,19 @@ export class MedicalDevicesSyncService implements OnDestroy {
       console.log('[MedicalDevicesSync] Sinais vitais enviados:', data.vitals);
     } catch (error) {
       console.error('[MedicalDevicesSync] Erro ao enviar sinais vitais:', error);
+    }
+  }
+
+  /**
+   * Envia chunk de áudio PCM para streaming de ausculta
+   */
+  async sendAudioChunk(appointmentId: string, chunk: any): Promise<void> {
+    if (!this.hubConnection || this.hubConnection.state !== 'Connected') return;
+
+    try {
+      await this.hubConnection.invoke('SendAudioChunk', appointmentId, chunk);
+    } catch (error) {
+      console.error('[MedicalDevicesSync] Erro ao enviar audio chunk:', error);
     }
   }
 

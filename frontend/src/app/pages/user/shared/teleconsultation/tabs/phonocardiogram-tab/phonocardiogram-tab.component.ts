@@ -131,7 +131,7 @@ import { TeleconsultationRealTimeService } from '@core/services/teleconsultation
         <!-- Status de Conexão -->
         @if (isOperator && isCapturing) {
           <div class="connection-status">
-            <app-icon name="wifi" [size]="14" />
+            <app-icon name="activity" [size]="14" />
             <span>Transmitindo para o médico via SignalR (~3KB/s)</span>
           </div>
         }
