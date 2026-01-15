@@ -224,6 +224,16 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
     group: 'standalone'
   },
   {
+    id: 'patient-history',
+    label: 'Histórico Clínico',
+    icon: 'book',
+    roles: ['PROFESSIONAL', 'ADMIN'],
+    showInTeleconsultation: true,
+    showInDetails: true,
+    order: 92,
+    group: 'standalone'
+  },
+  {
     id: 'conclusion',
     label: 'Finalizar Consulta',
     icon: 'check-circle',
@@ -312,6 +322,7 @@ export const TAB_ID_TO_LEGACY_NAME: Record<string, string> = {
   'atestado': 'Atestado',
   'ai': 'Análise Diagnóstica',
   'cns': 'Consulta CADSUS',
+  'patient-history': 'Histórico Clínico',
   'return': 'Agendar Retorno',
   'referral': 'Encaminhamento',
   'conclusion': 'Finalizar Consulta'

@@ -281,6 +281,17 @@
           </div>
         }
 
+        <!-- Patient History Tab -->
+        @if (activeTab === 'patient-history') {
+          <div class="tab-panel">
+            <app-patient-history-tab
+              [appointmentId]="appointmentId"
+              [appointment]="appointment"
+              [isDetailsView]="true"
+            />
+          </div>
+        }
+
         <!-- Conclusion Tab -->
         @if (activeTab === 'conclusion') {
           <div class="tab-panel">

@@ -13,6 +13,13 @@ public class AuditLogDto
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
     public DateTime CreatedAt { get; set; }
+    
+    // Campos para auditoria LGPD
+    public Guid? PatientId { get; set; }
+    public string? PatientCpf { get; set; }
+    public string? PatientName { get; set; }
+    public string? DataCategory { get; set; }
+    public string? AccessReason { get; set; }
 }
 
 public class PaginatedAuditLogsDto

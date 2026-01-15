@@ -26,6 +26,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<DigitalCertificate> DigitalCertificates { get; set; }
     public DbSet<ExamRequest> ExamRequests { get; set; }
     public DbSet<MedicalReport> MedicalReports { get; set; }
+    
+    // Tabelas de referência para prontuário e licitações
+    public DbSet<ProfessionalCouncil> ProfessionalCouncils { get; set; }
+    public DbSet<CboOccupation> CboOccupations { get; set; }
+    public DbSet<SigtapProcedure> SigtapProcedures { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,7 +98,10 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.UserId).IsUnique();
             entity.HasIndex(e => e.Crm);
+            entity.HasIndex(e => e.CouncilRegistration);
             entity.Property(e => e.Crm).HasMaxLength(20);
+            entity.Property(e => e.CouncilRegistration).HasMaxLength(20);
+            entity.Property(e => e.CouncilState).HasMaxLength(2);
             entity.Property(e => e.Cbo).HasMaxLength(10);
             entity.Property(e => e.Gender).HasMaxLength(20);
             entity.Property(e => e.Nationality).HasMaxLength(100);
@@ -106,6 +114,18 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Specialty)
                 .WithMany(s => s.Professionals)
                 .HasForeignKey(e => e.SpecialtyId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            // Relacionamento com ProfessionalCouncil
+            entity.HasOne(e => e.Council)
+                .WithMany(c => c.Professionals)
+                .HasForeignKey(e => e.CouncilId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            // Relacionamento com CboOccupation
+            entity.HasOne(e => e.CboOccupation)
+                .WithMany(c => c.Professionals)
+                .HasForeignKey(e => e.CboOccupationId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -163,10 +183,22 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
             entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
             entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.PatientCpf).HasMaxLength(14);
+            entity.Property(e => e.DataCategory).HasMaxLength(50);
+            entity.Property(e => e.AccessReason).HasMaxLength(500);
+            entity.HasIndex(e => e.PatientId);
+            entity.HasIndex(e => e.PatientCpf);
+            entity.HasIndex(e => e.Action);
+            entity.HasIndex(e => e.CreatedAt);
 
             entity.HasOne(e => e.User)
                 .WithMany(u => u.AuditLogs)
                 .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.Patient)
+                .WithMany()
+                .HasForeignKey(e => e.PatientId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -367,6 +399,48 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // ============================================
+        // Tabelas de Referência (Conselhos, CBO, SIGTAP)
+        // ============================================
+        
+        // ProfessionalCouncil Configuration
+        modelBuilder.Entity<ProfessionalCouncil>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Acronym).IsUnique();
+            entity.Property(e => e.Acronym).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(100);
+        });
+        
+        // CboOccupation Configuration
+        modelBuilder.Entity<CboOccupation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Family).HasMaxLength(200);
+            entity.Property(e => e.Subgroup).HasMaxLength(200);
+        });
+        
+        // SigtapProcedure Configuration
+        modelBuilder.Entity<SigtapProcedure>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.GroupCode).HasMaxLength(10);
+            entity.Property(e => e.GroupName).HasMaxLength(200);
+            entity.Property(e => e.SubgroupCode).HasMaxLength(10);
+            entity.Property(e => e.SubgroupName).HasMaxLength(200);
+            entity.Property(e => e.StartCompetency).HasMaxLength(6);
+            entity.Property(e => e.EndCompetency).HasMaxLength(6);
+            entity.Property(e => e.Value).HasPrecision(18, 2);
         });
     }
 

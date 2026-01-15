@@ -23,6 +23,7 @@ import { ExameTabComponent } from '@pages/user/shared/teleconsultation/tabs/exam
 import { LaudoTabComponent } from '@pages/user/shared/teleconsultation/tabs/laudo-tab/laudo-tab';
 import { ReferralTabComponent } from '@pages/user/shared/teleconsultation/tabs/referral-tab/referral-tab';
 import { ReturnTabComponent } from '@pages/user/shared/teleconsultation/tabs/return-tab/return-tab';
+import { PatientHistoryTabComponent } from '@pages/user/shared/teleconsultation/tabs/patient-history-tab/patient-history-tab';
 import { getAllDetailsTabs, TabConfig } from '@pages/user/shared/teleconsultation/tabs/tab-config';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -76,7 +77,8 @@ import { Subject, takeUntil } from 'rxjs';
     ExameTabComponent,
     LaudoTabComponent,
     ReferralTabComponent,
-    ReturnTabComponent
+    ReturnTabComponent,
+    PatientHistoryTabComponent
   ],
   templateUrl: './appointment-details.html',
   styleUrls: ['./appointment-details.scss']

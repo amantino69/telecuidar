@@ -202,6 +202,14 @@
       </app-cns-tab>
     </div>
 
+    <!-- Histórico Clínico do Paciente -->
+    <div class="tab-content" *ngIf="activeTab === 'Histórico Clínico'" style="height: 100%">
+      <app-patient-history-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment">
+      </app-patient-history-tab>
+    </div>
+
     <!-- Receituário -->
     <div class="tab-content" *ngIf="activeTab === 'Receituário' || activeTab === 'Receita'" style="height: 100%">
       <app-receita-tab

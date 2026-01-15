@@ -150,14 +150,11 @@ export class IoMTService implements OnDestroy {
       // Importa SignalR dinamicamente
       const signalR = await import('@microsoft/signalr');
 
-      // Constrói URL do hub baseado no host atual
+      // Constrói URL do hub baseado no apiUrl do environment (backend)
       const getHubUrl = () => {
-        if (typeof window !== 'undefined') {
-          const protocol = window.location.protocol;
-          const host = window.location.host;
-          return `${protocol}//${host}/hubs/iomt`;
-        }
-        return '/hubs/iomt';
+        // Remove /api do final para obter a URL base do backend
+        const baseUrl = environment.apiUrl.replace(/\/api$/, '');
+        return `${baseUrl}/hubs/iomt`;
       };
       
       const hubUrl = getHubUrl();

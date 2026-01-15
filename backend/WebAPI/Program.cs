@@ -78,6 +78,7 @@ builder.Services.AddScoped<Application.Interfaces.IMedicalCertificateService, In
 builder.Services.AddScoped<Application.Interfaces.IExamRequestService, Infrastructure.Services.ExamRequestService>();
 builder.Services.AddScoped<Application.Interfaces.IMedicalReportService, Infrastructure.Services.MedicalReportService>();
 builder.Services.AddScoped<Application.Interfaces.IDigitalCertificateService, Infrastructure.Services.DigitalCertificateService>();
+builder.Services.AddScoped<Application.Interfaces.IClinicalTimelineService, Infrastructure.Services.ClinicalTimelineService>();
 builder.Services.AddSingleton<Application.Interfaces.IMedicamentoAnvisaService, Infrastructure.Services.MedicamentoAnvisaService>();
 
 // HttpClient for external API calls (OpenFDA, etc.)
@@ -216,6 +217,9 @@ if (seedEnabled)
         await WebAPI.Data.DataSeeder.SeedAsync(context);
         await WebAPI.Data.AdditionalUserSeeder.SeedAsync(context);
     }
+    
+    // Seed das tabelas de referência (Conselhos, CBO, SIGTAP)
+    await Infrastructure.Data.ReferenceTablesSeeder.SeedAsync(app.Services);
 }
 
 // Configure the HTTP request pipeline.

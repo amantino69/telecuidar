@@ -215,14 +215,11 @@ export class MedicalDevicesSyncService implements OnDestroy {
       // Importa SignalR dinamicamente
       const signalR = await import('@microsoft/signalr');
 
-      // Constrói URL do hub baseado no host atual (não usa /api)
+      // Constrói URL do hub baseado no apiUrl do environment (backend)
       const getHubUrl = () => {
-        if (typeof window !== 'undefined') {
-          const protocol = window.location.protocol;
-          const host = window.location.host;
-          return `${protocol}//${host}/hubs/medical-devices`;
-        }
-        return '/hubs/medical-devices';
+        // Remove /api do final para obter a URL base do backend
+        const baseUrl = environment.apiUrl.replace(/\/api$/, '');
+        return `${baseUrl}/hubs/medical-devices`;
       };
       
       const hubUrl = getHubUrl();

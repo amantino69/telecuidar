@@ -18,6 +18,7 @@ import { ReturnTabComponent } from './../tabs/return-tab/return-tab';
 import { ReferralTabComponent } from './../tabs/referral-tab/referral-tab';
 import { PhonocardiogramTabComponent } from '../tabs/phonocardiogram-tab/phonocardiogram-tab.component';
 import { MedicalDevicesTabComponent } from '../tabs/medical-devices-tab/medical-devices-tab';
+import { PatientHistoryTabComponent } from '../tabs/patient-history-tab/patient-history-tab';
 // AuscultationTabComponent removido do sistema
 // ExamCameraTabComponent removido do sistema
 // DeviceSettingsTabComponent removido do sistema
@@ -48,7 +49,8 @@ import { getTeleconsultationTabGroups, type TabGroup } from '../tabs/tab-config'
     ReturnTabComponent,
     ReferralTabComponent,
     PhonocardiogramTabComponent,
-    MedicalDevicesTabComponent
+    MedicalDevicesTabComponent,
+    PatientHistoryTabComponent
     // AuscultationTabComponent, ExamCameraTabComponent e DeviceSettingsTabComponent removidos
   ],
   templateUrl: './teleconsultation-sidebar.html',
