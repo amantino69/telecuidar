@@ -29,6 +29,20 @@ describe('DictationService', () => {
     (window as any).SpeechRecognition = mockSpeechRecognition;
     (window as any).webkitSpeechRecognition = mockSpeechRecognition;
 
+    // Mock navigator.mediaDevices.getUserMedia
+    const mockStream = {
+      getTracks: () => [{ stop: jest.fn(), label: 'Mock Microphone' }],
+      getAudioTracks: () => [{ label: 'Mock Microphone' }]
+    };
+    Object.defineProperty(global.navigator, 'mediaDevices', {
+      value: {
+        getUserMedia: jest.fn().mockResolvedValue(mockStream),
+        enumerateDevices: jest.fn().mockResolvedValue([{ kind: 'audioinput', label: 'Mock Mic' }])
+      },
+      writable: true,
+      configurable: true
+    });
+
     TestBed.configureTestingModule({
       providers: [
         DictationService,

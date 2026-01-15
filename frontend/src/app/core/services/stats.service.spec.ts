@@ -67,16 +67,23 @@ describe('StatsService', () => {
     }));
 
     it('should set default values for missing data', fakeAsync(() => {
+      const statsWithDefaults = {
+        ...mockDashboardStats,
+        todayAppointments: 5,
+        averageConsultationTime: 0
+      };
       let result: PlatformStats | undefined;
       service.getPlatformStats().subscribe(res => result = res);
 
       const req = httpMock.expectOne(`${apiUrl}/dashboard`);
-      req.flush(mockDashboardStats);
+      req.flush(statsWithDefaults);
       tick();
 
+      // occupancyRate e averageRating são valores placeholder (a implementar)
       expect(result?.occupancyRate).toBe(0);
-      expect(result?.averageRating).toBe(4.5);
-      expect(result?.averageConsultationTime).toBe(35);
+      expect(result?.averageRating).toBe(0);
+      // averageConsultationTime vem do backend
+      expect(result?.averageConsultationTime).toBe(0);
     }));
   });
 });

@@ -49,6 +49,8 @@ public class ClinicalTimelineService : IClinicalTimelineService
             return null;
         
         // Busca todas as consultas do paciente (apenas concluídas ou em atendimento)
+        // Nota: SQLite não suporta TimeSpan em ORDER BY, então ordenamos apenas por Date
+        // e depois ordenamos em memória por Time
         var appointmentsQuery = _context.Appointments
             .Include(a => a.Professional)
                 .ThenInclude(p => p.ProfessionalProfile!)
@@ -57,10 +59,12 @@ public class ClinicalTimelineService : IClinicalTimelineService
             .Where(a => a.PatientId == patientId)
             .Where(a => a.Status == AppointmentStatus.Completed || 
                        a.Status == AppointmentStatus.InProgress)
-            .OrderByDescending(a => a.Date)
-            .ThenByDescending(a => a.Time);
+            .OrderByDescending(a => a.Date);
         
-        var appointments = await appointmentsQuery.ToListAsync();
+        var appointments = (await appointmentsQuery.ToListAsync())
+            .OrderByDescending(a => a.Date)
+            .ThenByDescending(a => a.Time)
+            .ToList();
         
         // Busca contagens de documentos por consulta
         var appointmentIds = appointments.Select(a => a.Id).ToList();
@@ -149,7 +153,7 @@ public class ClinicalTimelineService : IClinicalTimelineService
                 catch { /* Ignora erro de parse */ }
             }
             
-            // Parse Biometrics JSON
+            // Parse Biometrics JSON (suporta camelCase, PascalCase e português)
             if (!string.IsNullOrEmpty(appointment.BiometricsJson))
             {
                 try
@@ -157,16 +161,16 @@ public class ClinicalTimelineService : IClinicalTimelineService
                     var bioData = JsonSerializer.Deserialize<JsonElement>(appointment.BiometricsJson);
                     entry.Biometrics = new TimelineBiometricsDto
                     {
-                        Weight = GetJsonDecimalValue(bioData, "weight") ?? GetJsonDecimalValue(bioData, "peso"),
-                        Height = GetJsonDecimalValue(bioData, "height") ?? GetJsonDecimalValue(bioData, "altura"),
-                        Bmi = GetJsonDecimalValue(bioData, "bmi") ?? GetJsonDecimalValue(bioData, "imc"),
-                        BloodPressureSystolic = GetJsonIntValue(bioData, "bloodPressureSystolic") ?? GetJsonIntValue(bioData, "pressaoSistolica"),
-                        BloodPressureDiastolic = GetJsonIntValue(bioData, "bloodPressureDiastolic") ?? GetJsonIntValue(bioData, "pressaoDiastolica"),
-                        HeartRate = GetJsonIntValue(bioData, "heartRate") ?? GetJsonIntValue(bioData, "frequenciaCardiaca"),
-                        Temperature = GetJsonDecimalValue(bioData, "temperature") ?? GetJsonDecimalValue(bioData, "temperatura"),
-                        OxygenSaturation = GetJsonIntValue(bioData, "oxygenSaturation") ?? GetJsonIntValue(bioData, "saturacaoOxigenio"),
-                        RespiratoryRate = GetJsonIntValue(bioData, "respiratoryRate") ?? GetJsonIntValue(bioData, "frequenciaRespiratoria"),
-                        GlycemicIndex = GetJsonIntValue(bioData, "glycemicIndex") ?? GetJsonIntValue(bioData, "glicemia")
+                        Weight = GetJsonDecimalValue(bioData, "Weight") ?? GetJsonDecimalValue(bioData, "weight") ?? GetJsonDecimalValue(bioData, "peso"),
+                        Height = GetJsonDecimalValue(bioData, "Height") ?? GetJsonDecimalValue(bioData, "height") ?? GetJsonDecimalValue(bioData, "altura"),
+                        Bmi = GetJsonDecimalValue(bioData, "Bmi") ?? GetJsonDecimalValue(bioData, "bmi") ?? GetJsonDecimalValue(bioData, "imc"),
+                        BloodPressureSystolic = GetJsonIntValue(bioData, "BloodPressureSystolic") ?? GetJsonIntValue(bioData, "bloodPressureSystolic") ?? GetJsonIntValue(bioData, "pressaoSistolica"),
+                        BloodPressureDiastolic = GetJsonIntValue(bioData, "BloodPressureDiastolic") ?? GetJsonIntValue(bioData, "bloodPressureDiastolic") ?? GetJsonIntValue(bioData, "pressaoDiastolica"),
+                        HeartRate = GetJsonIntValue(bioData, "HeartRate") ?? GetJsonIntValue(bioData, "heartRate") ?? GetJsonIntValue(bioData, "frequenciaCardiaca"),
+                        Temperature = GetJsonDecimalValue(bioData, "Temperature") ?? GetJsonDecimalValue(bioData, "temperature") ?? GetJsonDecimalValue(bioData, "temperatura"),
+                        OxygenSaturation = GetJsonIntValue(bioData, "OxygenSaturation") ?? GetJsonIntValue(bioData, "oxygenSaturation") ?? GetJsonIntValue(bioData, "saturacaoOxigenio"),
+                        RespiratoryRate = GetJsonIntValue(bioData, "RespiratoryRate") ?? GetJsonIntValue(bioData, "respiratoryRate") ?? GetJsonIntValue(bioData, "frequenciaRespiratoria"),
+                        GlycemicIndex = GetJsonIntValue(bioData, "Glucose") ?? GetJsonIntValue(bioData, "glycemicIndex") ?? GetJsonIntValue(bioData, "glicemia")
                     };
                 }
                 catch { /* Ignora erro de parse */ }
@@ -237,6 +241,60 @@ public class ClinicalTimelineService : IClinicalTimelineService
             MedicalCertificates = await GetMedicalCertificatesForAppointmentAsync(appointment.Id),
             MedicalReports = await GetMedicalReportsForAppointmentAsync(appointment.Id)
         };
+        
+        // Dados do conselho profissional
+        if (appointment.Professional.ProfessionalProfile?.Council != null)
+        {
+            entry.CouncilAcronym = appointment.Professional.ProfessionalProfile.Council.Acronym;
+            entry.CouncilRegistration = appointment.Professional.ProfessionalProfile.CouncilRegistration;
+            entry.CouncilState = appointment.Professional.ProfessionalProfile.CouncilState;
+        }
+        else if (!string.IsNullOrEmpty(appointment.Professional.ProfessionalProfile?.Crm))
+        {
+            // Fallback para CRM legado
+            entry.CouncilAcronym = "CRM";
+            entry.CouncilRegistration = appointment.Professional.ProfessionalProfile.Crm;
+        }
+        
+        // Parse SOAP JSON
+        if (!string.IsNullOrEmpty(appointment.SoapJson))
+        {
+            try
+            {
+                var soapData = JsonSerializer.Deserialize<JsonElement>(appointment.SoapJson);
+                entry.Soap = new TimelineSoapDto
+                {
+                    Subjective = GetJsonStringValue(soapData, "subjective") ?? GetJsonStringValue(soapData, "queixaPrincipal"),
+                    Objective = GetJsonStringValue(soapData, "objective") ?? GetJsonStringValue(soapData, "exameFisico"),
+                    Assessment = GetJsonStringValue(soapData, "assessment") ?? GetJsonStringValue(soapData, "avaliacao"),
+                    Plan = GetJsonStringValue(soapData, "plan") ?? GetJsonStringValue(soapData, "plano")
+                };
+            }
+            catch { /* Ignora erro de parse */ }
+        }
+        
+        // Parse Biometrics JSON (suporta camelCase, PascalCase e português)
+        if (!string.IsNullOrEmpty(appointment.BiometricsJson))
+        {
+            try
+            {
+                var bioData = JsonSerializer.Deserialize<JsonElement>(appointment.BiometricsJson);
+                entry.Biometrics = new TimelineBiometricsDto
+                {
+                    Weight = GetJsonDecimalValue(bioData, "Weight") ?? GetJsonDecimalValue(bioData, "weight") ?? GetJsonDecimalValue(bioData, "peso"),
+                    Height = GetJsonDecimalValue(bioData, "Height") ?? GetJsonDecimalValue(bioData, "height") ?? GetJsonDecimalValue(bioData, "altura"),
+                    Bmi = GetJsonDecimalValue(bioData, "Bmi") ?? GetJsonDecimalValue(bioData, "bmi") ?? GetJsonDecimalValue(bioData, "imc"),
+                    BloodPressureSystolic = GetJsonIntValue(bioData, "BloodPressureSystolic") ?? GetJsonIntValue(bioData, "bloodPressureSystolic") ?? GetJsonIntValue(bioData, "pressaoSistolica"),
+                    BloodPressureDiastolic = GetJsonIntValue(bioData, "BloodPressureDiastolic") ?? GetJsonIntValue(bioData, "bloodPressureDiastolic") ?? GetJsonIntValue(bioData, "pressaoDiastolica"),
+                    HeartRate = GetJsonIntValue(bioData, "HeartRate") ?? GetJsonIntValue(bioData, "heartRate") ?? GetJsonIntValue(bioData, "frequenciaCardiaca"),
+                    Temperature = GetJsonDecimalValue(bioData, "Temperature") ?? GetJsonDecimalValue(bioData, "temperature") ?? GetJsonDecimalValue(bioData, "temperatura"),
+                    OxygenSaturation = GetJsonIntValue(bioData, "OxygenSaturation") ?? GetJsonIntValue(bioData, "oxygenSaturation") ?? GetJsonIntValue(bioData, "saturacaoOxigenio"),
+                    RespiratoryRate = GetJsonIntValue(bioData, "RespiratoryRate") ?? GetJsonIntValue(bioData, "respiratoryRate") ?? GetJsonIntValue(bioData, "frequenciaRespiratoria"),
+                    GlycemicIndex = GetJsonIntValue(bioData, "Glucose") ?? GetJsonIntValue(bioData, "glycemicIndex") ?? GetJsonIntValue(bioData, "glicemia")
+                };
+            }
+            catch { /* Ignora erro de parse */ }
+        }
         
         // Contagens
         entry.PrescriptionsCount = entry.Prescriptions?.Count ?? 0;

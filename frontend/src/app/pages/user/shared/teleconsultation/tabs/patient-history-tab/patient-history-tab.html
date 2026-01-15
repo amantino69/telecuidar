@@ -377,6 +377,18 @@
                     </div>
                   </div>
                 }
+
+                <!-- Mensagem quando não há dados registrados -->
+                @if (!selectedEntry.aiSummary && !selectedEntry.soap && !selectedEntry.biometrics && 
+                     (!selectedEntry.prescriptions || selectedEntry.prescriptions.length === 0) &&
+                     (!selectedEntry.examRequests || selectedEntry.examRequests.length === 0) &&
+                     (!selectedEntry.medicalCertificates || selectedEntry.medicalCertificates.length === 0)) {
+                  <div class="empty-details">
+                    <app-icon name="info" [size]="20"></app-icon>
+                    <p>Nenhuma informação clínica foi registrada nesta consulta.</p>
+                    <span class="hint">Dados como anamnese, sinais vitais, receitas e exames aparecem aqui quando preenchidos durante o atendimento.</span>
+                  </div>
+                }
               }
             </div>
           }
