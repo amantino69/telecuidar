@@ -37,62 +37,61 @@
     </div>
   </div>
 
-  <!-- NOVA NAVEGAÇÃO COMPACTA -->
+  <!-- NAVEGAÇÃO PRINCIPAL - 3 BOTÕES ALINHADOS -->
   <div class="compact-nav">
-    <!-- Grupos principais (Avaliação Clínica, Prescrições) -->
-    @for (group of getGroupedTabs(); track group.id) {
-      <div class="nav-section" [class.expanded]="activeGroup === group.id">
-        <button class="section-header" (click)="setActiveGroup(group.id)">
-          <div class="section-title">
-            <app-icon [name]="group.icon" [size]="18" />
-            <span>{{ group.label }}</span>
-          </div>
-          <app-icon name="chevron-down" [size]="16" class="chevron" />
+    <!-- Grupos principais + Finalizar como botões na mesma linha -->
+    <div class="nav-groups">
+      @for (group of getGroupedTabs(); track group.id) {
+        <button 
+          class="group-btn" 
+          [class.active]="activeGroup === group.id"
+          (click)="setActiveGroup(group.id)">
+          <app-icon [name]="group.icon" [size]="16" />
+          <span>{{ group.label }}</span>
         </button>
-        
-        @if (activeGroup === group.id) {
-          <div class="section-items">
-            @for (tab of group.tabs; track tab.id) {
-              <button 
-                class="nav-item" 
-                [class.active]="isTabActive(tab.label)"
-                (click)="onTabChange(tab.label)">
-                <app-icon [name]="tab.icon" [size]="16" />
-                <span>{{ tab.label }}</span>
-              </button>
-            }
-          </div>
-        }
-      </div>
+      }
+      @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
+        <button 
+          class="group-btn finish" 
+          [class.active]="isTabActive('Finalizar Consulta')"
+          (click)="onTabChange('Finalizar Consulta')">
+          <app-icon name="check-circle" [size]="16" />
+          <span>Finalizar</span>
+        </button>
+      }
+    </div>
+
+    <!-- Ícones das opções do grupo selecionado -->
+    @for (group of getGroupedTabs(); track group.id) {
+      @if (activeGroup === group.id) {
+        <div class="nav-icons">
+          @for (tab of group.tabs; track tab.id) {
+            <button 
+              class="icon-nav-btn has-tooltip" 
+              [class.active]="isTabActive(tab.label)"
+              [attr.data-tooltip]="tab.label"
+              (click)="onTabChange(tab.label)">
+              <app-icon [name]="tab.icon" [size]="20" />
+            </button>
+          }
+        </div>
+      }
     }
 
-    <!-- Ferramentas (Análise IA, CADSUS) -->
+    <!-- Ferramentas (Análise IA, CADSUS, Histórico) como ícones -->
     @if (getStandaloneGroup(); as standaloneGroup) {
-      <div class="nav-tools">
+      <div class="nav-icons tools">
         @for (tab of standaloneGroup.tabs; track tab.id) {
           @if (tab.id !== 'conclusion') {
             <button 
-              class="tool-btn" 
+              class="icon-nav-btn tool has-tooltip" 
               [class.active]="isTabActive(tab.label)"
+              [attr.data-tooltip]="tab.label"
               (click)="onTabChange(tab.label)">
-              <app-icon [name]="tab.icon" [size]="16" />
-              <span>{{ tab.label }}</span>
+              <app-icon [name]="tab.icon" [size]="20" />
             </button>
           }
         }
-      </div>
-    }
-
-    <!-- Botão Finalizar Consulta (destacado) -->
-    @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
-      <div class="nav-finish">
-        <button 
-          class="finish-btn" 
-          [class.active]="isTabActive('Finalizar Consulta')"
-          (click)="onTabChange('Finalizar Consulta')">
-          <app-icon name="check-circle" [size]="18" />
-          <span>Finalizar Consulta</span>
-        </button>
       </div>
     }
   </div>
