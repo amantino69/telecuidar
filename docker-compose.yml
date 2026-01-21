@@ -244,6 +244,7 @@ services:
       - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS:-}
       - FRONTEND_URL=${FRONTEND_URL:-https://www.telecuidar.com.br}
       - SEED_DATA_ENABLED=${SEED_DATA_ENABLED:-true}
+      - POC_SEED_ENABLED=${POC_SEED_ENABLED:-false}
       - SWAGGER_ENABLED=${SWAGGER_ENABLED:-false}
       - ENABLE_HTTPS_REDIRECT=${ENABLE_HTTPS_REDIRECT:-false}
       # Jitsi Self-Hosted
