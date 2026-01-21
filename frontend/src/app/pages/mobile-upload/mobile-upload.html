@@ -1,0 +1,139 @@
+<div class="mobile-upload-container">
+  <header class="header">
+    <div class="logo">
+      <app-icon name="smartphone" [size]="24" />
+      <span>TeleCuidar Upload</span>
+    </div>
+    <app-theme-toggle />
+  </header>
+
+  <main class="content">
+    <!-- Camera View -->
+    <div class="camera-view" *ngIf="isCameraActive">
+      <video #videoElement autoplay playsinline></video>
+      <canvas #canvasElement style="display: none;"></canvas>
+      <div class="camera-controls">
+        <button class="btn-cancel" (click)="closeCamera()">
+          <app-icon name="x" [size]="24" />
+        </button>
+        <button class="btn-capture" (click)="capturePhoto()">
+          <app-icon name="camera" [size]="32" />
+        </button>
+        <div style="width: 48px;"></div>
+      </div>
+    </div>
+
+    <div class="upload-card" *ngIf="!isCameraActive">
+      <!-- Success Message -->
+      <div class="status-message success" *ngIf="uploadSuccess">
+        <app-icon name="check-circle" [size]="48" />
+        <h3>Arquivos enviados com sucesso!</h3>
+        <p *ngIf="uploadCount === 1">1 arquivo enviado. Você pode enviar mais ou fechar esta janela.</p>
+        <p *ngIf="uploadCount > 1">{{ uploadCount }} arquivos enviados. Você pode enviar mais ou fechar esta janela.</p>
+        <app-button (click)="cancelUpload()" variant="primary">Enviar mais arquivos</app-button>
+      </div>
+
+      <div class="upload-form" *ngIf="!uploadSuccess">
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <div class="instruction-header">
+            <h2>Enviar Anexos</h2>
+            <p *ngIf="selectedFiles.length === 0">Selecione uma opção para enviar</p>
+            <p *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} arquivo(s) selecionado(s)</p>
+          </div>
+
+          <div class="action-buttons-row">
+            <!-- CÂMERA - usa API MediaDevices (abre câmera diretamente) -->
+            <button class="action-btn compact" (click)="openCamera()">
+              <div class="icon-circle camera">
+                <app-icon name="camera" [size]="24" />
+              </div>
+              <span>Câmera</span>
+            </button>
+
+            <!-- GALERIA - usa input file tradicional -->
+            <label class="action-btn compact" for="input-gallery">
+              <div class="icon-circle gallery">
+                <app-icon name="image" [size]="24" />
+              </div>
+              <span>Galeria</span>
+            </label>
+
+            <!-- ARQUIVOS - usa input file tradicional -->
+            <label class="action-btn compact" for="input-files">
+              <div class="icon-circle files">
+                <app-icon name="folder" [size]="24" />
+              </div>
+              <span>Arquivos</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Selected Files List -->
+        <div class="selected-files-list" *ngIf="selectedFiles.length > 0">
+          <div class="file-item" *ngFor="let item of selectedFiles; let i = index">
+            <div class="file-preview">
+              <img *ngIf="item.previewUrl" [src]="item.previewUrl" alt="Preview">
+              <app-icon *ngIf="!item.previewUrl" name="file" [size]="24" />
+            </div>
+            <div class="file-details">
+              <input 
+                type="text" 
+                [(ngModel)]="item.title" 
+                class="title-input"
+                placeholder="Título do arquivo">
+              <span class="file-size">{{ formatBytes(item.file.size) }}</span>
+            </div>
+            <button class="remove-btn" (click)="removeFile(i)">
+              <app-icon name="close" [size]="18" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Send Button -->
+        <div class="send-section" *ngIf="selectedFiles.length > 0">
+          <app-button [fullWidth]="true" size="lg" (click)="sendAllAttachments()" [disabled]="isUploading">
+            <ng-container *ngIf="!isUploading">
+              Enviar {{ selectedFiles.length }} arquivo(s)
+              <app-icon name="arrow-right" [size]="20" />
+            </ng-container>
+            <ng-container *ngIf="isUploading">
+              Enviando {{ currentUploadIndex }} de {{ selectedFiles.length }}...
+            </ng-container>
+          </app-button>
+          <button class="cancel-link" (click)="cancelUpload()" *ngIf="!isUploading">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Input - Câmera (fallback) -->
+    <input 
+      type="file" 
+      id="input-camera"
+      #cameraInput
+      accept="image/*"
+      capture="environment"
+      (change)="onFileSelected($event)" 
+      hidden>
+
+    <!-- Hidden Input - Galeria -->
+    <input 
+      type="file" 
+      id="input-gallery"
+      #galleryInput
+      accept="image/*,video/*"
+      multiple
+      (change)="onFileSelected($event)" 
+      hidden>
+
+    <!-- Hidden Input - Arquivos -->
+    <input 
+      type="file" 
+      id="input-files"
+      #fileInput
+      accept="*/*"
+      multiple
+      (change)="onFileSelected($event)" 
+      hidden>
+  </main>
+</div>

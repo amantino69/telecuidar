@@ -1,0 +1,127 @@
+
+<div class="schedule-blocks">
+  <div class="schedule-blocks__header">
+    <div class="schedule-blocks__header-content">
+      <app-icon name="clock" [size]="32" />
+      <div>
+        <h1 class="schedule-blocks__title">Solicitações de Bloqueios</h1>
+        <p class="schedule-blocks__subtitle">Solicitações de bloqueio feitas pelos profissionais</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-blocks__filters">
+    <app-search-input
+      placeholder="Buscar por profissional ou email..."
+      (search)="onSearch($event)"
+    />
+    <app-filter-select
+      label="Status"
+      [options]="statusOptions"
+      (change)="onStatusFilterChange($event)"
+    />
+  </div>
+
+  @if (isLoading) {
+    <div class="schedule-blocks__loading">
+      <p>Carregando bloqueios...</p>
+    </div>
+  } @else {
+    <div class="schedule-blocks__table-wrapper">
+      <table class="schedule-blocks__table">
+        <thead>
+          <tr>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Profissional" field="professionalName" [sortable]="true" [currentSortField]="sortField" [currentSortDirection]="sortDirection" (sort)="onSort($event)" />
+            </th>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Data do Bloqueio" [sortable]="false" />
+            </th>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Motivo" [sortable]="false" />
+            </th>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Status" field="status" [sortable]="true" [currentSortField]="sortField" [currentSortDirection]="sortDirection" (sort)="onSort($event)" />
+            </th>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Data da Solicitação" [sortable]="false" />
+            </th>
+            <th class="schedule-blocks__table-header">
+              <app-table-header label="Tempo de Espera" [sortable]="false" />
+            </th>
+            <th class="schedule-blocks__table-header schedule-blocks__table-header--actions">
+              <app-table-header label="Ações" [sortable]="false" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (blocks.length === 0) {
+            <tr>
+              <td colspan="7" class="schedule-blocks__table-cell schedule-blocks__empty-cell">
+                <div class="schedule-blocks__empty">
+                  <app-icon name="alert-circle" [size]="48" />
+                  <p>Nenhuma solicitação encontrada</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (block of blocks; track block.id) {
+            <tr class="schedule-blocks__table-row">
+              <td class="schedule-blocks__table-cell schedule-blocks__table-cell--professional">
+                <div class="schedule-blocks__professional-info">
+                  <p class="schedule-blocks__professional-name">{{ block.professionalName }}</p>
+                </div>
+              </td>
+              <td class="schedule-blocks__table-cell">
+                <div class="schedule-blocks__cell-content">
+                  @if (block.type === 'Single') {
+                    {{ formatDate(block.date!) }}
+                  } @else {
+                    {{ formatDate(block.startDate!) }} até {{ formatDate(block.endDate!) }}
+                  }
+                </div>
+              </td>
+              <td class="schedule-blocks__table-cell">
+                {{ block.reason }}
+              </td>
+              <td class="schedule-blocks__table-cell">
+                <app-badge [variant]="getStatusBadge(block.status).variant" [label]="getStatusBadge(block.status).label" size="sm" />
+              </td>
+              <td class="schedule-blocks__table-cell">
+                {{ formatDate(block.createdAt) }}
+              </td>
+              <td class="schedule-blocks__table-cell">
+                {{ getWaitTime(block.createdAt) | waitTime }}
+              </td>
+              <td class="schedule-blocks__table-cell schedule-blocks__table-cell--actions">
+                <div class="schedule-blocks__actions">
+                  @if (block.status === 'Pending') {
+                    <button type="button" class="schedule-blocks__action-btn schedule-blocks__action-btn--approve" title="Aprovar" (click)="approveBlock(block)">
+                      <app-icon name="check-circle" [size]="18" />
+                    </button>
+                    <button type="button" class="schedule-blocks__action-btn schedule-blocks__action-btn--deny" title="Negar" (click)="denyBlock(block)">
+                      <app-icon name="x-circle" [size]="18" />
+                    </button>
+                  }
+                  <button type="button" class="schedule-blocks__action-btn schedule-blocks__action-btn--view" title="Visualizar" (click)="openDetails(block)">
+                    <app-icon name="eye" [size]="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

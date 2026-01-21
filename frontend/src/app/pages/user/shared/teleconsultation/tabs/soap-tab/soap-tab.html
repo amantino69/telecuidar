@@ -1,0 +1,51 @@
+<div class="soap-container">
+  <!-- Header compacto com abas e botão salvar -->
+  <div class="soap-header">
+    <div class="soap-tabs">
+      @for (tab of soapTabs; track tab.id) {
+        <button 
+          type="button"
+          class="soap-tab-btn"
+          [class.active]="activeSection === tab.id"
+          [attr.data-color]="tab.color"
+          (click)="setActiveSection(tab.id)">
+          <span class="tab-letter">{{ tab.letter }}</span>
+          <span class="tab-label">{{ tab.label }}</span>
+        </button>
+      }
+    </div>
+    
+    @if (!readonly) {
+      <button 
+        type="button"
+        class="save-btn"
+        [class.saving]="isSaving"
+        [disabled]="isSaving || soapForm.pristine"
+        (click)="saveSoap()">
+        @if (isSaving) {
+          <span class="spinner"></span>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        }
+        <span>{{ isSaving ? 'Salvando...' : 'Salvar' }}</span>
+      </button>
+    }
+    
+    @if (lastSaved) {
+      <span class="last-saved">{{ lastSaved | date:'HH:mm' }}</span>
+    }
+  </div>
+
+  <!-- Área de conteúdo expandida -->
+  <form [formGroup]="soapForm" class="soap-form">
+    <div class="soap-content" [attr.data-color]="getActiveTab().color">
+      <textarea 
+        [formControlName]="activeSection"
+        [placeholder]="getActiveTab().placeholder"
+        class="soap-textarea">
+      </textarea>
+    </div>
+  </form>
+</div>

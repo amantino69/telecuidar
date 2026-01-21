@@ -1,0 +1,285 @@
+<div class="cns-tab">
+  <!-- Aviso quando serviço não está configurado -->
+  @if (!serviceConfigured) {
+    <div class="alert alert-warning">
+      <div class="alert-icon">
+        <app-icon name="alert-circle" [size]="24" />
+      </div>
+      <div class="alert-content">
+        <h4>Serviço CNS não configurado</h4>
+        <p>Para habilitar consultas ao CADSUS, configure as variáveis de ambiente:</p>
+        <ul>
+          <li><code>CNS_CERT_PATH</code> - Caminho do certificado digital (.pfx)</li>
+          <li><code>CNS_CERT_PASSWORD</code> - Senha do certificado</li>
+        </ul>
+      </div>
+    </div>
+  }
+
+  @if (serviceConfigured) {
+    <!-- Card de busca -->
+    <div class="search-card">
+      <div class="search-header">
+        <div class="search-title">
+          <app-icon name="search" [size]="20" />
+          <h3>Consulta CNS / CADSUS</h3>
+        </div>
+        
+        <!-- Status do token -->
+        @if (tokenStatus) {
+          <div class="token-badge" [class.valid]="tokenStatus.isValid" [class.expired]="!tokenStatus.isValid && tokenStatus.hasToken">
+            <span class="token-dot"></span>
+            @if (tokenStatus.isValid) {
+              <span>Token válido</span>
+            } @else if (tokenStatus.hasToken) {
+              <span>Token expirado</span>
+            } @else {
+              <span>Sem token</span>
+            }
+            <button class="btn-icon" (click)="renewToken()" [disabled]="tokenLoading" title="Renovar token">
+              <app-icon name="refresh-cw" [size]="14" [class.spinning]="tokenLoading" />
+            </button>
+          </div>
+        }
+      </div>
+      
+      <p class="search-description">
+        Consulte dados do paciente no Cadastro Nacional de Usuários do SUS
+      </p>
+      
+      <div class="search-form">
+        <div class="form-group">
+          <label for="cpf-input">CPF do Paciente</label>
+          <div class="input-wrapper" [class.has-error]="error">
+            <input 
+              type="text" 
+              id="cpf-input"
+              [value]="cpf"
+              (input)="onCpfInput($event)"
+              placeholder="000.000.000-00"
+              maxlength="14">
+            @if (cpf) {
+              <button class="input-clear" (click)="cpf = ''; error = null" title="Limpar">
+                <app-icon name="close" [size]="16" />
+              </button>
+            }
+          </div>
+        </div>
+        
+        <button 
+          class="btn btn-primary"
+          [disabled]="loading || !isValidCpf"
+          (click)="consultarCpf()">
+          @if (loading) {
+            <span class="btn-spinner"></span>
+            <span>Consultando...</span>
+          } @else {
+            <app-icon name="search" [size]="18" />
+            <span>Consultar</span>
+          }
+        </button>
+      </div>
+
+      @if (error) {
+        <div class="alert alert-error compact">
+          <app-icon name="alert-circle" [size]="16" />
+          <span>{{ error }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Estado de loading -->
+    @if (loading) {
+      <div class="loading-overlay">
+        <div class="loading-content">
+          <div class="spinner-lg"></div>
+          <p>Consultando dados no CADSUS...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Resultados da consulta -->
+    @if (cidadao && !loading) {
+      <div class="results-container">
+        <div class="results-header">
+          <h3>
+            <app-icon name="check-circle" [size]="20" />
+            Dados do Cidadão
+          </h3>
+          <button class="btn btn-outline btn-sm" (click)="limparDados()">
+            <app-icon name="close" [size]="16" />
+            Limpar
+          </button>
+        </div>
+
+        <!-- Identificação Principal -->
+        <div class="info-card highlight">
+          <div class="card-header">
+            <app-icon name="file" [size]="18" />
+            <span>Identificação Principal</span>
+          </div>
+          <div class="card-body">
+            <div class="info-row featured">
+              <span class="info-label">Nome Completo</span>
+              <span class="info-value name">{{ cidadao.nome || '-' }}</span>
+            </div>
+            <div class="info-grid cols-3">
+              <div class="info-item">
+                <span class="info-label">CNS</span>
+                <span class="info-value mono">{{ cidadao.cns || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">CPF</span>
+                <span class="info-value mono">{{ cidadao.cpf || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Data de Nascimento</span>
+                <span class="info-value">{{ cidadao.dataNascimento || '-' }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Status do Cadastro</span>
+              <span class="status-pill" [ngClass]="getStatusClass(cidadao.statusCadastro)">
+                {{ cidadao.statusCadastro || '-' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Características e Filiação -->
+        <div class="info-cards-row">
+          <!-- Características Pessoais -->
+          <div class="info-card">
+            <div class="card-header">
+              <app-icon name="user" [size]="18" />
+              <span>Características</span>
+            </div>
+            <div class="card-body">
+              <div class="info-grid cols-2">
+                <div class="info-item">
+                  <span class="info-label">Sexo</span>
+                  <span class="info-value">{{ cidadao.sexo || '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Raça/Cor</span>
+                  <span class="info-value">{{ cidadao.racaCor || '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filiação -->
+          <div class="info-card">
+            <div class="card-header">
+              <app-icon name="users" [size]="18" />
+              <span>Filiação</span>
+            </div>
+            <div class="card-body">
+              <div class="info-item">
+                <span class="info-label">Nome da Mãe</span>
+                <span class="info-value">{{ cidadao.nomeMae || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Nome do Pai</span>
+                <span class="info-value">{{ cidadao.nomePai || '-' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="info-card">
+          <div class="card-header">
+            <app-icon name="home" [size]="18" />
+            <span>Endereço</span>
+          </div>
+          <div class="card-body">
+            @if (cidadao.enderecoCompleto) {
+              <div class="info-row featured">
+                <span class="info-label">Endereço Completo</span>
+                <span class="info-value">{{ cidadao.enderecoCompleto }}</span>
+              </div>
+            }
+            <div class="info-grid cols-4">
+              <div class="info-item">
+                <span class="info-label">Tipo</span>
+                <span class="info-value">{{ cidadao.tipoLogradouro || '-' }}</span>
+              </div>
+              <div class="info-item span-2">
+                <span class="info-label">Logradouro</span>
+                <span class="info-value">{{ cidadao.logradouro || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Número</span>
+                <span class="info-value">{{ cidadao.numero || '-' }}</span>
+              </div>
+            </div>
+            <div class="info-grid cols-4">
+              <div class="info-item">
+                <span class="info-label">Complemento</span>
+                <span class="info-value">{{ cidadao.complemento || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Cidade</span>
+                <span class="info-value">{{ cidadao.cidade || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">CEP</span>
+                <span class="info-value mono">{{ cidadao.cep || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">País</span>
+                <span class="info-value">{{ cidadao.paisEnderecoAtual || '-' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Naturalidade e Contato -->
+        <div class="info-cards-row">
+          <!-- Naturalidade -->
+          <div class="info-card">
+            <div class="card-header">
+              <app-icon name="calendar" [size]="18" />
+              <span>Naturalidade</span>
+            </div>
+            <div class="card-body">
+              <div class="info-grid cols-2">
+                <div class="info-item">
+                  <span class="info-label">Cidade de Nascimento</span>
+                  <span class="info-value">{{ cidadao.cidadeNascimento || '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">País de Nascimento</span>
+                  <span class="info-value">{{ cidadao.paisNascimento || '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contato -->
+          <div class="info-card">
+            <div class="card-header">
+              <app-icon name="phone" [size]="18" />
+              <span>Contato</span>
+            </div>
+            <div class="card-body">
+              <div class="info-item">
+                <span class="info-label">Telefones</span>
+                <span class="info-value">
+                  {{ cidadao.telefones && cidadao.telefones.length > 0 ? cidadao.telefones.join(', ') : '-' }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">E-mails</span>
+                <span class="info-value">
+                  {{ cidadao.emails && cidadao.emails.length > 0 ? cidadao.emails.join(', ') : '-' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

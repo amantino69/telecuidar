@@ -1,0 +1,129 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  @include flex-column;
+  gap: $spacing-md;
+  @include transition(all);
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-lg;
+    background: var(--primary-50);
+    color: var(--primary-600);
+    @include flex-center;
+  }
+
+  &__content {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+    font-weight: $font-weight-medium;
+  }
+
+  &__value-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-sm;
+  }
+
+  &__value {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-bold;
+    color: var(--text-primary);
+    line-height: $line-height-tight;
+  }
+
+  &__trend {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    padding: 2px 8px;
+    border-radius: $radius-md;
+
+    &--up {
+      background: var(--green-50);
+      color: var(--green-700);
+    }
+
+    &--down {
+      background: var(--red-50);
+      color: var(--red-700);
+    }
+  }
+
+  &__description {
+    font-size: $font-size-xs;
+    color: var(--text-tertiary);
+  }
+
+  &__loading {
+    @include flex-column;
+    gap: 1rem;
+  }
+
+  &__skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-secondary) 25%,
+      var(--bg-tertiary) 50%,
+      var(--bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: $radius-md;
+
+    &--title {
+      height: 16px;
+      width: 60%;
+    }
+
+    &--value {
+      height: 32px;
+      width: 80%;
+    }
+  }
+
+  // Variants
+  &--primary &__icon {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary-500);
+  }
+
+  &--success &__icon {
+    background: rgba(34, 197, 94, 0.1);
+    color: rgb(22, 163, 74);
+  }
+
+  &--warning &__icon {
+    background: rgba(249, 115, 22, 0.1);
+    color: rgb(234, 88, 12);
+  }
+
+  &--danger &__icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgb(220, 38, 38);
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

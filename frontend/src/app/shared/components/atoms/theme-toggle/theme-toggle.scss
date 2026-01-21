@@ -1,0 +1,262 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.theme-selector {
+  position: relative;
+}
+
+.theme-toggle {
+  @include flex-center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 1) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: $radius-full;
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 100%);
+    border-radius: $radius-full $radius-full 50% 50%;
+    pointer-events: none;
+  }
+
+  .icon {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &:hover {
+    background: linear-gradient(180deg, 
+      rgba(255, 255, 255, 1) 0%, 
+      rgba(248, 250, 252, 1) 100%);
+    border-color: var(--primary-400);
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 0 rgba(59, 130, 246, 0.1),
+      0 6px 12px rgba(59, 130, 246, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    color: var(--primary-600);
+
+    .icon {
+      transform: rotate(15deg) scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.04),
+      0 2px 4px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+    outline-offset: 2px;
+  }
+}
+
+// Dropdown menu
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-lg;
+  box-shadow: var(--shadow-lg);
+  padding: $spacing-xs;
+  z-index: $z-index-dropdown;
+  animation: dropdownFadeIn 0.2s ease-out;
+
+  .dropdown-header {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  background: transparent;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+
+  &:hover {
+    background: var(--neutral-100);
+  }
+
+  &.active {
+    background: var(--primary-50);
+    
+    .option-name {
+      color: var(--primary-700);
+      font-weight: $font-weight-semibold;
+    }
+    
+    app-icon:first-child {
+      color: var(--primary-600);
+    }
+  }
+
+  app-icon:first-child {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .option-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .option-name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--text-primary);
+  }
+
+  .option-desc {
+    font-size: $font-size-xs;
+    color: var(--text-secondary);
+  }
+
+  .check-icon {
+    color: var(--primary-600);
+    flex-shrink: 0;
+  }
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Dark mode
+:host-context([data-theme='dark']) {
+  .theme-toggle {
+    background: linear-gradient(180deg, 
+      rgba(51, 65, 85, 1) 0%, 
+      rgba(30, 41, 59, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    box-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.2),
+      0 4px 8px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    &::before {
+      background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 100%);
+    }
+
+    &:hover {
+      background: linear-gradient(180deg, 
+        rgba(71, 85, 105, 1) 0%, 
+        rgba(51, 65, 85, 1) 100%);
+      border-color: var(--primary-400);
+      color: var(--primary-400);
+      box-shadow:
+        0 4px 0 rgba(96, 165, 250, 0.15),
+        0 6px 12px rgba(96, 165, 250, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    &:active {
+      box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+  }
+
+  .theme-dropdown {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
+  .theme-option {
+    &:hover {
+      background: var(--neutral-200);
+    }
+
+    &.active {
+      background: rgba(96, 165, 250, 0.15);
+
+      .option-name {
+        color: var(--primary-500);
+      }
+
+      app-icon:first-child {
+        color: var(--primary-500);
+      }
+
+      .check-icon {
+        color: var(--primary-500);
+      }
+    }
+  }
+}
+
+// Alto Contraste
+:host-context([data-theme='contrast']) {
+  .theme-toggle {
+    border-width: 2px;
+    border-color: var(--text-primary);
+    
+    &:hover {
+      border-color: var(--primary-600);
+      box-shadow:
+        0 4px 0 rgba(29, 78, 216, 0.2),
+        0 6px 12px rgba(29, 78, 216, 0.25);
+    }
+  }
+
+  .theme-dropdown {
+    border-width: 2px;
+    border-color: var(--border);
+  }
+
+  .theme-option {
+    &.active {
+      border: 2px solid var(--primary-600);
+    }
+  }
+}

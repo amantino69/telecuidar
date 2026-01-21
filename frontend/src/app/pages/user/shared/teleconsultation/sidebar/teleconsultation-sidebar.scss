@@ -1,0 +1,455 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Tipografia melhorada para toda a sidebar
+.tele-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 40vw;
+  min-width: 400px;
+  max-width: 600px;
+  font-family: $font-primary;
+  
+  // Aplicar fonte em todos os textos
+  * {
+    font-family: inherit;
+  }
+  
+  // Títulos e headers
+  h1, h2, h3, h4, h5, h6,
+  .section-title,
+  .tab-title,
+  .card-title {
+    font-family: $font-heading;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    width: 55vw;
+    min-width: 500px;
+    max-width: none;
+  }
+  
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform $transition-base, width $transition-base, top $transition-base, height $transition-base;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+
+  &.open {
+    transform: translateX(0);
+  }
+
+  // Modo tela cheia: sidebar ocupa 50% da tela (metade direita)
+  // deixando a outra metade para o vídeo do Jitsi
+  &.full-screen {
+    width: 50vw;
+    min-width: 50vw;
+    max-width: 50vw;
+    top: 0;
+    height: 100%;
+    z-index: 60;
+    
+    @include mobile {
+      // Em mobile, ocupa 100% pois não dá pra dividir
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      top: 0;
+      height: 100%;
+    }
+  }
+
+  // Quando header está visível, ajustar posição
+  &.full-screen:not(.header-hidden) {
+    top: 80px;
+    height: calc(100% - 80px);
+    
+    @include mobile {
+      top: 120px;
+      height: calc(100% - 120px);
+    }
+  }
+
+  &.full-screen.header-hidden {
+    top: 0;
+    height: 100%;
+  }
+
+  .sidebar-header {
+    padding: $spacing-sm $spacing-md;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 48px;
+  }
+
+  .sidebar-actions-left {
+    display: flex;
+    gap: $spacing-sm;
+
+    .resize-btn {
+      @include mobile {
+        display: none;
+      }
+    }
+  }
+
+  .sidebar-actions-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    .show-header-btn {
+      background: var(--primary-50);
+      color: var(--primary-600);
+      border-color: var(--primary-200);
+      
+      &:hover {
+        background: var(--primary-100);
+        color: var(--primary-700);
+      }
+    }
+  }
+
+  .sidebar-actions {
+    display: flex;
+    gap: $spacing-sm;
+
+    .dictation-btn {
+      &.active {
+        color: var(--primary-600);
+        border-color: var(--primary-600);
+        background: var(--primary-50);
+      }
+
+      &.listening {
+        color: var(--red-600);
+        border-color: var(--red-600);
+        background: var(--red-50);
+        animation: pulse 1.5s infinite;
+      }
+
+      &.initializing {
+        color: var(--warning-600);
+        border-color: var(--warning-600);
+        background: var(--warning-50);
+        cursor: wait;
+        opacity: 0.8;
+      }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid currentColor;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+      }
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  // NAVEGAÇÃO PRINCIPAL - 3 BOTÕES ALINHADOS
+  .compact-nav {
+    display: flex;
+    flex-direction: column;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    
+    @include mobile {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    // 3 Botões principais na mesma linha
+    .nav-groups {
+      display: flex;
+      gap: 8px;
+      padding: $spacing-sm $spacing-md;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--background) 100%);
+      
+      .group-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 10px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        
+        span {
+          line-height: 1.2;
+        }
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        &.active {
+          background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+          border-color: #0369a1;
+          color: white;
+          box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        // Botão Prescrições - Roxo/Violeta (segundo botão quando não ativo)
+        &:nth-child(2):not(.finish) {
+          background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+          border-color: #6d28d9;
+          color: white;
+          
+          &:hover {
+            background: linear-gradient(180deg, #a78bfa 0%, #8b5cf6 100%);
+            border-color: #7c3aed;
+          }
+          
+          &.active {
+            background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+            border-color: #5b21b6;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          }
+        }
+        
+        // Botão Finalizar - Verde vibrante
+        &.finish {
+          background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+          border-color: #15803d;
+          color: white;
+          
+          &:hover {
+            background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+            border-color: #16a34a;
+          }
+          
+          &.active {
+            background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+            border-color: #166534;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          }
+        }
+        
+        @include mobile {
+          padding: 8px 6px;
+          font-size: 10px;
+          gap: 4px;
+        }
+      }
+    }
+
+    // Ícones das opções - ESTILO 3D/NEUMORFISMO
+    .nav-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px $spacing-md;
+      background: var(--background);
+      justify-content: center;
+      
+      &.tools {
+        padding-top: 8px;
+        padding-bottom: 12px;
+        border-top: 1px solid var(--border);
+        
+        .icon-nav-btn.tool {
+          background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+          border-color: #cbd5e1;
+          color: #475569;
+          box-shadow: 
+            3px 3px 6px rgba(0, 0, 0, 0.08),
+            -2px -2px 4px rgba(255, 255, 255, 0.9),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+          
+          &:hover {
+            background: linear-gradient(145deg, #f1f5f9 0%, #cbd5e1 100%);
+            color: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 
+              4px 4px 10px rgba(0, 0, 0, 0.12),
+              -3px -3px 6px rgba(255, 255, 255, 0.95);
+          }
+          
+          &.active {
+            background: linear-gradient(145deg, #475569 0%, #334155 100%);
+            color: white;
+            border-color: #334155;
+            box-shadow: 
+              inset 2px 2px 4px rgba(0, 0, 0, 0.2),
+              0 2px 8px rgba(51, 65, 85, 0.3);
+          }
+        }
+      }
+
+      .icon-nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border: 2px solid var(--primary-200);
+        border-radius: 12px;
+        background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+        color: var(--primary-600);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        
+        // Efeito 3D/Neumorfismo
+        box-shadow: 
+          4px 4px 8px rgba(0, 0, 0, 0.08),
+          -3px -3px 6px rgba(255, 255, 255, 0.9),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        
+        // Tooltip customizado que aparece ACIMA do ícone
+        &.has-tooltip {
+          &::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 14px;
+            background: #0f172a;
+            color: white;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+          }
+          
+          // Seta do tooltip
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 7px solid transparent;
+            border-top-color: #0f172a;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+          }
+          
+          &:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-2px);
+          }
+          
+          &:hover::after {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+        
+        &:hover {
+          background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+          color: var(--primary-700);
+          border-color: var(--primary-400);
+          transform: translateY(-3px);
+          box-shadow: 
+            6px 6px 12px rgba(0, 0, 0, 0.12),
+            -4px -4px 8px rgba(255, 255, 255, 0.95),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        &.active {
+          background: linear-gradient(145deg, var(--primary-500) 0%, var(--primary-600) 100%);
+          color: white;
+          border-color: var(--primary-700);
+          transform: translateY(1px);
+          box-shadow: 
+            inset 3px 3px 6px rgba(0, 0, 0, 0.15),
+            0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+        
+        @include mobile {
+          width: 44px;
+          height: 44px;
+        }
+      }
+    }
+  }
+
+  // Conteúdo
+  .sidebar-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .tab-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: var(--background);
+    color: var(--text-primary);
+  }
+
+  &.close-btn:hover {
+    color: var(--red-600);
+    background: var(--red-50);
+    border-color: var(--red-200);
+  }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}

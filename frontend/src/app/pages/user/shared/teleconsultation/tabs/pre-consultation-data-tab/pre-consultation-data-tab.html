@@ -1,0 +1,208 @@
+<div class="pre-consultation-tab">
+  @if (hasData && preConsultationData) {
+    <div class="pre-consultation-data">
+      <!-- Personal Info -->
+      <div class="data-section">
+        <h3>
+          <app-icon name="user" [size]="20" />
+          Informações Pessoais
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nome Completo</label>
+            <p>{{ preConsultationData.personalInfo.fullName }}</p>
+          </div>
+          <div class="info-item">
+            <label>Data de Nascimento</label>
+            <p>{{ preConsultationData.personalInfo.birthDate | date:'dd/MM/yyyy':'':'pt-BR' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Peso</label>
+            <p>{{ preConsultationData.personalInfo.weight }} kg</p>
+          </div>
+          <div class="info-item">
+            <label>Altura</label>
+            <p>{{ preConsultationData.personalInfo.height }} cm</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical History -->
+      <div class="data-section">
+        <h3>
+          <app-icon name="heart" [size]="20" />
+          Histórico Médico
+        </h3>
+        <div class="info-grid">
+          @if (preConsultationData.medicalHistory.chronicConditions) {
+            <div class="info-item full-width">
+              <label>Condições Crônicas</label>
+              <p>{{ preConsultationData.medicalHistory.chronicConditions }}</p>
+            </div>
+          }
+          @if (preConsultationData.medicalHistory.medications) {
+            <div class="info-item full-width">
+              <label>Medicamentos em Uso</label>
+              <p>{{ preConsultationData.medicalHistory.medications }}</p>
+            </div>
+          }
+          @if (preConsultationData.medicalHistory.allergies) {
+            <div class="info-item full-width">
+              <label>Alergias</label>
+              <p class="highlight-warning">{{ preConsultationData.medicalHistory.allergies }}</p>
+            </div>
+          }
+          @if (preConsultationData.medicalHistory.surgeries) {
+            <div class="info-item full-width">
+              <label>Cirurgias Anteriores</label>
+              <p>{{ preConsultationData.medicalHistory.surgeries }}</p>
+            </div>
+          }
+          @if (preConsultationData.medicalHistory.generalObservations) {
+            <div class="info-item full-width">
+              <label>Observações Gerais</label>
+              <p>{{ preConsultationData.medicalHistory.generalObservations }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Lifestyle Habits -->
+      <div class="data-section">
+        <h3>
+          <app-icon name="activity" [size]="20" />
+          Hábitos de Vida
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Fumante</label>
+            <p>{{ getLifestyleLabel(preConsultationData.lifestyleHabits.smoker) }}</p>
+          </div>
+          <div class="info-item">
+            <label>Consumo de Álcool</label>
+            <p>{{ getLifestyleLabel(preConsultationData.lifestyleHabits.alcoholConsumption) }}</p>
+          </div>
+          <div class="info-item">
+            <label>Atividade Física</label>
+            <p>{{ getLifestyleLabel(preConsultationData.lifestyleHabits.physicalActivity) }}</p>
+          </div>
+          @if (preConsultationData.lifestyleHabits.generalObservations) {
+            <div class="info-item full-width">
+              <label>Observações</label>
+              <p>{{ preConsultationData.lifestyleHabits.generalObservations }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Vital Signs -->
+      @if (preConsultationData.vitalSigns) {
+        <div class="data-section">
+          <h3>
+            <app-icon name="heart" [size]="20" />
+            Sinais Vitais
+          </h3>
+          <div class="info-grid">
+            @if (preConsultationData.vitalSigns.bloodPressure) {
+              <div class="info-item">
+                <label>Pressão Arterial</label>
+                <p>{{ preConsultationData.vitalSigns.bloodPressure }} mmHg</p>
+              </div>
+            }
+            @if (preConsultationData.vitalSigns.heartRate) {
+              <div class="info-item">
+                <label>Frequência Cardíaca</label>
+                <p>{{ preConsultationData.vitalSigns.heartRate }} bpm</p>
+              </div>
+            }
+            @if (preConsultationData.vitalSigns.temperature) {
+              <div class="info-item">
+                <label>Temperatura</label>
+                <p>{{ preConsultationData.vitalSigns.temperature }}°C</p>
+              </div>
+            }
+            @if (preConsultationData.vitalSigns.oxygenSaturation) {
+              <div class="info-item">
+                <label>Saturação de Oxigênio</label>
+                <p>{{ preConsultationData.vitalSigns.oxygenSaturation }}%</p>
+              </div>
+            }
+            @if (preConsultationData.vitalSigns.generalObservations) {
+              <div class="info-item full-width">
+                <label>Observações</label>
+                <p>{{ preConsultationData.vitalSigns.generalObservations }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Current Symptoms -->
+      <div class="data-section">
+        <h3>
+          <app-icon name="alert-circle" [size]="20" />
+          Sintomas Atuais
+        </h3>
+        <div class="info-grid">
+          <div class="info-item full-width">
+            <label>Sintomas Principais</label>
+            <p class="highlight-info">{{ preConsultationData.currentSymptoms.mainSymptoms }}</p>
+          </div>
+          <div class="info-item">
+            <label>Início dos Sintomas</label>
+            <p>{{ preConsultationData.currentSymptoms.symptomOnset }}</p>
+          </div>
+          @if (preConsultationData.currentSymptoms.painIntensity) {
+            <div class="info-item">
+              <label>Intensidade da Dor</label>
+              <p>{{ preConsultationData.currentSymptoms.painIntensity }}/10</p>
+            </div>
+          }
+          @if (preConsultationData.currentSymptoms.generalObservations) {
+            <div class="info-item full-width">
+              <label>Observações</label>
+              <p>{{ preConsultationData.currentSymptoms.generalObservations }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Additional Observations -->
+      @if (preConsultationData.additionalObservations) {
+        <div class="data-section">
+          <h3>
+            <app-icon name="file" [size]="20" />
+            Observações Adicionais
+          </h3>
+          <div class="observations-box">
+            <p>{{ preConsultationData.additionalObservations }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Attachments -->
+      @if (preConsultationData.attachments && preConsultationData.attachments.length > 0) {
+        <div class="data-section">
+          <h3>
+            <app-icon name="camera" [size]="20" />
+            Anexos da Pré-Consulta
+          </h3>
+          <div class="attachments-list">
+            @for (attachment of preConsultationData.attachments; track $index) {
+              <div class="attachment-item">
+                <app-icon [name]="attachment.type === 'image' ? 'image' : 'file'" [size]="20" />
+                <span>{{ attachment.title }}</span>
+                <a [href]="attachment.fileUrl" target="_blank">Ver</a>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state">
+      <app-icon name="alert-circle" [size]="48" />
+      <p>O paciente ainda não preencheu a pré-consulta</p>
+    </div>
+  }
+</div>

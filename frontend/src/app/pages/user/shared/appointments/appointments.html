@@ -1,0 +1,320 @@
+<div class="appointments-container">
+  <div class="header">
+    <div class="header-content">
+      <app-icon name="calendar" [size]="32" />
+      <div>
+        <h1>Minhas Consultas</h1>
+        <p class="subtitle">Gerencie seus agendamentos e histórico de consultas</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- View Mode Toggle - apenas para PROFESSIONAL -->
+      <div class="view-toggle" *ngIf="userrole === 'PROFESSIONAL'">
+        <button 
+          class="toggle-btn" 
+          [class.active]="viewMode === 'list'"
+          (click)="setViewMode('list')"
+          title="Visualização em Lista">
+          <app-icon name="menu" [size]="18" />
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="viewMode === 'calendar'"
+          (click)="setViewMode('calendar')"
+          title="Visualização em Calendário">
+          <app-icon name="calendar" [size]="18" />
+        </button>
+      </div>
+      <div class="actions-section" *ngIf="userrole === 'PATIENT'">
+        <app-button (click)="scheduleNew()">
+          <app-icon name="plus" [size]="20"></app-icon>
+          Nova Consulta
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- CALENDAR VIEW - apenas para PROFESSIONAL -->
+  <!-- ============================================ -->
+  <div class="calendar-section" *ngIf="viewMode === 'calendar' && userrole === 'PROFESSIONAL'">
+    <!-- Calendar Controls -->
+    <div class="calendar-controls">
+      <div class="calendar-view-toggle">
+        <button 
+          class="view-btn" 
+          [class.active]="calendarViewMode === 'day'"
+          (click)="setCalendarViewMode('day')">
+          Dia
+        </button>
+        <button 
+          class="view-btn" 
+          [class.active]="calendarViewMode === 'week'"
+          (click)="setCalendarViewMode('week')">
+          Semana
+        </button>
+        <button 
+          class="view-btn" 
+          [class.active]="calendarViewMode === 'month'"
+          (click)="setCalendarViewMode('month')">
+          Mês
+        </button>
+      </div>
+      
+      <div class="calendar-nav">
+        <button class="nav-btn" (click)="navigateCalendar(-1)" title="Anterior">
+          <app-icon name="arrow-left" [size]="20" />
+        </button>
+        <button class="nav-btn today-btn" (click)="goToToday()">Hoje</button>
+        <button class="nav-btn" (click)="navigateCalendar(1)" title="Próximo">
+          <app-icon name="arrow-right" [size]="20" />
+        </button>
+      </div>
+      
+      <h3 class="calendar-title">{{ getCalendarTitle() }}</h3>
+      
+      <div class="calendar-options">
+        <label class="show-empty-toggle">
+          <input type="checkbox" [(ngModel)]="showEmptySlots" (change)="refreshCalendar()">
+          <span>Mostrar horários vazios</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div class="calendar-day-view" *ngIf="calendarViewMode === 'day'">
+      <div class="day-header">
+        <span class="day-name">{{ getDayName(currentDate) }}</span>
+        <span class="day-date">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+        <span class="appointment-count" [class.has-appointments]="getDayAppointments(currentDate).length > 0">
+          {{ getDayAppointments(currentDate).length }} consulta(s)
+        </span>
+      </div>
+      <div class="day-slots">
+        <div 
+          class="time-slot" 
+          *ngFor="let slot of getDaySlots(currentDate)"
+          [class.slot-empty]="!slot.appointment"
+          [class.slot-filled]="slot.appointment"
+          [class.slot-past]="slot.isPast"
+          (click)="slot.appointment ? openDetails(slot.appointment) : null">
+          <span class="slot-time">{{ slot.time }}</span>
+          <div class="slot-content" *ngIf="slot.appointment">
+            <span class="patient-name">{{ slot.appointment.patientName }}</span>
+            <span class="status-badge" [ngClass]="slot.appointment.status">
+              {{ getStatusLabel(slot.appointment.status) }}
+            </span>
+          </div>
+          <span class="slot-empty-label" *ngIf="!slot.appointment && showEmptySlots">Disponível</span>
+        </div>
+        <div class="no-slots" *ngIf="getDaySlots(currentDate).length === 0">
+          <app-icon name="x-circle" [size]="32" />
+          <p>Nenhum horário configurado para este dia</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week View -->
+    <div class="calendar-week-view" *ngIf="calendarViewMode === 'week'">
+      <div class="week-grid">
+        <div class="week-day" *ngFor="let day of getWeekDays()">
+          <div class="week-day-header" [class.is-today]="isToday(day.date)">
+            <span class="weekday-name">{{ day.name }}</span>
+            <span class="weekday-number">{{ day.date | date:'dd' }}</span>
+          </div>
+          <div 
+            class="week-day-content" 
+            [class.has-appointments]="day.appointments.length > 0"
+            (click)="selectDay(day.date)">
+            <span class="appointment-count-badge" *ngIf="day.appointments.length > 0">
+              {{ day.appointments.length }}
+            </span>
+            <span class="no-appointments" *ngIf="day.appointments.length === 0">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month View -->
+    <div class="calendar-month-view" *ngIf="calendarViewMode === 'month'">
+      <div class="month-header">
+        <div class="weekday-label" *ngFor="let name of weekDayNames">{{ name }}</div>
+      </div>
+      <div class="month-grid">
+        <div 
+          class="month-day" 
+          *ngFor="let day of getMonthDays()"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.is-today]="day.isToday"
+          [class.has-appointments]="day.appointmentsCount > 0"
+          (click)="selectDay(day.date)">
+          <span class="day-number">{{ day.date | date:'d' }}</span>
+          <span class="day-count" *ngIf="day.appointmentsCount > 0">{{ day.appointmentsCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day Detail Modal (inline popover) -->
+    <div class="day-detail-panel" *ngIf="selectedCalendarDay">
+      <div class="panel-header">
+        <h4>{{ selectedCalendarDay | date:'EEEE, dd/MM':'':'pt-BR' }}</h4>
+        <button class="close-btn" (click)="closeDayDetail()">
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+      <div class="panel-content">
+        <div class="slot-list">
+          <div 
+            class="slot-item" 
+            *ngFor="let slot of getSelectedDaySlots()"
+            [class.slot-empty]="!slot.appointment"
+            [class.slot-filled]="slot.appointment"
+            (click)="slot.appointment ? openDetails(slot.appointment) : null">
+            <span class="slot-time">{{ slot.time }}</span>
+            <div class="slot-info" *ngIf="slot.appointment">
+              <span class="patient-name">{{ slot.appointment.patientName }}</span>
+              <span class="status-mini" [ngClass]="slot.appointment.status">
+                {{ getStatusLabel(slot.appointment.status) }}
+              </span>
+            </div>
+            <span class="slot-available" *ngIf="!slot.appointment">Disponível</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- LIST VIEW - para todos os usuários -->
+  <!-- ============================================ -->
+  <div class="list-section" *ngIf="viewMode === 'list' || userrole !== 'PROFESSIONAL'">
+    <div class="filters-bar">
+      <div class="tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="onTabChange('all')">
+          Todas
+          <span class="count-badge">{{ counts.all }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'upcoming'" (click)="onTabChange('upcoming')">
+          Próximas
+          <span class="count-badge">{{ counts.upcoming }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
+          Realizadas
+          <span class="count-badge">{{ counts.past }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'cancelled'" (click)="onTabChange('cancelled')">
+          Canceladas
+          <span class="count-badge">{{ counts.Cancelled }}</span>
+        </button>
+      </div>
+
+      <div class="search-sort">
+        <div class="search-wrapper">
+          <app-search-input 
+              placeholder="Buscar por nome..." 
+              [(ngModel)]="searchQuery"
+              (search)="onSearch($event)">
+          </app-search-input>
+        </div>
+        <button class="sort-btn" (click)="toggleSort()" title="Ordenar por data">
+          <app-icon [name]="sortOrder === 'asc' ? 'chevron-up' : 'chevron-down'" [size]="20"></app-icon>
+          <span class="desktop-only">{{ sortOrder === 'asc' ? 'Mais Antigas' : 'Mais Recentes' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="appointments-list">
+      <div class="loading-state" *ngIf="loading">
+        <p>Carregando consultas...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && appointments.length === 0">
+        <app-icon name="calendar" [size]="48"></app-icon>
+        <h3>Nenhuma consulta encontrada</h3>
+        <p *ngIf="activeTab === 'upcoming'">Você não tem consultas agendadas.</p>
+        <p *ngIf="activeTab !== 'upcoming'">Tente ajustar os filtros de busca.</p>
+        <app-button *ngIf="userrole === 'PATIENT'" variant="outline" (click)="scheduleNew()">Agendar Agora</app-button>
+      </div>
+
+      <div class="appointment-card" *ngFor="let appointment of appointments">
+        <div class="card-header">
+          <div class="date-badge">
+            <span class="day">{{ appointment.date | date:'dd' }}</span>
+            <span class="month">{{ appointment.date | date:'MMM':'':'pt-BR' }}</span>
+          </div>
+          <div class="status-badge" [ngClass]="appointment.status">
+            {{ getStatusLabel(appointment.status) }}
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div class="professional-info">
+            <div class="avatar-placeholder">
+               <app-icon name="user" [size]="24"></app-icon>
+            </div>
+            <div class="info-text">
+              <h3>{{ userrole === 'PATIENT' ? appointment.professionalName : appointment.patientName }}</h3>
+              <p class="specialty">{{ appointment.specialtyName }}</p>
+            </div>
+          </div>
+          
+          <div class="meta-info">
+              <div class="meta-item">
+                  <app-icon name="clock" [size]="16"></app-icon>
+                  <span>{{ appointment.time }}{{ appointment.endTime ? ' - ' + appointment.endTime : '' }}</span>
+              </div>
+              <div class="meta-item" *ngIf="appointment.type">
+                  <app-badge 
+                    [label]="getAppointmentTypeLabel(appointment.type)" 
+                    [variant]="getAppointmentTypeVariant(appointment.type)"
+                    size="sm">
+                  </app-badge>
+              </div>
+              <div class="meta-item">
+                  <app-icon name="calendar" [size]="16"></app-icon>
+                  <span class="text-xs text-secondary">Criado em: {{ appointment.createdAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="meta-item" *ngIf="appointment.meetLink && (appointment.status === 'Confirmed' || appointment.status === 'InProgress')">
+                  <app-icon name="video" [size]="16"></app-icon>
+                  <span>Online</span>
+              </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <app-button variant="ghost" size="sm" (click)="openDetails(appointment)">Detalhes</app-button>
+          
+          <app-button 
+              *ngIf="appointment.status !== 'Cancelled' && appointment.status !== 'Completed'" 
+              variant="ghost" 
+              size="sm" 
+              class="danger-text"
+              (click)="cancelAppointment(appointment)">
+              Cancelar
+          </app-button>
+
+          <app-button 
+              *ngIf="appointment.status === 'Scheduled' || appointment.status === 'Confirmed' || appointment.status === 'InProgress'" 
+              variant="primary" 
+              size="sm" 
+              (click)="accessConsultation(appointment)">
+              <app-icon name="video" [size]="16"></app-icon>
+              Entrar na Consulta
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-appointment-details-modal
+  [isOpen]="isDetailsModalOpen"
+  [appointment]="selectedAppointment"
+  (close)="closeDetails()">
+</app-appointment-details-modal>
+
+<app-pre-consultation-details-modal
+  [isOpen]="isPreConsultationModalOpen"
+  [preConsultation]="selectedAppointment?.preConsultationJson"
+  (close)="closePreConsultationModal()">
+</app-pre-consultation-details-modal>

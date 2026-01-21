@@ -1,0 +1,248 @@
+<div class="atestado-container">
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Carregando atestados...</p>
+    </div>
+  } @else {
+    <!-- Header -->
+    <div class="atestado-header">
+      <div class="header-content">
+        <h3>
+          <app-icon name="file" [size]="20" />
+          Atestados Médicos
+        </h3>
+      </div>
+      
+      @if (canEdit && !showForm) {
+        <div class="header-actions">
+          <app-button 
+            variant="primary" 
+            size="sm"
+            (click)="startNewCertificate()">
+            <app-icon name="plus" [size]="16" />
+            Novo Atestado
+          </app-button>
+        </div>
+      }
+    </div>
+
+    <!-- Formulário de Atestado -->
+    @if (showForm) {
+      <div class="certificate-form">
+        <h4>{{ editingCertificate ? 'Editar Atestado' : 'Novo Atestado' }}</h4>
+        
+        <form [formGroup]="certificateForm" (ngSubmit)="saveCertificate()">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tipo">Tipo de Atestado *</label>
+              <select id="tipo" formControlName="tipo">
+                @for (tipo of tiposAtestado; track tipo.value) {
+                  <option [value]="tipo.value">{{ tipo.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (certificateForm.get('tipo')?.value === 'afastamento') {
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="dataInicio">Data Início</label>
+                <input type="date" id="dataInicio" formControlName="dataInicio" />
+              </div>
+              <div class="form-group">
+                <label for="dataFim">Data Fim</label>
+                <input type="date" id="dataFim" formControlName="dataFim" />
+              </div>
+            </div>
+            
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="diasAfastamento">Dias de Afastamento</label>
+                <input type="number" id="diasAfastamento" formControlName="diasAfastamento" min="1" />
+              </div>
+              <div class="form-group">
+                <label for="cid">CID (opcional)</label>
+                <input type="text" id="cid" formControlName="cid" placeholder="Ex: J06.9" />
+              </div>
+            </div>
+          }
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="conteudo">Conteúdo do Atestado *</label>
+              <textarea 
+                id="conteudo" 
+                formControlName="conteudo" 
+                rows="6"
+                placeholder="Digite o conteúdo do atestado..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="observacoes">Observações (opcional)</label>
+              <textarea 
+                id="observacoes" 
+                formControlName="observacoes" 
+                rows="2"
+                placeholder="Observações adicionais..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <app-button 
+              variant="secondary" 
+              type="button"
+              (click)="cancelForm()">
+              Cancelar
+            </app-button>
+            <app-button 
+              variant="primary" 
+              type="submit"
+              [disabled]="certificateForm.invalid || isSaving">
+              {{ isSaving ? 'Salvando...' : 'Salvar Atestado' }}
+            </app-button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Lista de Atestados -->
+    @if (!showForm) {
+      <div class="certificates-list">
+        @if (certificates.length === 0) {
+          <div class="empty-state">
+            <app-icon name="file" [size]="48" />
+            <h4>Nenhum atestado emitido</h4>
+            <p>Clique em "Novo Atestado" para criar um atestado médico para esta consulta.</p>
+          </div>
+        } @else {
+          @for (cert of certificates; track cert.id) {
+            <div class="certificate-card" [class.signed]="cert.isSigned">
+              <div class="certificate-header">
+                <div class="certificate-type">
+                  <app-icon name="file" [size]="18" />
+                  <span>{{ getTipoLabel(cert.tipo) }}</span>
+                </div>
+                @if (cert.isSigned) {
+                  <span class="signed-badge">
+                    <app-icon name="check-circle" [size]="14" />
+                    Assinado
+                  </span>
+                }
+              </div>
+              
+              <div class="certificate-content">
+                <p class="certificate-text">{{ cert.conteudo }}</p>
+                
+                @if (cert.tipo === 'afastamento' && cert.diasAfastamento) {
+                  <div class="certificate-details">
+                    <span class="detail">
+                      <strong>Dias de afastamento:</strong> {{ cert.diasAfastamento }}
+                    </span>
+                    @if (cert.dataInicio) {
+                      <span class="detail">
+                        <strong>Início:</strong> {{ formatDate(cert.dataInicio) }}
+                      </span>
+                    }
+                    @if (cert.dataFim) {
+                      <span class="detail">
+                        <strong>Fim:</strong> {{ formatDate(cert.dataFim) }}
+                      </span>
+                    }
+                    @if (cert.cid) {
+                      <span class="detail">
+                        <strong>CID:</strong> {{ cert.cid }}
+                      </span>
+                    }
+                  </div>
+                }
+                
+                @if (cert.observacoes) {
+                  <p class="certificate-obs">
+                    <strong>Obs:</strong> {{ cert.observacoes }}
+                  </p>
+                }
+
+                <!-- Info de assinatura digital -->
+                @if (cert.isSigned) {
+                  <div class="signature-info">
+                    <app-icon name="shield" [size]="18" />
+                    <div class="signature-details">
+                      <strong>Documento Assinado Digitalmente</strong>
+                      @if (cert.certificateSubject) {
+                        <p>Certificado: {{ cert.certificateSubject }}</p>
+                      }
+                      @if (cert.signedAt) {
+                        <p>Data: {{ formatDate(cert.signedAt) }}</p>
+                      }
+                      @if (cert.documentHash) {
+                        <p class="hash">Hash: {{ cert.documentHash }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              
+              <div class="certificate-footer">
+                <span class="certificate-date">
+                  <app-icon name="calendar" [size]="14" />
+                  {{ formatDate(cert.createdAt) }}
+                </span>
+                
+                @if (isProfessional) {
+                  <div class="certificate-actions">
+                    @if (!cert.isSigned && canEdit) {
+                      <button class="action-btn edit" (click)="editCertificate(cert)" title="Editar">
+                        <app-icon name="edit" [size]="16" />
+                      </button>
+                      <button class="action-btn delete" (click)="deleteCertificate(cert)" title="Excluir">
+                        <app-icon name="trash" [size]="16" />
+                      </button>
+                    }
+                    @if (!cert.isSigned && canEdit) {
+                      <button 
+                        class="action-btn sign" 
+                        type="button"
+                        (click)="openSignModal(cert); $event.stopPropagation()" 
+                        title="Assinar Digitalmente">
+                        <app-icon name="shield" [size]="16" />
+                      </button>
+                    }
+                    @if (cert.isSigned) {
+                      <button 
+                        class="action-btn pdf signed" 
+                        (click)="downloadSignedPdf(cert)"
+                        title="Baixar PDF Assinado (validável em validar.iti.gov.br)">
+                        <app-icon name="download" [size]="16" />
+                      </button>
+                    } @else if (canEdit) {
+                      <button 
+                        class="action-btn pdf" 
+                        (click)="generatePdf(cert)" 
+                        [disabled]="isGeneratingPdf"
+                        title="Gerar PDF">
+                        <app-icon name="download" [size]="16" />
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal de Assinatura Digital -->
+<app-sign-document-modal
+  [isOpen]="showSignModal"
+  [documentType]="'certificate'"
+  [documentId]="signingCertificateId || ''"
+  (close)="closeSignModal()"
+  (signed)="onDocumentSigned($event)"
+/>

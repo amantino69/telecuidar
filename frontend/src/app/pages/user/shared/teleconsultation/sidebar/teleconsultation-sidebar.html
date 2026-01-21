@@ -1,0 +1,263 @@
+<div class="tele-sidebar" [class.open]="isOpen" [class.full-screen]="isFullScreen" [class.header-hidden]="!isHeaderVisible">
+  <div class="sidebar-header">
+    <div class="sidebar-actions-left">
+      <button class="icon-btn resize-btn" (click)="onToggleMode()" [title]="isFullScreen ? 'Modo Lateral' : 'Tela Cheia'">
+        <app-icon [name]="isFullScreen ? 'arrow-right' : 'arrow-left'" [size]="20" />
+      </button>
+    </div>
+    
+    @if (isFullScreen && !isHeaderVisible) {
+      <div class="sidebar-actions-center">
+        <button class="icon-btn show-header-btn" (click)="onToggleHeader()" title="Mostrar Cabeçalho">
+          <app-icon name="chevron-down" [size]="20" />
+        </button>
+      </div>
+    }
+    
+    <div class="sidebar-actions">
+      @if (userrole !== 'PATIENT') {
+        <button 
+          class="icon-btn dictation-btn" 
+          [class.active]="isDictationActive"
+          [class.listening]="isListening"
+          [class.initializing]="isDictationInitializing"
+          [disabled]="isDictationInitializing"
+          (click)="toggleDictation()" 
+          [title]="isDictationInitializing ? 'Liberando microfone...' : 'Modo Ditado'">
+          @if (isDictationInitializing) {
+            <span class="spinner"></span>
+          } @else {
+            <app-icon [name]="isDictationActive ? 'mic' : 'mic-off'" [size]="20" />
+          }
+        </button>
+      }
+      <button class="icon-btn close-btn" (click)="onToggle()">
+        <app-icon name="close" [size]="20" />
+      </button>
+    </div>
+  </div>
+
+  <!-- NAVEGAÇÃO PRINCIPAL - 3 BOTÕES ALINHADOS -->
+  <div class="compact-nav">
+    <!-- Grupos principais + Finalizar como botões na mesma linha -->
+    <div class="nav-groups">
+      @for (group of getGroupedTabs(); track group.id) {
+        <button 
+          class="group-btn" 
+          [class.active]="activeGroup === group.id"
+          (click)="setActiveGroup(group.id)">
+          <app-icon [name]="group.icon" [size]="16" />
+          <span>{{ group.label }}</span>
+        </button>
+      }
+      @if (userrole === 'PROFESSIONAL' || userrole === 'ADMIN') {
+        <button 
+          class="group-btn finish" 
+          [class.active]="isTabActive('Finalizar Consulta')"
+          (click)="onFinalizarClick()">
+          <app-icon name="check-circle" [size]="16" />
+          <span>Finalizar</span>
+        </button>
+      }
+    </div>
+
+    <!-- Ícones das opções do grupo selecionado -->
+    @for (group of getGroupedTabs(); track group.id) {
+      @if (activeGroup === group.id) {
+        <div class="nav-icons">
+          @for (tab of group.tabs; track tab.id) {
+            <button 
+              class="icon-nav-btn has-tooltip" 
+              [class.active]="isTabActive(tab.label)"
+              [attr.data-tooltip]="tab.label"
+              (click)="onTabChange(tab.label)">
+              <app-icon [name]="tab.icon" [size]="20" />
+            </button>
+          }
+        </div>
+      }
+    }
+
+    <!-- Ferramentas (Análise IA, CADSUS, Histórico) - APENAS para Avaliação Clínica -->
+    @if (activeGroup === 'exame-fisico' && getStandaloneGroup(); as standaloneGroup) {
+      <div class="nav-icons tools">
+        @for (tab of standaloneGroup.tabs; track tab.id) {
+          @if (tab.id !== 'conclusion') {
+            <button 
+              class="icon-nav-btn tool has-tooltip" 
+              [class.active]="isTabActive(tab.label)"
+              [attr.data-tooltip]="tab.label"
+              (click)="onTabChange(tab.label)">
+              <app-icon [name]="tab.icon" [size]="20" />
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <div class="sidebar-content">
+    <!-- Sinais Vitais (antigo Dispositivos Médicos) -->
+    <div class="tab-content" *ngIf="activeTab === 'Sinais Vitais'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-medical-devices-tab>
+    </div>
+
+    <!-- Ausculta - REMOVIDA DO SISTEMA -->
+
+    <!-- Câmera de Exame - REMOVIDA DO SISTEMA -->
+
+    <!-- Dados do Paciente -->
+    <div class="tab-content" *ngIf="activeTab === 'Dados do Paciente'">
+      <app-patient-data-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment">
+      </app-patient-data-tab>
+    </div>
+
+    <!-- Anamnese -->
+    <div class="tab-content" *ngIf="activeTab === 'Anamnese'">
+      <app-anamnesis-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment"
+        [userrole]="userrole">
+      </app-anamnesis-tab>
+    </div>
+
+    <!-- Campos da Especialidade -->
+    <div class="tab-content" *ngIf="activeTab === 'Campos da Especialidade'">
+      <app-specialty-fields-tab
+        [appointment]="appointment"
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-specialty-fields-tab>
+    </div>
+
+    <!-- IOT (legado) -->
+    <div class="tab-content" *ngIf="activeTab === 'IOT'">
+      <app-iot-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-iot-tab>
+    </div>
+
+    <!-- Dispositivos Médicos (compatibilidade) -->
+    <div class="tab-content" *ngIf="activeTab === 'Dispositivos Médicos'" style="height: 100%">
+      <app-medical-devices-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-medical-devices-tab>
+    </div>
+
+    <!-- Fonocardiograma -->
+    <div class="tab-content" *ngIf="activeTab === 'Fonocardio'" style="height: 100%">
+      <app-phonocardiogram-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-phonocardiogram-tab>
+    </div>
+
+    <!-- Biométricos -->
+    <div class="tab-content" *ngIf="activeTab === 'Biométricos'">
+      <app-biometrics-tab 
+        [appointmentId]="appointmentId" 
+        [userrole]="userrole">
+      </app-biometrics-tab>
+    </div>
+
+    <!-- Chat Anexos -->
+    <div class="tab-content" *ngIf="activeTab === 'Chat Anexos'" style="height: 100%">
+      <app-attachments-chat-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole">
+      </app-attachments-chat-tab>
+    </div>
+
+    <!-- SOAP -->
+    <div class="tab-content" *ngIf="activeTab === 'SOAP'">
+      <app-soap-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment"
+        [userrole]="userrole">
+      </app-soap-tab>
+    </div>
+
+    <!-- Análise Diagnóstica (antigo IA) -->
+    <div class="tab-content" *ngIf="activeTab === 'Análise Diagnóstica' || activeTab === 'IA'" style="height: 100%">
+      <app-ai-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment"
+        [userrole]="userrole"
+        [patientData]="patientData"
+        [preConsultationData]="preConsultationData"
+        [anamnesisData]="anamnesisData"
+        [biometricsData]="biometricsData"
+        [soapData]="soapData"
+        [specialtyFieldsData]="specialtyFieldsData">
+      </app-ai-tab>
+    </div>
+
+    <!-- Consulta CADSUS (antigo CNS) -->
+    <div class="tab-content" *ngIf="activeTab === 'Consulta CADSUS' || activeTab === 'CNS'" style="height: 100%">
+      <app-cns-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment">
+      </app-cns-tab>
+    </div>
+
+    <!-- Histórico Clínico do Paciente -->
+    <div class="tab-content" *ngIf="activeTab === 'Histórico Clínico'" style="height: 100%">
+      <app-patient-history-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment">
+      </app-patient-history-tab>
+    </div>
+
+    <!-- Receituário -->
+    <div class="tab-content" *ngIf="activeTab === 'Receituário' || activeTab === 'Receita'" style="height: 100%">
+      <app-receita-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
+      </app-receita-tab>
+    </div>
+
+    <!-- Atestado -->
+    <div class="tab-content" *ngIf="activeTab === 'Atestado'" style="height: 100%">
+      <app-atestado-tab
+        [appointmentId]="appointmentId"
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
+      </app-atestado-tab>
+    </div>
+
+    <!-- Agendar Retorno -->
+    <div class="tab-content" *ngIf="activeTab === 'Agendar Retorno' || activeTab === 'Retorno'" style="height: 100%">
+      <app-return-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment"
+        [userrole]="userrole">
+      </app-return-tab>
+    </div>
+
+    <!-- Encaminhamento -->
+    <div class="tab-content" *ngIf="activeTab === 'Encaminhamento'" style="height: 100%">
+      <app-referral-tab
+        [appointmentId]="appointmentId"
+        [appointment]="appointment"
+        [userrole]="userrole"
+        [readonly]="userrole === 'ASSISTANT'">
+      </app-referral-tab>
+    </div>
+
+    <!-- Finalizar Consulta -->
+    <div class="tab-content" *ngIf="activeTab === 'Finalizar Consulta' || activeTab === 'Concluir'" style="height: 100%">
+      <app-conclusion-tab
+        [appointment]="appointment"
+        (finish)="onFinishConsultation($event)">
+      </app-conclusion-tab>
+    </div>
+  </div>
+</div>

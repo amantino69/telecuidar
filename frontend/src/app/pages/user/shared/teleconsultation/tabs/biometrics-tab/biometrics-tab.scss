@@ -1,0 +1,275 @@
+@use 'variables' as *;
+
+.biometrics-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: $spacing-md;
+  color: var(--text-primary);
+  overflow-y: auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      
+      .updated-at {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: $font-size-xs;
+        color: var(--text-secondary);
+      }
+
+      .saving-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: $font-size-xs;
+        color: var(--primary-600);
+        font-weight: $font-weight-medium;
+        
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
+  }
+
+  .description {
+    color: var(--text-secondary);
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-lg;
+  }
+
+  .biometrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-md;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $spacing-md;
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: var(--primary-300);
+      box-shadow: $shadow-sm;
+    }
+
+    &.double {
+      grid-column: span 1;
+    }
+
+    .metric-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      
+      &.heart { background: var(--red-50); color: var(--red-600); }
+      &.spo2 { background: var(--blue-50); color: var(--blue-600); }
+      &.pressure { background: var(--orange-50); color: var(--orange-600); }
+      &.temp { background: var(--yellow-50); color: var(--yellow-600); }
+      &.lungs { background: var(--cyan-50); color: var(--cyan-600); }
+      &.glucose { background: var(--purple-50); color: var(--purple-600); }
+      &.weight { background: var(--green-50); color: var(--green-600); }
+      &.height { background: var(--indigo-50); color: var(--indigo-600); }
+    }
+
+    .metric-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+
+      label {
+        font-size: $font-size-sm;
+        color: var(--text-secondary);
+        font-weight: $font-weight-medium;
+      }
+
+      .input-group {
+        display: flex;
+        align-items: baseline;
+        gap: $spacing-xs;
+
+        input {
+          width: 70px;
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid transparent;
+          font-size: $font-size-xl;
+          font-weight: $font-weight-bold;
+          color: var(--text-primary);
+          padding: 0;
+          transition: border-color $transition-fast;
+
+          &::placeholder {
+            color: var(--text-disabled);
+          }
+
+          &:focus {
+            outline: none;
+            border-bottom-color: var(--primary-500);
+          }
+
+          &[readonly] {
+            cursor: default;
+            border-bottom-color: transparent;
+          }
+          
+          &:disabled {
+            background: transparent;
+            cursor: not-allowed;
+            opacity: 0.8;
+            border-bottom-color: transparent;
+          }
+          
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          &[type=number] {
+            -moz-appearance: textfield;
+          }
+        }
+
+        .unit {
+          font-size: $font-size-sm;
+          color: var(--text-secondary);
+          font-weight: $font-weight-medium;
+        }
+      }
+
+      .input-row {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        flex-wrap: wrap;
+
+        .separator {
+          font-size: $font-size-xl;
+          color: var(--text-disabled);
+        }
+      }
+    }
+  }
+
+  // Botão conectar Bluetooth
+  .btn-connect {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--primary-300);
+    border-radius: $radius-md;
+    background: var(--primary-50);
+    color: var(--primary-700);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-fast;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-100);
+      border-color: var(--primary-400);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &.connected {
+      background: var(--green-50);
+      border-color: var(--green-300);
+      color: var(--green-700);
+    }
+  }
+
+  // Ações (botão salvar)
+  .actions {
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+  }
+
+  .btn-save {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-xl;
+    background: var(--primary-600);
+    color: white;
+    border: none;
+    border-radius: $radius-lg;
+    font-size: 14px;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-700);
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  // Aviso Bluetooth
+  .bluetooth-warning {
+    margin-top: $spacing-lg;
+    padding: $spacing-sm $spacing-md;
+    background: var(--yellow-50);
+    border: 1px solid var(--yellow-200);
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
+    color: var(--yellow-800);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

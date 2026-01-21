@@ -1,0 +1,138 @@
+<div class="ai-container">
+  <!-- Header -->
+  <div class="ai-header">
+    <div class="header-title">
+      <app-icon name="activity" [size]="24" />
+      <h3>Assistente de IA</h3>
+    </div>
+    <span class="powered-by">Powered by DeepSeek</span>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Carregando dados...</p>
+    </div>
+  }
+
+  <!-- Error Message -->
+  @if (errorMessage) {
+    <div class="error-banner" (click)="clearError()">
+      <app-icon name="alert-circle" [size]="20" />
+      <span>{{ errorMessage }}</span>
+      <button class="close-btn">
+        <app-icon name="close" [size]="16" />
+      </button>
+    </div>
+  }
+
+  @if (!isLoading) {
+    <!-- Summary Section -->
+    <div class="ai-section">
+      <div class="section-header">
+        <div class="section-title">
+          <app-icon name="file" [size]="20" />
+          <h4>Resumo Clínico</h4>
+        </div>
+        @if (summaryGeneratedAt) {
+          <span class="generated-at">
+            Gerado em {{ summaryGeneratedAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+        }
+      </div>
+
+      <div class="section-content">
+        <div class="result-area" [class.has-content]="summary">
+          @if (summary) {
+            <markdown class="markdown-content" [data]="summary"></markdown>
+          } @else {
+            <div class="empty-state">
+              <app-icon name="file" [size]="40" />
+              <p>Nenhum resumo gerado ainda.</p>
+              <small>Clique no botão abaixo para gerar um resumo baseado nos dados da consulta.</small>
+            </div>
+          }
+        </div>
+
+        @if (!readonly) {
+          <div class="section-actions">
+            <app-button
+              variant="primary"
+              [loading]="isGeneratingSummary"
+              [disabled]="isGeneratingSummary || isGeneratingDiagnosis"
+              (click)="generateSummary()"
+            >
+              <app-icon name="activity" [size]="18" />
+              {{ isGeneratingSummary ? 'Gerando...' : 'Gerar Resumo' }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Diagnosis Section -->
+    <div class="ai-section">
+      <div class="section-header">
+        <div class="section-title">
+          <app-icon name="stethoscope" [size]="20" />
+          <h4>Hipótese Diagnóstica</h4>
+        </div>
+        @if (diagnosisGeneratedAt) {
+          <span class="generated-at">
+            Gerado em {{ diagnosisGeneratedAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+        }
+      </div>
+
+      <div class="section-content">
+        @if (!readonly) {
+          <div class="context-input">
+            <label for="additionalContext">Contexto Adicional (opcional)</label>
+            <textarea
+              id="additionalContext"
+              [(ngModel)]="additionalContext"
+              placeholder="Informe observações adicionais que possam auxiliar na geração da hipótese diagnóstica..."
+              rows="3"
+            ></textarea>
+          </div>
+        }
+
+        <div class="result-area" [class.has-content]="diagnosticHypothesis">
+          @if (diagnosticHypothesis) {
+            <markdown class="markdown-content" [data]="diagnosticHypothesis"></markdown>
+          } @else {
+            <div class="empty-state">
+              <app-icon name="stethoscope" [size]="40" />
+              <p>Nenhuma hipótese diagnóstica gerada ainda.</p>
+              <small>Clique no botão abaixo para gerar hipóteses baseadas nos dados da consulta.</small>
+            </div>
+          }
+        </div>
+
+        @if (!readonly) {
+          <div class="section-actions">
+            <app-button
+              variant="secondary"
+              [loading]="isGeneratingDiagnosis"
+              [disabled]="isGeneratingSummary || isGeneratingDiagnosis"
+              (click)="generateDiagnosis()"
+            >
+              <app-icon name="stethoscope" [size]="18" />
+              {{ isGeneratingDiagnosis ? 'Gerando...' : 'Gerar Hipótese Diagnóstica' }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <app-icon name="alert-circle" [size]="16" />
+      <p>
+        <strong>Aviso:</strong> As sugestões geradas pela IA são apenas para auxiliar a decisão clínica do profissional de saúde. 
+        Todas as conclusões devem ser validadas e confirmadas pelo profissional responsável.
+      </p>
+    </div>
+  }
+</div>

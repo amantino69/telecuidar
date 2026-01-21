@@ -1,0 +1,324 @@
+<div class="referral-tab-container">
+  <!-- Success State -->
+  <div class="success-state" *ngIf="referralScheduled && scheduledAppointment">
+    <div class="success-icon">
+      <app-icon name="check" [size]="48"></app-icon>
+    </div>
+    <h2>Encaminhamento Agendado!</h2>
+    <p class="success-message">O encaminhamento foi agendado com sucesso.</p>
+    
+    <div class="scheduled-info">
+      <div class="info-item">
+        <app-icon name="activity" [size]="18"></app-icon>
+        <span>{{ scheduledAppointment.specialtyName }}</span>
+      </div>
+      <div class="info-item">
+        <app-icon name="user" [size]="18"></app-icon>
+        <span>{{ scheduledAppointment.professionalName }}</span>
+      </div>
+      <div class="info-item">
+        <app-icon name="calendar" [size]="18"></app-icon>
+        <span>{{ scheduledAppointment.date | date:'fullDate':'':'pt-BR' }}</span>
+      </div>
+      <div class="info-item">
+        <app-icon name="clock" [size]="18"></app-icon>
+        <span>{{ scheduledAppointment.time }}</span>
+      </div>
+    </div>
+
+    <app-button variant="outline" (click)="scheduleAnother()">
+      <app-icon name="check" [size]="16"></app-icon>
+      Concluir
+    </app-button>
+  </div>
+
+  <!-- List View - Show existing referrals -->
+  <ng-container *ngIf="!referralScheduled && viewMode === 'list'">
+    <div class="header">
+      <div class="header-content">
+        <div class="title-section">
+          <app-icon name="arrow-right" [size]="24" />
+          <div>
+            <h2>Encaminhamentos</h2>
+            <p class="subtitle">Paciente: {{ appointment?.patientName }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions" *ngIf="!readonly">
+        <app-button variant="primary" size="sm" (click)="startNewReferral()">
+          <app-icon name="plus" [size]="16"></app-icon>
+          Novo Encaminhamento
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoadingReferrals">
+      <app-icon name="clock" [size]="32"></app-icon>
+      <p>Carregando encaminhamentos...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoadingReferrals && existingReferrals.length === 0">
+      <app-icon name="arrow-right" [size]="48"></app-icon>
+      <h4>Nenhum encaminhamento agendado</h4>
+      <p>Clique em "Novo Encaminhamento" para encaminhar o paciente para outra especialidade.</p>
+    </div>
+
+    <!-- Referrals List -->
+    <div class="referrals-list" *ngIf="!isLoadingReferrals && existingReferrals.length > 0">
+      <div class="referral-card" *ngFor="let ref of existingReferrals">
+        <div class="referral-header">
+          <div class="referral-specialty">
+            <app-icon name="activity" [size]="18"></app-icon>
+            <span>{{ ref.specialtyName }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(ref.status)">
+            {{ getStatusLabel(ref.status) }}
+          </span>
+        </div>
+        <div class="referral-details">
+          <div class="detail-item">
+            <app-icon name="user" [size]="16"></app-icon>
+            <span>{{ ref.professionalName }}</span>
+          </div>
+          <div class="detail-item">
+            <app-icon name="calendar" [size]="16"></app-icon>
+            <span>{{ ref.date | date:'fullDate':'':'pt-BR' }}</span>
+          </div>
+          <div class="detail-item">
+            <app-icon name="clock" [size]="16"></app-icon>
+            <span>{{ ref.time }}</span>
+          </div>
+          <div class="detail-item" *ngIf="ref.observation">
+            <app-icon name="file" [size]="16"></app-icon>
+            <span>{{ ref.observation }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Scheduling Flow -->
+  <ng-container *ngIf="!referralScheduled && viewMode === 'scheduling' && !readonly">
+    <div class="header">
+      <div class="header-content">
+        <app-button variant="ghost" size="sm" (click)="backToList()">
+          <app-icon name="arrow-left" [size]="16"></app-icon>
+          Voltar
+        </app-button>
+        <div class="title-section">
+          <app-icon name="arrow-right" [size]="24" />
+          <div>
+            <h2>Encaminhar para Especialidade</h2>
+            <p class="subtitle">Paciente: {{ appointment?.patientName }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stepper">
+      <ng-container *ngFor="let step of steps; let i = index; let last = last">
+        <div 
+          class="step-item" 
+          [class.active]="step.id === currentStep"
+          [class.completed]="i < getStepIndex(currentStep)"
+          [class.disabled]="i > getStepIndex(currentStep)"
+          (click)="goToStep(step.id)">
+          <div class="step-circle">
+            <app-icon *ngIf="i < getStepIndex(currentStep)" name="check" [size]="12"></app-icon>
+            <span *ngIf="i >= getStepIndex(currentStep)">{{ i + 1 }}</span>
+          </div>
+          <span class="step-label">{{ step.label }}</span>
+        </div>
+        <div *ngIf="!last" class="step-line" [class.completed]="i < getStepIndex(currentStep)"></div>
+      </ng-container>
+    </div>
+
+    <!-- Step 1: Specialty Selection -->
+    <div class="step-content" *ngIf="currentStep === 'specialty'">
+      <div class="step-header">
+        <h3>Selecione a especialidade</h3>
+        <p>Para qual especialidade deseja encaminhar o paciente?</p>
+      </div>
+
+      <div class="search-bar">
+        <app-search-input 
+          placeholder="Buscar especialidade..." 
+          [(ngModel)]="searchQuery"
+          (search)="onSearch($event)">
+        </app-search-input>
+      </div>
+
+      <div class="specialties-grid">
+        <div class="specialty-card" 
+             *ngFor="let specialty of filteredSpecialties"
+             (click)="selectSpecialty(specialty)">
+          <div class="icon-wrapper">
+            <app-icon name="activity" [size]="32"></app-icon>
+          </div>
+          <h3>{{ specialty.name }}</h3>
+          <p *ngIf="specialty.description">{{ specialty.description }}</p>
+          <div class="card-footer">
+            <span class="availability-badge">Disponível</span>
+            <app-icon name="arrow-right" [size]="16"></app-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredSpecialties.length === 0">
+        <p>Nenhuma especialidade encontrada.</p>
+      </div>
+    </div>
+
+    <!-- Step 2: Date Selection -->
+    <div class="step-content" *ngIf="currentStep === 'date'">
+      <div class="step-header">
+        <h3>Selecione uma data</h3>
+        <p>{{ selectedSpecialty?.name }}</p>
+      </div>
+
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <app-button variant="ghost" size="sm" (click)="changeMonth(-1)">
+            <app-icon name="arrow-left" [size]="16"></app-icon>
+          </app-button>
+          <h4>{{ currentMonth | date:'MMMM yyyy':'':'pt-BR' }}</h4>
+          <app-button variant="ghost" size="sm" (click)="changeMonth(1)">
+            <app-icon name="arrow-right" [size]="16"></app-icon>
+          </app-button>
+        </div>
+
+        <div class="calendar-grid">
+          <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
+          
+          <div class="day" 
+               *ngFor="let day of calendarDays"
+               [class.disabled]="!day.available"
+               [class.selected]="selectedDate?.getTime() === day.date.getTime()"
+               (click)="selectDate(day)">
+            <span class="day-number">{{ day.date | date:'d' }}</span>
+            <div class="day-info" *ngIf="day.available">
+              <span class="slots">{{ day.slots }} vagas</span>
+              <span class="pros">{{ day.professionalsCount }} prof.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Time Slots -->
+    <div class="step-content" *ngIf="currentStep === 'time'">
+      <div class="step-header">
+        <h3>Horários Disponíveis</h3>
+        <p>{{ selectedDate | date:'fullDate':'':'pt-BR' }}</p>
+      </div>
+
+      <div class="loading-state" *ngIf="loading">
+        <app-icon name="clock" [size]="32"></app-icon>
+        <p>Carregando horários...</p>
+      </div>
+
+      <div class="slots-list" *ngIf="!loading">
+        <div class="slot-item" *ngFor="let slot of availableSlots" (click)="selectSlot(slot)">
+          <div class="time">{{ slot.time }}</div>
+          <div class="slot-details">
+            <span>{{ slot.professionals.length }} {{ slot.professionals.length === 1 ? 'profissional' : 'profissionais' }} disponível{{ slot.professionals.length === 1 ? '' : 'is' }}</span>
+          </div>
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        </div>
+
+        <div class="empty-state" *ngIf="availableSlots.length === 0">
+          <p>Nenhum horário disponível para esta data.</p>
+          <app-button variant="outline" size="sm" (click)="goBack()">
+            Escolher outra data
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Professional Selection -->
+    <div class="step-content" *ngIf="currentStep === 'professional-selection'">
+      <div class="step-header">
+        <h3>Escolha o Profissional</h3>
+        <p>{{ selectedDate | date:'shortDate':'':'pt-BR' }} às {{ selectedSlot?.time }}</p>
+      </div>
+
+      <div class="professionals-list">
+        <div class="professional-card" 
+             *ngFor="let pro of selectedSlot?.professionals"
+             (click)="selectProfessional(pro)">
+          <div class="pro-avatar">
+            <app-avatar 
+              [name]="pro.name + ' ' + pro.lastName" 
+              [imageUrl]="pro.avatar"
+              size="md">
+            </app-avatar>
+          </div>
+          <div class="pro-info">
+            <h3>{{ pro.name }} {{ pro.lastName }}</h3>
+            <p>{{ pro.email }}</p>
+          </div>
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Confirmation -->
+    <div class="step-content" *ngIf="currentStep === 'confirmation'">
+      <div class="step-header">
+        <h3>Confirmar Encaminhamento</h3>
+        <p>Verifique os dados antes de confirmar</p>
+      </div>
+
+      <div class="confirmation-card">
+        <div class="info-section">
+          <h4>Consulta Atual</h4>
+          <div class="info-row">
+            <label>Especialidade</label>
+            <p>{{ appointment?.specialtyName }}</p>
+          </div>
+          <div class="info-row">
+            <label>Data</label>
+            <p>{{ appointment?.date | date:'shortDate':'':'pt-BR' }}</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-section">
+          <h4>Encaminhamento</h4>
+          <div class="info-row">
+            <label>Especialidade</label>
+            <p>{{ selectedSpecialty?.name }}</p>
+          </div>
+          <div class="info-row">
+            <label>Profissional</label>
+            <p>{{ selectedProfessional?.name }}</p>
+          </div>
+          <div class="info-row">
+            <label>Data</label>
+            <p>{{ selectedDate | date:'fullDate':'':'pt-BR' }}</p>
+          </div>
+          <div class="info-row">
+            <label>Horário</label>
+            <p>{{ selectedSlot?.time }}</p>
+          </div>
+        </div>
+
+        <div class="observation-input">
+          <label>Motivo do Encaminhamento</label>
+          <textarea [(ngModel)]="observation" placeholder="Descreva o motivo do encaminhamento..."></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <app-button variant="outline" (click)="goBack()">Voltar</app-button>
+        <app-button variant="primary" (click)="confirmScheduling()" [loading]="loading">
+          <app-icon name="check" [size]="16"></app-icon>
+          Confirmar Encaminhamento
+        </app-button>
+      </div>
+    </div>
+  </ng-container>
+</div>

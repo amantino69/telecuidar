@@ -1,0 +1,194 @@
+<div class="specialties">
+  <div class="specialties__header">
+    <div class="specialties__header-content">
+      <app-icon name="book" [size]="32" />
+      <div>
+        <h1 class="specialties__title">Especialidades</h1>
+        <p class="specialties__subtitle">Gerencie todas as especialidades da plataforma</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="specialties__create-btn"
+      (click)="createSpecialty()"
+    >
+      <app-icon name="plus" [size]="20" />
+      Nova Especialidade
+    </button>
+  </div>
+
+  <div class="specialties__filters">
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+      (search)="onSearch($event)"
+      placeholder="Buscar por nome, descrição ou ID..."
+      icon="search"
+    />
+
+    <app-filter-select
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
+      [options]="statusOptions"
+    />
+  </div>
+
+  @if (isLoading) {
+    <div class="specialties__loading">
+      <p>Carregando especialidades...</p>
+    </div>
+  } @else if (specialties.length === 0) {
+    <div class="specialties__empty">
+      <app-icon name="book" [size]="48" />
+      <p>Nenhuma especialidade encontrada</p>
+    </div>
+  } @else {
+    <div class="specialties__table-wrapper">
+      <table class="specialties-table">
+        <thead class="specialties-table__head">
+          <tr>
+            <th class="specialties-table__header specialties-table__header--sortable">
+              <app-table-header
+                label="ID"
+                field="id"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="specialties-table__header specialties-table__header--sortable">
+              <app-table-header
+                label="NOME"
+                field="name"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="specialties-table__header">DESCRIÇÃO</th>
+            <th class="specialties-table__header specialties-table__header--sortable">
+              <app-table-header
+                label="STATUS"
+                field="status"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="specialties-table__header specialties-table__header--sortable">
+              <app-table-header
+                label="CRIADA EM"
+                field="createdAt"
+                [sortable]="true"
+                [currentSortField]="sortField"
+                [currentSortDirection]="sortDirection"
+                (sort)="onSort($event)"
+              />
+            </th>
+            <th class="specialties-table__header specialties-table__header--actions">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody class="specialties-table__body">
+          @for (specialty of specialties; track specialty.id) {
+            <tr class="specialties-table__row">
+              <td class="specialties-table__cell">
+                <span class="specialties-table__id">#{{ specialty.id }}</span>
+              </td>
+              <td class="specialties-table__cell">
+                <span class="specialties-table__name">{{ specialty.name }}</span>
+              </td>
+              <td class="specialties-table__cell">
+                <span class="specialties-table__description">{{ specialty.description }}</span>
+              </td>
+              <td class="specialties-table__cell">
+                <span 
+                  class="specialties-table__badge"
+                  [class.specialties-table__badge--active]="specialty.status === 'Active'"
+                  [class.specialties-table__badge--inactive]="specialty.status === 'Inactive'"
+                >
+                  {{ specialty.status | specialtyStatus }}
+                </span>
+              </td>
+              <td class="specialties-table__cell">
+                <span class="specialties-table__date">{{ specialty.createdAt | date: 'dd/MM/yyyy' }}</span>
+              </td>
+              <td class="specialties-table__cell specialties-table__cell--actions">
+                <div class="specialties-table__actions">
+                  <button
+                    type="button"
+                    class="specialties-table__action-btn specialties-table__action-btn--assign"
+                    (click)="assignSpecialty(specialty)"
+                    aria-label="Atribuir especialidade a profissional"
+                  >
+                    <app-icon name="user" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="specialties-table__action-btn specialties-table__action-btn--edit"
+                    (click)="editSpecialty(specialty)"
+                    aria-label="Editar especialidade"
+                  >
+                    <app-icon name="edit" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="specialties-table__action-btn"
+                    [class.specialties-table__action-btn--activate]="specialty.status === 'Inactive'"
+                    [class.specialties-table__action-btn--deactivate]="specialty.status === 'Active'"
+                    (click)="toggleStatus(specialty)"
+                    [aria-label]="specialty.status === 'Active' ? 'Desativar especialidade' : 'Ativar especialidade'"
+                  >
+                    <app-icon [name]="specialty.status === 'Active' ? 'x-circle' : 'check'" [size]="18" />
+                  </button>
+                  <button
+                    type="button"
+                    class="specialties-table__action-btn specialties-table__action-btn--delete"
+                    (click)="deleteSpecialty(specialty)"
+                    aria-label="Excluir especialidade"
+                  >
+                    <app-icon name="trash" [size]="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>
+
+<!-- Modal de Criação -->
+<app-specialty-create-modal
+  [isOpen]="isCreateModalOpen"
+  (close)="onCreateModalClose()"
+  (create)="onSpecialtyCreated($event)"
+/>
+
+<!-- Modal de Edição -->
+<app-specialty-edit-modal
+  [isOpen]="isEditModalOpen"
+  [specialty]="selectedSpecialty"
+  (close)="onEditModalClose()"
+  (update)="onSpecialtyUpdated($event)"
+/>
+
+<!-- Modal de Atribuição -->
+<app-assign-specialty-modal
+  [isOpen]="isAssignModalOpen"
+  [specialty]="selectedSpecialty"
+  (close)="onAssignModalClose()"
+  (assign)="onSpecialtyAssigned($event)"
+/>

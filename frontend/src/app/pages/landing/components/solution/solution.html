@@ -1,0 +1,45 @@
+<section class="solution" id="solution">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Nossa Solução: Consultório Digital</h2>
+      <p class="section-subtitle">
+        Levamos o conhecimento médico especializado para perto do paciente através de estruturas híbridas inovadoras
+      </p>
+    </div>
+
+    <div class="timeline">
+      @for (step of steps; track step.number; let i = $index) {
+        <div 
+          class="timeline-item" 
+          [class.timeline-item--active]="isActiveStep(i)"
+          (click)="openModal(step)"
+          #timelineItem>
+          <div class="timeline-item__number-wrapper">
+            <div class="timeline-item__number" [class.timeline-item__number--active]="isActiveStep(i)">
+              {{ step.number }}
+            </div>
+          </div>
+          <div class="timeline-item__image">
+            <img [src]="step.image" [alt]="step.imageAlt" loading="lazy" />
+          </div>
+          <div class="timeline-item__content">
+            <h3 class="timeline-item__title">{{ step.title }}</h3>
+            <p class="timeline-item__description">{{ step.description }}</p>
+            <div class="timeline-item__features">
+              @for (feature of step.features; track feature) {
+                <span class="feature-tag">{{ feature }}</span>
+              }
+            </div>
+            <span class="timeline-item__more">Saiba mais →</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<app-info-modal
+  [isOpen]="isModalOpen"
+  [data]="selectedModal"
+  (close)="closeModal()"
+></app-info-modal>

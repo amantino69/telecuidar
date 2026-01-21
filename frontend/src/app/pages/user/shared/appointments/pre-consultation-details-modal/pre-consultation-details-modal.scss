@@ -1,0 +1,186 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-index-modal-backdrop;
+  padding: $spacing-md;
+}
+
+.modal-container {
+  background: var(--surface);
+  border-radius: $radius-xl;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-xl;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-header {
+  padding: $spacing-xl;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include heading-3;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-md;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--background);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.modal-content {
+  padding: $spacing-xl;
+  overflow-y: auto;
+  @include flex-column;
+  gap: $spacing-2xl;
+
+  .section {
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: var(--primary);
+      margin: 0 0 $spacing-md 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: $spacing-sm;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-primary);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-lg;
+
+    .item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .label {
+        font-size: $font-size-sm;
+        color: var(--text-secondary);
+        font-weight: $font-weight-medium;
+      }
+
+      .value {
+        font-size: $font-size-base;
+        color: var(--text-primary);
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+
+  .attachments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: $spacing-md;
+
+    .attachment-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-md;
+      border-radius: $radius-lg;
+      background: var(--background);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: var(--primary);
+        box-shadow: $shadow-md;
+        transform: translateY(-2px);
+      }
+
+      .attachment-preview {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: $radius-md;
+        overflow: hidden;
+        background: var(--surface);
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .file-icon {
+          color: var(--text-secondary);
+        }
+      }
+
+      .attachment-title {
+        font-size: $font-size-sm;
+        color: var(--text-primary);
+        text-align: center;
+        word-break: break-word;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+    }
+  }
+}
+
+.modal-footer {
+  padding: $spacing-xl;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  background: var(--surface);
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

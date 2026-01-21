@@ -1,0 +1,335 @@
+// ========================================
+// GLOBAL STYLES - TeleCuidar
+// ========================================
+
+@use './styles/variables' as *;
+@use './styles/mixins' as *;
+@use './styles/theme';
+
+// ========================================
+// RESET & BASE STYLES
+// ========================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: $font-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+  color: var(--text-primary);
+  background-color: var(--background);
+  @include transition(background-color);
+  min-height: 100vh;
+  overflow-x: hidden;
+  // Melhor renderização de fonte
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+// Forçar Roboto em todos os elementos interativos
+button,
+input,
+textarea,
+select,
+a {
+  font-family: $font-primary;
+}
+
+// ========================================
+// TYPOGRAPHY - Mais firme e legível
+// ========================================
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $font-heading;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  color: var(--text-primary);
+  margin-bottom: $spacing-md;
+  letter-spacing: -0.02em; // Mais compacto e profissional
+}
+
+h1 {
+  @include heading-1;
+}
+
+h2 {
+  @include heading-2;
+}
+
+h3 {
+  @include heading-3;
+}
+
+h4 {
+  @include heading-4;
+}
+
+p {
+  margin-bottom: $spacing-md;
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--primary-600);
+  text-decoration: none;
+  @include transition(color);
+
+  &:hover {
+    color: var(--primary-700);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+strong,
+b {
+  font-weight: $font-weight-bold;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+small {
+  font-size: $font-size-sm;
+}
+
+code {
+  font-family: $font-mono;
+  font-size: 0.9em;
+  padding: $spacing-xs $spacing-sm;
+  background-color: var(--neutral-100);
+  border-radius: $radius-sm;
+}
+
+pre {
+  font-family: $font-mono;
+  padding: $spacing-md;
+  background-color: var(--neutral-100);
+  border-radius: $radius-md;
+  overflow-x: auto;
+  @include custom-scrollbar;
+
+  code {
+    padding: 0;
+    background-color: transparent;
+  }
+}
+
+// ========================================
+// LISTS
+// ========================================
+
+ul,
+ol {
+  padding-left: $spacing-xl;
+  margin-bottom: $spacing-md;
+
+  li {
+    margin-bottom: $spacing-sm;
+  }
+}
+
+// ========================================
+// IMAGES & MEDIA
+// ========================================
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+// ========================================
+// FORMS
+// ========================================
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+input,
+textarea,
+select {
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// ========================================
+// UTILITY CLASSES
+// ========================================
+
+.container {
+  @include container;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ========================================
+// SCROLLBAR
+// ========================================
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: $radius-full;
+  border: 3px solid var(--background);
+
+  &:hover {
+    background: var(--text-secondary);
+  }
+}
+
+// ========================================
+// SELECTION
+// ========================================
+
+::selection {
+  background-color: var(--primary-200);
+  color: var(--text-primary);
+}
+
+::-moz-selection {
+  background-color: var(--primary-200);
+  color: var(--text-primary);
+}
+
+// ========================================
+// ACCESSIBILITY
+// ========================================
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ========================================
+// TEMA ALTO CONTRASTE - Design refinado
+// Foco: maior legibilidade sem quebrar a estética
+// ========================================
+[data-theme='contrast'] {
+  // Fundo levemente mais escuro para contraste
+  --background: #f0f4f8;
+  --surface: #ffffff;
+  --text-primary: #0a0a0a;
+  --text-secondary: #1e293b;
+  
+  // Aumentar peso de fonte globalmente
+  body {
+    font-weight: 500;
+  }
+
+  // Títulos mais fortes
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+}
+
+// ========================================
+// PRINT STYLES
+// ========================================
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+  }
+
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

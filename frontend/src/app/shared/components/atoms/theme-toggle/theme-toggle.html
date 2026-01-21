@@ -1,0 +1,35 @@
+<div class="theme-selector">
+  <button
+    class="theme-toggle"
+    (click)="toggleDropdown()"
+    [attr.aria-label]="'Tema atual: ' + getCurrentThemeName()"
+    [attr.aria-expanded]="isOpen"
+    type="button"
+  >
+    <app-icon [name]="getCurrentThemeIcon()" [size]="20"></app-icon>
+  </button>
+
+  @if (isOpen) {
+    <div class="theme-dropdown" role="menu">
+      <div class="dropdown-header">Escolha o tema</div>
+      @for (theme of themes; track theme.id) {
+        <button
+          class="theme-option"
+          [class.active]="currentTheme === theme.id"
+          (click)="selectTheme(theme.id)"
+          role="menuitem"
+          type="button"
+        >
+          <app-icon [name]="theme.icon" [size]="18"></app-icon>
+          <div class="option-text">
+            <span class="option-name">{{ theme.name }}</span>
+            <span class="option-desc">{{ theme.description }}</span>
+          </div>
+          @if (currentTheme === theme.id) {
+            <app-icon name="check" [size]="16" class="check-icon"></app-icon>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

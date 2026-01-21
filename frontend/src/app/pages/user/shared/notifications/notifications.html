@@ -1,0 +1,130 @@
+<div class="notifications">
+  <div class="notifications__header">
+    <div class="notifications__header-content">
+      <app-icon name="bell" [size]="32" />
+      <div>
+        <h1 class="notifications__title">Notificações</h1>
+        <p class="notifications__subtitle">Acompanhe as atualizações do sistema</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="notifications__mark-all-btn"
+      (click)="markAllAsRead()"
+      [disabled]="!hasUnreadNotifications"
+    >
+      <app-icon name="check-circle" [size]="20" />
+      Marcar todas como lidas
+    </button>
+  </div>
+
+  <div class="notifications__filters">
+    <app-search-input
+      [(ngModel)]="searchTerm"
+      (search)="onSearch($event)"
+      placeholder="Buscar notificações..."
+      icon="search"
+    />
+
+    <app-filter-select
+      [(ngModel)]="statusFilter"
+      (change)="onFilterChange()"
+      [options]="statusOptions"
+    />
+
+    <app-filter-select
+      [(ngModel)]="typeFilter"
+      (change)="onFilterChange()"
+      [options]="typeOptions"
+    />
+  </div>
+
+  <div class="notifications__list">
+    @if (loading) {
+      <div class="notifications__loading">
+        <p>Carregando notificações...</p>
+      </div>
+    } @else if (notifications.length === 0) {
+      <div class="notifications__empty">
+        <app-icon name="bell" [size]="48" />
+        <p>Nenhuma notificação encontrada</p>
+      </div>
+    } @else {
+      @for (notification of notifications; track notification.id) {
+        <div
+          class="notification-card"
+          [class.notification-card--unread]="!notification.isRead"
+          [class.notification-card--info]="notification.type === 'Info'"
+          [class.notification-card--warning]="notification.type === 'Warning'"
+          [class.notification-card--error]="notification.type === 'Error'"
+          [class.notification-card--success]="notification.type === 'Success'"
+          [class.notification-card--clickable]="hasRelatedPage(notification)"
+          (click)="onCardClick(notification)"
+        >
+          <div class="notification-card__icon">
+            @switch (notification.type) {
+              @case ('Info') {
+                <app-icon name="alert-circle" [size]="24" />
+              }
+              @case ('Warning') {
+                <app-icon name="alert-circle" [size]="24" />
+              }
+              @case ('Error') {
+                <app-icon name="x-circle" [size]="24" />
+              }
+              @case ('Success') {
+                <app-icon name="check-circle" [size]="24" />
+              }
+            }
+          </div>
+
+          <div class="notification-card__content">
+            <div class="notification-card__header">
+              <h3 class="notification-card__title">{{ notification.title }}</h3>
+              @if (!notification.isRead) {
+                <span class="notification-card__unread-badge"></span>
+              }
+            </div>
+            <p class="notification-card__message">{{ notification.message }}</p>
+            <div class="notification-card__footer">
+              <span class="notification-card__timestamp">{{ formatTimestamp(notification.createdAt) }}</span>
+            </div>
+          </div>
+
+          <div class="notification-card__actions">
+            <div class="notification-card__action-buttons">
+              @if (!notification.isRead) {
+                <button
+                  type="button"
+                  class="notification-card__action-btn"
+                  (click)="markAsRead(notification.id); $event.stopPropagation()"
+                  title="Marcar como lida"
+                >
+                  <app-icon name="check" [size]="18" />
+                </button>
+              }
+              <button
+                type="button"
+                class="notification-card__action-btn notification-card__action-btn--delete"
+                (click)="deleteNotification(notification.id); $event.stopPropagation()"
+                title="Excluir"
+              >
+                <app-icon name="close" [size]="18" />
+              </button>
+            </div>
+            @if (hasRelatedPage(notification)) {
+              <app-button 
+                variant="ghost" 
+                size="sm" 
+                class="notification-card__related-btn"
+                (click)="navigateToRelatedPage(notification, $event)">
+                {{ getActionLabel(notification) }}
+                <app-icon name="arrow-right" [size]="14" />
+              </app-button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

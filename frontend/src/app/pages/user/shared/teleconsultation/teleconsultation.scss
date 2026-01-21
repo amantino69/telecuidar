@@ -1,0 +1,352 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.teleconsultation-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--neutral-900); // Video background
+  z-index: $z-index-modal + 10; // Above everything
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  color: var(--neutral-50);
+
+  // Overlay quando médico está ditando (para paciente)
+  .dictation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+
+    .dictation-message {
+      text-align: center;
+      padding: 2rem 3rem;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+      app-icon {
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+        animation: pulse 1.5s infinite;
+      }
+
+      h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.5rem;
+      }
+
+      p {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+  }
+
+  // Main Content Wrapper (Video + Header)
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: margin-right $transition-base, width $transition-base;
+    overflow: hidden;
+
+    // When sidebar is open, adjust the width (40% sidebar)
+    &.sidebar-open {
+      margin-right: 40vw;
+      
+      // Tablets: aumentar sidebar para 55% (mais espaço para leitura/digitação)
+      @media (min-width: 768px) and (max-width: 1024px) {
+        margin-right: 55vw;
+      }
+      
+      // Respect min/max width of sidebar
+      @media (max-width: 1000px) {
+        margin-right: 400px;
+      }
+      @media (min-width: 1500px) {
+        margin-right: 600px;
+      }
+    }
+
+    // Modo full-screen: vídeo ocupa 50% da esquerda, sidebar 50% da direita
+    &.full-screen {
+      width: 50vw;
+      margin-right: 50vw;
+      
+      @include mobile {
+        // Em mobile, esconde o vídeo quando sidebar está em tela cheia
+        display: none;
+      }
+    }
+  }
+
+  // Video Area
+  .video-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    
+    // Jitsi Video Component fills the area
+    app-jitsi-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .placeholder-video {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: $spacing-md;
+      color: rgba(255, 255, 255, 0.5);
+      
+      p {
+        font-size: $font-size-xl;
+        margin: 0;
+      }
+
+      .placeholder-subtitle {
+        font-size: $font-size-sm;
+        opacity: 0.7;
+        max-width: 400px;
+        text-align: center;
+      }
+    }
+
+    .controls-overlay {
+      position: absolute;
+      top: $spacing-md;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      
+      .show-header-btn {
+        background: rgba(0, 0, 0, 0.6);
+        color: var(--neutral-50);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        
+        &:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+      }
+    }
+  }
+
+  // Header
+  .tele-header {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: 80px; // Fixed height for desktop
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 $spacing-2xl;
+    display: flex;
+    align-items: center;
+    transition: all $transition-base;
+    z-index: 40;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    overflow: hidden;
+    max-height: 80px;
+
+    // When sidebar is full-screen and header is visible, put header above sidebar
+    &.above-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 70; // Above sidebar full-screen (z-index: 60)
+    }
+
+    @include mobile {
+      height: auto; // Auto height for mobile to fit content
+      min-height: 80px;
+      padding: $spacing-md; // Reduced padding
+      flex-direction: column; // Stack content vertically
+      justify-content: center;
+      max-height: 200px; // Enough for mobile layout
+    }
+
+    &.hidden {
+      max-height: 0;
+      min-height: 0;
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+      opacity: 0;
+      visibility: hidden;
+      overflow: hidden;
+    }
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: $breakpoint-desktop-hd;
+      margin: 0 auto;
+
+      @include mobile {
+        flex-direction: column;
+        gap: $spacing-md;
+        width: 100%;
+      }
+
+      .info-section {
+        @include mobile {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-xs;
+        }
+
+        .main-info {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+          margin-bottom: $spacing-xs;
+
+          @include mobile {
+            margin-bottom: 0;
+            justify-content: space-between;
+            width: 100%;
+          }
+
+          h2 {
+            margin: 0;
+            font-size: $font-size-xl;
+            font-weight: $font-weight-semibold;
+            font-family: $font-heading;
+
+            @include mobile {
+              font-size: $font-size-lg;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 200px;
+            }
+          }
+
+          .specialty-badge {
+            background: var(--primary-50);
+            color: var(--primary-600);
+            padding: $spacing-xs $spacing-sm;
+            border-radius: $radius-full;
+            font-size: $font-size-xs;
+            font-weight: $font-weight-semibold;
+            text-transform: uppercase;
+            white-space: nowrap;
+          }
+        }
+
+        .meta-info {
+          display: flex;
+          gap: $spacing-lg;
+          color: var(--text-secondary);
+          font-size: $font-size-sm;
+
+          @include mobile {
+            gap: $spacing-md;
+            font-size: $font-size-xs;
+            justify-content: flex-start;
+          }
+
+          span {
+            display: flex;
+            align-items: center;
+            gap: $spacing-sm;
+          }
+        }
+      }
+
+      .controls-section {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+
+        @include mobile {
+          width: 100%;
+          justify-content: space-between; // Spread controls on mobile
+          padding-top: $spacing-sm;
+          border-top: 1px solid var(--border); // Separator for clarity
+        }
+
+        .sidebar-btn {
+          background: var(--primary-50);
+          border-color: var(--primary-200);
+          color: var(--primary-600);
+
+          &:hover {
+            background: var(--primary-100);
+            color: var(--primary-700);
+            border-color: var(--primary-300);
+          }
+        }
+      }
+    }
+  }
+
+
+
+
+
+  // Shared Utilities
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    &.close-btn:hover {
+        color: var(--red-600);
+        background: var(--red-50);
+        border-color: var(--red-200);
+    }
+  }
+}

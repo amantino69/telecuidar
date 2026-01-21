@@ -1,0 +1,80 @@
+@if (isOpen && specialty) {
+  <div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__header-content">
+          <app-icon name="users" [size]="24" />
+          <h2 class="modal__title">Atribuir Especialidade</h2>
+        </div>
+        <button
+          type="button"
+          class="modal__close"
+          (click)="onCancel()"
+          aria-label="Fechar"
+        >
+          <app-icon name="close" [size]="24" />
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="modal__specialty-info">
+          <div class="specialty-badge">
+            <app-icon name="book" [size]="20" />
+            <span>{{ specialty.name }}</span>
+          </div>
+          <p class="specialty-description">{{ specialty.description }}</p>
+        </div>
+
+        <form class="assign-form">
+          <div class="assign-form__field">
+            <label for="professional-select" class="assign-form__label">
+              Selecione o Profissional
+            </label>
+            
+            @if (isLoading) {
+              <div class="assign-form__loading">
+                <p>Carregando profissionais...</p>
+              </div>
+            } @else if (professionals.length === 0) {
+              <div class="assign-form__empty">
+                <p>Nenhum profissional ativo encontrado</p>
+              </div>
+            } @else {
+              <select
+                id="professional-select"
+                class="assign-form__select"
+                [(ngModel)]="selectedUserId"
+                name="professional"
+              >
+                <option value="">Selecione um profissional</option>
+                @for (professional of professionals; track professional.id) {
+                  <option [value]="professional.id">
+                    {{ professional.name }} - {{ professional.email }}
+                  </option>
+                }
+              </select>
+            }
+          </div>
+        </form>
+      </div>
+
+      <div class="modal__footer">
+        <app-button
+          [variant]="'outline'"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </app-button>
+
+        <app-button
+          [variant]="'primary'"
+          (click)="onAssign()"
+          [disabled]="!isFormValid()"
+        >
+          <app-icon name="check" [size]="18" />
+          Atribuir Especialidade
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

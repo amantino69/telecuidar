@@ -1,0 +1,83 @@
+<div class="auth-page">
+  <div class="auth-theme-toggle">
+    <app-theme-toggle />
+  </div>
+  
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <app-logo size="lg"></app-logo>
+        <h1 class="auth-card__title">Bem-vindo de volta!</h1>
+        <p class="auth-card__subtitle">Faça login para acessar sua conta</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        @if (errorMessage) {
+          <div class="auth-alert auth-alert--error">
+            <app-icon name="close" [size]="20"></app-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="seu@email.com"
+            class="form-input"
+            [class.form-input--error]="email?.invalid && email?.touched"
+          />
+          @if (email?.invalid && email?.touched) {
+            <span class="form-error">{{ getErrorMessage('email') }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Senha</label>
+          <app-input-password
+            formControlName="password"
+            placeholder="Digite sua senha"
+          ></app-input-password>
+          @if (password?.invalid && password?.touched) {
+            <span class="form-error">{{ getErrorMessage('password') }}</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <app-checkbox
+            formControlName="rememberMe"
+            label="Lembrar-me"
+            icon="bookmark"
+          ></app-checkbox>
+          
+          <a routerLink="/auth/forgot-password" class="form-link">
+            Esqueceu a senha?
+          </a>
+        </div>
+
+        <app-button
+          type="submit"
+          variant="primary"
+          size="lg"
+          [fullWidth]="true"
+          [disabled]="isLoading"
+        >
+          {{ isLoading ? 'Entrando...' : 'Entrar' }}
+        </app-button>
+
+        <div class="auth-footer">
+          <p class="auth-footer__text">
+            Não tem uma conta?
+            <a routerLink="/registrar" class="auth-footer__link">Cadastre-se</a>
+          </p>
+          <button type="button" class="auth-footer__back" (click)="goToHome()">
+            <app-icon name="arrow-left" [size]="16"></app-icon>
+            Voltar à página inicial
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

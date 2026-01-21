@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Application\Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+    <PackageReference Include="itext7" Version="8.0.5" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

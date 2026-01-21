@@ -1,0 +1,41 @@
+<header class="header">
+  <div class="container">
+    <div class="header__content">
+      <app-logo [size]="'md'"></app-logo>
+
+      <nav class="header__nav" [class.header__nav--open]="isMenuOpen">
+        <a href="#home" class="header__link">Início</a>
+        <a href="#features" class="header__link">Funcionalidades</a>
+        <a href="#about" class="header__link">Sobre</a>
+        <a href="#contact" class="header__link">Contato</a>
+        
+        <div class="header__nav-actions">
+          @if (isLoggedIn) {
+            <app-button variant="primary" size="md" routerLink="/painel">Acessar Painel</app-button>
+          } @else {
+            <app-button variant="outline" size="md" routerLink="/entrar">Entrar</app-button>
+            <app-button variant="primary" size="md" routerLink="/registrar">Cadastrar</app-button>
+          }
+        </div>
+      </nav>
+
+      <div class="header__actions">
+        <app-theme-toggle></app-theme-toggle>
+        @if (isLoggedIn) {
+          <app-button variant="primary" size="md" routerLink="/painel">Acessar Painel</app-button>
+        } @else {
+          <app-button variant="outline" size="md" routerLink="/entrar">Entrar</app-button>
+          <app-button variant="primary" size="md" routerLink="/registrar">Cadastrar</app-button>
+        }
+
+        <button class="header__menu-btn" (click)="toggleMenu()" type="button" aria-label="Menu">
+          @if (isMenuOpen) {
+            <app-icon name="close" [size]="24"></app-icon>
+          } @else {
+            <app-icon name="menu" [size]="24"></app-icon>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

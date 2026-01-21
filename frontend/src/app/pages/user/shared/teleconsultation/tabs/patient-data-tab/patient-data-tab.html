@@ -1,0 +1,97 @@
+<div class="patient-data-tab">
+  @if (loading) {
+    <div class="loading-state">
+      <p>Carregando dados do paciente...</p>
+    </div>
+  }
+
+  @if (!loading && patientData) {
+    <div class="patient-info">
+      <div class="info-header">
+        <div class="avatar">
+          @if (patientData.avatar) {
+            <img [src]="patientData.avatar" [alt]="patientData.name" />
+          } @else {
+            <app-icon name="user" [size]="48" />
+          }
+        </div>
+        <div class="header-text">
+          <h2>{{ patientData.name }} {{ patientData.lastName }}</h2>
+          <span class="patient-id">ID: {{ patientData.id }}</span>
+        </div>
+      </div>
+
+      <div class="info-sections">
+        <div class="info-section">
+          <h3>
+            <app-icon name="user" [size]="20" />
+            Informações Pessoais
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nome Completo</label>
+              <p>{{ patientData.name }} {{ patientData.lastName }}</p>
+            </div>
+            <div class="info-item">
+              <label>CPF</label>
+              <p>{{ patientData.cpf }}</p>
+            </div>
+            <div class="info-item">
+              <label>E-mail</label>
+              <p>{{ patientData.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>Telefone</label>
+              <p>{{ formatPhone(patientData.phone) }}</p>
+            </div>
+            <div class="info-item">
+              <label>Status</label>
+              <p class="status-badge" [class.active]="patientData.status === 'Active'">
+                {{ patientData.status === 'Active' ? 'Ativo' : 'Inativo' }}
+              </p>
+            </div>
+            <div class="info-item">
+              <label>E-mail Verificado</label>
+              <p>
+                @if (patientData.emailVerified) {
+                  <span class="verified">
+                    <app-icon name="check-circle" [size]="16" />
+                    Verificado
+                  </span>
+                } @else {
+                  <span class="unverified">Não verificado</span>
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>
+            <app-icon name="calendar" [size]="20" />
+            Histórico
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Paciente desde</label>
+              <p>{{ patientData.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</p>
+            </div>
+            @if (patientData.updatedAt) {
+              <div class="info-item">
+                <label>Última atualização</label>
+                <p>{{ patientData.updatedAt | date:'dd/MM/yyyy':'':'pt-BR' }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (!loading && !patientData) {
+    <div class="empty-state">
+      <app-icon name="alert-circle" [size]="48" />
+      <p>Não foi possível carregar os dados do paciente</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,37 @@
+{
+  "name": "telecuidar",
+  "version": "2.0.0",
+  "description": "TeleCuidar - Plataforma de Telemedicina",
+  "private": true,
+  "scripts": {
+    "setup": "pwsh -ExecutionPolicy Bypass -File ./setup-env.ps1",
+    "backend": "cd backend/WebAPI && dotnet run",
+    "frontend": "cd frontend && npm start",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && dotnet restore",
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend/WebAPI && dotnet build",
+    "build:all": "npm run build:frontend && npm run build:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend/Tests && dotnet test",
+    "test:all": "npm run test:frontend && npm run test:backend",
+    "clean": "pwsh -Command \"Remove-Item -Recurse -Force frontend/node_modules,frontend/dist,backend/**/bin,backend/**/obj -ErrorAction SilentlyContinue\"",
+    "seed:reset": "cd backend && pwsh -ExecutionPolicy Bypass -File ./WebAPI/Scripts/reset-database.ps1",
+    "seed:populate": "cd backend && pwsh -ExecutionPolicy Bypass -File ./WebAPI/Scripts/seed-database.ps1",
+    "test:api": "cd backend && pwsh -ExecutionPolicy Bypass -File ./WebAPI/Scripts/test-api.ps1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guilhermevieirao/telecuidar"
+  },
+  "keywords": [
+    "telemedicina",
+    "telecuidar",
+    "saude",
+    "angular",
+    "dotnet"
+  ],
+  "author": "TeleCuidar Team",
+  "license": "MIT"
+}

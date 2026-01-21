@@ -1,0 +1,125 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Detalhes da Agenda</h2>
+      <button type="button" class="modal__close-btn" (click)="onClose()">
+        <svg class="modal__close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    @if (schedule) {
+      <div class="modal__content">
+        <div class="schedule-view__section">
+          <h3 class="schedule-view__section-title">Profissional</h3>
+          <div class="schedule-view__info-grid">
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Nome</span>
+              <span class="schedule-view__value">{{ schedule.professionalName }}</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">ID</span>
+              <span class="schedule-view__value">{{ schedule.professionalId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="schedule-view__section">
+          <h3 class="schedule-view__section-title">Configuração Global</h3>
+          <div class="schedule-view__info-grid">
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Dias de Atendimento</span>
+              <span class="schedule-view__value">{{ getWorkingDays() }}</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Horário</span>
+              <span class="schedule-view__value">{{ schedule.globalConfig.timeRange.startTime }} - {{ schedule.globalConfig.timeRange.endTime }}</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Duração da Consulta</span>
+              <span class="schedule-view__value">{{ schedule.globalConfig.consultationDuration }} minutos</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Intervalo entre Consultas</span>
+              <span class="schedule-view__value">{{ schedule.globalConfig.intervalBetweenConsultations }} minutos</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Pausa</span>
+              <span class="schedule-view__value">
+                @if (schedule.globalConfig.breakTime) {
+                  {{ schedule.globalConfig.breakTime.startTime }} - {{ schedule.globalConfig.breakTime.endTime }}
+                } @else {
+                  Nenhuma
+                }
+              </span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Validade</span>
+              <span class="schedule-view__value">{{ getValidity() }}</span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Status</span>
+              <span class="schedule-view__value schedule-view__value--badge">
+                <span class="schedule-view__badge" [class.schedule-view__badge--active]="isScheduleActive()">
+                  {{ isScheduleActive() ? 'Ativa' : 'Inativa' }}
+                </span>
+              </span>
+            </div>
+            <div class="schedule-view__info-item">
+              <span class="schedule-view__label">Criado em</span>
+              <span class="schedule-view__value">{{ schedule.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (hasCustomizedDays()) {
+          <div class="schedule-view__section">
+            <h3 class="schedule-view__section-title">Dias Personalizados</h3>
+            @for (day of getCustomizedDays(); track day.day) {
+              <div class="schedule-view__day-card">
+                <h4 class="schedule-view__day-title">{{ getDayLabel(day.day) }}</h4>
+                <div class="schedule-view__info-grid">
+                  @if (day.timeRange) {
+                    <div class="schedule-view__info-item">
+                      <span class="schedule-view__label">Horário</span>
+                      <span class="schedule-view__value">{{ day.timeRange.startTime }} - {{ day.timeRange.endTime }}</span>
+                    </div>
+                  }
+                  @if (day.consultationDuration !== undefined) {
+                    <div class="schedule-view__info-item">
+                      <span class="schedule-view__label">Duração</span>
+                      <span class="schedule-view__value">{{ day.consultationDuration }} minutos</span>
+                    </div>
+                  }
+                  @if (day.intervalBetweenConsultations !== undefined) {
+                    <div class="schedule-view__info-item">
+                      <span class="schedule-view__label">Intervalo</span>
+                      <span class="schedule-view__value">{{ day.intervalBetweenConsultations }} minutos</span>
+                    </div>
+                  }
+                  <div class="schedule-view__info-item">
+                    <span class="schedule-view__label">Pausa</span>
+                    <span class="schedule-view__value">
+                      @if (day.breakTime) {
+                        {{ day.breakTime.startTime }} - {{ day.breakTime.endTime }}
+                      } @else {
+                        Nenhuma
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <div class="modal__footer">
+      <button type="button" class="modal__close-action-btn" (click)="onClose()">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>

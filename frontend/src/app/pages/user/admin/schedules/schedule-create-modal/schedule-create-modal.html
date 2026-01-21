@@ -1,0 +1,369 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">
+        @if (editingSchedule) {
+          Editar Agenda
+        } @else {
+          Nova Agenda
+        }
+      </h2>
+      <button
+        type="button"
+        class="modal__close-btn"
+        (click)="onClose()"
+      >
+        <app-icon name="close" [size]="24" />
+      </button>
+    </div>
+
+    <div class="modal__content">
+      <form [formGroup]="form" class="schedule-form">
+        <!-- Step 1: Professional Selection -->
+        @if (currentStep === 'PROFESSIONAL') {
+          <div class="schedule-form__step">
+            <h3 class="schedule-form__step-title">Selecione o Profissional</h3>
+            
+            <div class="schedule-form__field">
+              <label for="professional" class="schedule-form__label">Profissional *</label>
+              <select
+                id="professional"
+                class="schedule-form__select"
+                formControlName="professionalId"
+              >
+                <option value="">-- Selecione um profissional --</option>
+                @for (prof of professionals; track prof.id) {
+                  <option [value]="prof.id">
+                    {{ prof.name }} ({{ prof.email }})
+                  </option>
+                }
+              </select>
+              @if (form.get('professionalId')?.hasError('required') && form.get('professionalId')?.touched) {
+                <span class="schedule-form__error">Profissional é obrigatório</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Step 2: Global Configuration -->
+        @if (currentStep === 'global') {
+          <div class="schedule-form__step">
+            <h3 class="schedule-form__step-title">Configuração Global</h3>
+            <p class="schedule-form__step-subtitle">Defina os parâmetros padrão que serão aplicados a todos os dias</p>
+
+            <div class="schedule-form__row">
+              <div class="schedule-form__field">
+                <label for="globalStartTime" class="schedule-form__label">Horário de Início *</label>
+                <input
+                  type="time"
+                  id="globalStartTime"
+                  class="schedule-form__input"
+                  formControlName="globalStartTime"
+                />
+              </div>
+              <div class="schedule-form__field">
+                <label for="globalEndTime" class="schedule-form__label">Horário de Fim *</label>
+                <input
+                  type="time"
+                  id="globalEndTime"
+                  class="schedule-form__input"
+                  formControlName="globalEndTime"
+                />
+              </div>
+            </div>
+
+            <div class="schedule-form__row">
+              <div class="schedule-form__field">
+                <label for="globalConsultationDuration" class="schedule-form__label">Duração da Consulta (min) *</label>
+                <input
+                  type="number"
+                  id="globalConsultationDuration"
+                  class="schedule-form__input"
+                  formControlName="globalConsultationDuration"
+                  min="1"
+                />
+              </div>
+              <div class="schedule-form__field">
+                <label for="globalIntervalBetweenConsultations" class="schedule-form__label">Intervalo entre Consultas (min)</label>
+                <input
+                  type="number"
+                  id="globalIntervalBetweenConsultations"
+                  class="schedule-form__input"
+                  formControlName="globalIntervalBetweenConsultations"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div class="schedule-form__subsection">
+              <label class="schedule-form__label-checkbox">
+                <input
+                  type="checkbox"
+                  class="schedule-form__checkbox"
+                  formControlName="globalHasBreak"
+                  (change)="toggleBreakTime()"
+                />
+                <span>Definir Pausa</span>
+              </label>
+
+              @if (hasBreakTime) {
+                <div class="schedule-form__row">
+                  <div class="schedule-form__field">
+                    <label for="globalBreakStartTime" class="schedule-form__label">Início da Pausa</label>
+                    <input
+                      type="time"
+                      id="globalBreakStartTime"
+                      class="schedule-form__input"
+                      formControlName="globalBreakStartTime"
+                    />
+                  </div>
+                  <div class="schedule-form__field">
+                    <label for="globalBreakEndTime" class="schedule-form__label">Fim da Pausa</label>
+                    <input
+                      type="time"
+                      id="globalBreakEndTime"
+                      class="schedule-form__input"
+                      formControlName="globalBreakEndTime"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Step 3: Daily Configuration -->
+        @if (currentStep === 'daily') {
+          <div class="schedule-form__step">
+            <div class="schedule-form__step-header">
+              <div>
+                <h3 class="schedule-form__step-title">Configuração por Dia</h3>
+                <p class="schedule-form__step-subtitle">Customize horários e intervalos para dias específicos (opcional)</p>
+              </div>
+            </div>
+
+            <div class="schedule-form__days-list">
+              @for (day of days; track day) {
+                <div class="schedule-form__day-item">
+                  <div class="schedule-form__day-header">
+                    <div class="schedule-form__day-toggle">
+                      <input
+                        type="checkbox"
+                        [id]="'day_' + day"
+                        class="schedule-form__checkbox"
+                        [formControlName]="day + '_isWorking'"
+                      />
+                      <label [for]="'day_' + day" class="schedule-form__day-label">
+                        {{ getDayLabel(day) }}
+                      </label>
+                    </div>
+                    @if (form.get(day + '_isWorking')?.value) {
+                      <button
+                        type="button"
+                        class="schedule-form__expand-btn"
+                        (click)="toggleDayExpanded(day)"
+                        [class.schedule-form__expand-btn--expanded]="expandedDays.has(day)"
+                      >
+                        <app-icon name="chevron-down" [size]="20" />
+                      </button>
+                    }
+                  </div>
+
+                  @if (form.get(day + '_isWorking')?.value && expandedDays.has(day)) {
+                    <div class="schedule-form__day-details">
+                      <div class="schedule-form__day-customize">
+                        <input
+                          type="checkbox"
+                          [id]="'customize_' + day"
+                          class="schedule-form__checkbox"
+                          [formControlName]="day + '_isCustomized'"
+                          (change)="toggleDayCustomized(day)"
+                        />
+                        <label [for]="'customize_' + day" class="schedule-form__customize-label">
+                          Configuração diferente da padrão
+                        </label>
+                      </div>
+
+                      @if (form.get(day + '_isCustomized')?.value) {
+                        <div class="schedule-form__day-fields">
+                          <div class="schedule-form__row">
+                            <div class="schedule-form__field">
+                              <label class="schedule-form__label">Horário de Início</label>
+                              <input
+                                type="time"
+                                class="schedule-form__input"
+                                [formControlName]="day + '_startTime'"
+                              />
+                            </div>
+                            <div class="schedule-form__field">
+                              <label class="schedule-form__label">Horário de Fim</label>
+                              <input
+                                type="time"
+                                class="schedule-form__input"
+                                [formControlName]="day + '_endTime'"
+                              />
+                            </div>
+                          </div>
+
+                          <div class="schedule-form__row">
+                            <div class="schedule-form__field">
+                              <label class="schedule-form__label">Duração (min)</label>
+                              <input
+                                type="number"
+                                class="schedule-form__input"
+                                [formControlName]="day + '_consultationDuration'"
+                                min="1"
+                              />
+                            </div>
+                            <div class="schedule-form__field">
+                              <label class="schedule-form__label">Intervalo (min)</label>
+                              <input
+                                type="number"
+                                class="schedule-form__input"
+                                [formControlName]="day + '_intervalBetweenConsultations'"
+                                min="0"
+                              />
+                            </div>
+                          </div>
+
+                          <div class="schedule-form__row">
+                            <div class="schedule-form__field">
+                              <label class="schedule-form__label-checkbox">
+                                <input
+                                  type="checkbox"
+                                  class="schedule-form__checkbox"
+                                  [formControlName]="day + '_hasBreak'"
+                                />
+                                <span>Definir Pausa</span>
+                              </label>
+
+                              @if (form.get(day + '_hasBreak')?.value) {
+                                <div class="schedule-form__row" style="margin-top: 8px;">
+                                  <div class="schedule-form__field">
+                                    <label class="schedule-form__label">Início da Pausa</label>
+                                    <input
+                                      type="time"
+                                      class="schedule-form__input"
+                                      [formControlName]="day + '_breakStartTime'"
+                                    />
+                                  </div>
+                                  <div class="schedule-form__field">
+                                    <label class="schedule-form__label">Fim da Pausa</label>
+                                    <input
+                                      type="time"
+                                      class="schedule-form__input"
+                                      [formControlName]="day + '_breakEndTime'"
+                                    />
+                                  </div>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Step 4: Validity and Status -->
+        @if (currentStep === 'validity') {
+          <div class="schedule-form__step">
+            <h3 class="schedule-form__step-title">Validade e Status</h3>
+
+            <div class="schedule-form__row">
+              <div class="schedule-form__field">
+                <label for="validityStartDate" class="schedule-form__label">Data de Início *</label>
+                <input
+                  type="date"
+                  id="validityStartDate"
+                  class="schedule-form__input"
+                  formControlName="validityStartDate"
+                />
+              </div>
+              <div class="schedule-form__field">
+                <label class="schedule-form__label-checkbox">
+                  <input
+                    type="checkbox"
+                    class="schedule-form__checkbox"
+                    formControlName="hasEndDate"
+                    (change)="toggleEndDate()"
+                  />
+                  <span>Definir Data de Fim</span>
+                </label>
+
+                @if (hasEndDate) {
+                  <input
+                    type="date"
+                    id="validityEndDate"
+                    class="schedule-form__input"
+                    formControlName="validityEndDate"
+                    style="margin-top: 8px;"
+                  />
+                }
+              </div>
+            </div>
+
+            <div class="schedule-form__field">
+              <label for="isActive" class="schedule-form__label-checkbox">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  class="schedule-form__checkbox"
+                  formControlName="isActive"
+                />
+                <span>Agenda ativa</span>
+              </label>
+            </div>
+          </div>
+        }
+      </form>
+    </div>
+
+    <div class="modal__footer">
+      <div class="modal__step-indicator">
+        <span class="modal__step" [class.modal__step--active]="currentStep === 'PROFESSIONAL'">1. Profissional</span>
+        <span class="modal__step" [class.modal__step--active]="currentStep === 'global'">2. Global</span>
+        <span class="modal__step" [class.modal__step--active]="currentStep === 'daily'">3. Dias</span>
+        <span class="modal__step" [class.modal__step--active]="currentStep === 'validity'">4. Validade</span>
+      </div>
+
+      <div class="modal__actions">
+        @if (currentStep !== 'PROFESSIONAL') {
+          <app-button
+            [variant]="'outline'"
+            (click)="previousStep()"
+            [disabled]="isSaving || isLoading"
+          >
+            Voltar
+          </app-button>
+        }
+        @if (currentStep !== 'validity') {
+          <app-button
+            [variant]="'primary'"
+            (click)="nextStep()"
+            [disabled]="isSaving || isLoading"
+          >
+            Próximo
+          </app-button>
+        }
+        @if (currentStep === 'validity') {
+          <app-button
+            [variant]="'primary'"
+            (click)="submitForm()"
+            [loading]="isSaving"
+          >
+            @if (editingSchedule) {
+              Atualizar Agenda
+            } @else {
+              Criar Agenda
+            }
+          </app-button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

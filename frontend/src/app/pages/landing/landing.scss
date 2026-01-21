@@ -1,0 +1,31 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'landing-shared' as *;
+
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 64px;
+  background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+
+  main {
+    flex: 1;
+
+    > * {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+
+      &.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Dark theme
+:host-context([data-theme="dark"]) .landing {
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+}

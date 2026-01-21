@@ -1,0 +1,209 @@
+<div class="iot-tab">
+  <!-- Header -->
+  <div class="iot-header">
+    <div class="header-title">
+      <app-icon name="activity" [size]="24" />
+      <h2>Monitoramento IoT em Tempo Real</h2>
+    </div>
+    
+    @if (!readonly) {
+      <div class="connection-controls">
+        @if (!isConnected) {
+          <button class="connect-btn" (click)="connect()">
+            <app-icon name="activity" [size]="18" />
+            Conectar Dispositivo
+          </button>
+        } @else {
+          <button class="disconnect-btn" (click)="disconnect()">
+            <app-icon name="slash" [size]="18" />
+            Desconectar
+          </button>
+        }
+        
+        <div class="status-badge" [class.connected]="isConnected">
+          <span class="status-dot"></span>
+          {{ connectionStatus }}
+        </div>
+      </div>
+    } @else {
+      <div class="readonly-badge">
+        <app-icon name="eye" [size]="16" />
+        <span>Modo visualização</span>
+      </div>
+    }
+  </div>
+
+  <!-- Device Info -->
+  @if (isConnected) {
+    <div class="device-info">
+      <div class="device-details">
+        <div class="device-item">
+          <app-icon name="smartphone" [size]="16" />
+          <span>{{ deviceInfo.name }}</span>
+        </div>
+        <div class="device-item">
+          <span class="label">Modelo:</span>
+          <span class="value">{{ deviceInfo.model }}</span>
+        </div>
+        <div class="device-item">
+          <span class="label">Serial:</span>
+          <span class="value">{{ deviceInfo.serialNumber }}</span>
+        </div>
+      </div>
+      
+      <div class="device-status">
+        <div class="status-item">
+          <app-icon name="activity" [size]="16" />
+          <span>{{ deviceInfo.batteryLevel }}%</span>
+        </div>
+        <div class="status-item">
+          <app-icon name="activity" [size]="16" />
+          <span>{{ deviceInfo.signalStrength }}/5</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Current Readings -->
+  @if (isConnected && currentReadings) {
+    <div class="current-readings">
+      <h3>Leitura Atual</h3>
+      <div class="readings-grid">
+        <div class="reading-card" [class.alert]="getHeartRateStatus() === 'alert'">
+          <div class="reading-icon heart-rate">
+            <app-icon name="heart" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Frequência Cardíaca</span>
+            <span class="reading-value">{{ currentReadings.heartRate }} <span class="unit">BPM</span></span>
+          </div>
+        </div>
+
+        <div class="reading-card" [class.alert]="getBloodPressureStatus() === 'alert'">
+          <div class="reading-icon blood-pressure">
+            <app-icon name="activity" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Pressão Arterial</span>
+            <span class="reading-value">{{ currentReadings.systolic }}/{{ currentReadings.diastolic }} <span class="unit">mmHg</span></span>
+          </div>
+        </div>
+
+        <div class="reading-card" [class.alert]="getOxygenStatus() === 'alert'">
+          <div class="reading-icon oxygen">
+            <app-icon name="heart" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Saturação O₂</span>
+            <span class="reading-value">{{ currentReadings.oxygenSaturation }} <span class="unit">%</span></span>
+          </div>
+        </div>
+
+        <div class="reading-card" [class.alert]="getTemperatureStatus() === 'alert'">
+          <div class="reading-icon temperature">
+            <app-icon name="activity" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Temperatura</span>
+            <span class="reading-value">{{ currentReadings.temperature | number:'1.1-1' }} <span class="unit">°C</span></span>
+          </div>
+        </div>
+
+        <div class="reading-card">
+          <div class="reading-icon respiratory">
+            <app-icon name="refresh-cw" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Freq. Respiratória</span>
+            <span class="reading-value">{{ currentReadings.respiratoryRate }} <span class="unit">RPM</span></span>
+          </div>
+        </div>
+
+        <div class="reading-card">
+          <div class="reading-icon timestamp">
+            <app-icon name="clock" [size]="24" />
+          </div>
+          <div class="reading-content">
+            <span class="reading-label">Última Atualização</span>
+            <span class="reading-value timestamp">{{ currentReadings.timestamp | date:'HH:mm:ss' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Charts -->
+  @if (isConnected) {
+    <div class="charts-section">
+      <h3>Histórico de Monitoramento</h3>
+      
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-header">
+            <h4>
+              <app-icon name="heart" [size]="20" />
+              Frequência Cardíaca
+            </h4>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas #heartRateCanvas></canvas>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h4>
+              <app-icon name="activity" [size]="20" />
+              Pressão Arterial
+            </h4>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas #bloodPressureCanvas></canvas>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h4>
+              <app-icon name="heart" [size]="20" />
+              Saturação de Oxigênio
+            </h4>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas #oxygenCanvas></canvas>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h4>
+              <app-icon name="activity" [size]="20" />
+              Temperatura Corporal
+            </h4>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas #temperatureCanvas></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isConnected) {
+    <div class="empty-state">
+      <app-icon name="slash" [size]="64" />
+      @if (readonly) {
+        <h3>Sem dados de IOT registrados</h3>
+        <p>Não há dados de monitoramento biométrico disponíveis para esta consulta.</p>
+      } @else {
+        <h3>Dispositivo IoT Desconectado</h3>
+        <p>Conecte um dispositivo de monitoramento biométrico para visualizar os dados em tempo real.</p>
+        <button class="connect-btn-large" (click)="connect()">
+          <app-icon name="activity" [size]="20" />
+          Conectar Agora
+        </button>
+      }
+    </div>
+  }
+</div>

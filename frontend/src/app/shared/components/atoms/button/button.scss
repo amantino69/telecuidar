@@ -1,0 +1,343 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  border: none;
+  border-radius: 14px;
+  font-family: $font-primary;
+  font-size: $font-size-base;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none !important;
+  }
+
+  // ========================================
+  // PRIMARY - Botão principal azul 3D VIBRANTE
+  // ========================================
+  &-primary {
+    background: linear-gradient(145deg, #4a8eff 0%, #2970ff 50%, #1a5ce8 100%);
+    color: white;
+    border: 1px solid rgba(26, 92, 232, 0.6);
+    box-shadow:
+      0 5px 0 #1548c2,
+      0 8px 16px rgba(41, 112, 255, 0.45),
+      inset 0 2px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(145deg, #7aabff 0%, #4a8eff 50%, #2970ff 100%);
+      transform: translateY(-4px);
+      box-shadow:
+        0 8px 0 #1548c2,
+        0 14px 28px rgba(41, 112, 255, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #1548c2,
+        0 4px 8px rgba(41, 112, 255, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  // ========================================
+  // SECONDARY - Botão secundário cinza 3D
+  // ========================================
+  &-secondary {
+    background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+    color: #374151;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 4px 0 rgba(0, 0, 0, 0.06),
+      0 6px 12px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(145deg, #ffffff 0%, #e2e8f0 100%);
+      transform: translateY(-3px);
+      box-shadow:
+        0 6px 0 rgba(0, 0, 0, 0.06),
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.06),
+        0 3px 6px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  // ========================================
+  // OUTLINE - Botão outline 3D
+  // ========================================
+  &-outline {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+    box-shadow:
+      0 4px 0 rgba(59, 130, 246, 0.15),
+      0 6px 12px rgba(59, 130, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
+      border-color: #2563eb;
+      color: #2563eb;
+      transform: translateY(-3px);
+      box-shadow:
+        0 6px 0 rgba(59, 130, 246, 0.2),
+        0 10px 20px rgba(59, 130, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 rgba(59, 130, 246, 0.1),
+        0 3px 6px rgba(59, 130, 246, 0.08);
+    }
+  }
+
+  // ========================================
+  // GHOST - Botão fantasma
+  // ========================================
+  &-ghost {
+    background: transparent;
+    color: var(--text-primary);
+    border: none;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.04);
+      transform: translateY(-2px);
+    }
+
+    &:active:not(:disabled) {
+      background: rgba(0, 0, 0, 0.06);
+      transform: translateY(0);
+    }
+  }
+
+  // ========================================
+  // DANGER - Botão vermelho 3D VIBRANTE
+  // ========================================
+  &-danger {
+    background: linear-gradient(145deg, #ff6b6b 0%, #f53d3d 50%, #e02020 100%);
+    color: white;
+    border: 1px solid rgba(224, 32, 32, 0.6);
+    box-shadow:
+      0 5px 0 #bc1919,
+      0 8px 16px rgba(245, 61, 61, 0.45),
+      inset 0 2px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(145deg, #ff9e9e 0%, #ff6b6b 50%, #f53d3d 100%);
+      transform: translateY(-4px);
+      box-shadow:
+        0 8px 0 #bc1919,
+        0 14px 28px rgba(245, 61, 61, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #bc1919,
+        0 4px 8px rgba(245, 61, 61, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &-red {
+    @extend .btn-danger;
+  }
+
+  // ========================================
+  // GREEN - Botão verde 3D VIBRANTE
+  // ========================================
+  &-green {
+    background: linear-gradient(145deg, #1fd87e 0%, #00c566 50%, #00a854 100%);
+    color: white;
+    border: 1px solid rgba(0, 168, 84, 0.6);
+    box-shadow:
+      0 5px 0 #008744,
+      0 8px 16px rgba(0, 197, 102, 0.45),
+      inset 0 2px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(145deg, #4de69f 0%, #1fd87e 50%, #00c566 100%);
+      transform: translateY(-4px);
+      box-shadow:
+        0 8px 0 #008744,
+        0 14px 28px rgba(0, 197, 102, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #008744,
+        0 4px 8px rgba(0, 197, 102, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  // ========================================
+  // BLUE - Alias para primary
+  // ========================================
+  &-blue {
+    @extend .btn-primary;
+  }
+
+  // ========================================
+  // SIZES
+  // ========================================
+  &-sm {
+    padding: 10px 16px;
+    font-size: $font-size-sm;
+    border-radius: 10px;
+  }
+
+  &-md {
+    padding: 14px 24px;
+    font-size: $font-size-base;
+    border-radius: 12px;
+  }
+
+  &-lg {
+    padding: 18px 32px;
+    font-size: $font-size-lg;
+    border-radius: 14px;
+  }
+
+  &-full {
+    width: 100%;
+  }
+}
+
+// ========================================
+// DARK MODE
+// ========================================
+:host-context([data-theme='dark']) {
+  .btn {
+    &-primary {
+      background: linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow:
+        0 4px 0 #1e40af,
+        0 6px 12px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 100%);
+        box-shadow:
+          0 6px 0 #1e40af,
+          0 10px 20px rgba(59, 130, 246, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    &-secondary {
+      background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 4px 0 rgba(0, 0, 0, 0.25),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(145deg, #475569 0%, #334155 100%);
+        box-shadow:
+          0 6px 0 rgba(0, 0, 0, 0.25),
+          0 10px 20px rgba(0, 0, 0, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    &-outline {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+      color: #60a5fa;
+      border-color: #3b82f6;
+      box-shadow:
+        0 4px 0 rgba(59, 130, 246, 0.2),
+        0 6px 12px rgba(59, 130, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(145deg, rgba(30, 58, 138, 0.4) 0%, rgba(29, 78, 216, 0.3) 100%);
+        box-shadow:
+          0 6px 0 rgba(59, 130, 246, 0.25),
+          0 10px 20px rgba(59, 130, 246, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    &-ghost {
+      color: #e2e8f0;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      &:active:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    &-danger {
+      background: linear-gradient(145deg, #ef4444 0%, #b91c1c 100%);
+      box-shadow:
+        0 4px 0 #991b1b,
+        0 6px 12px rgba(239, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+      &:hover:not(:disabled) {
+        box-shadow:
+          0 6px 0 #991b1b,
+          0 10px 20px rgba(239, 68, 68, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    &-green {
+      background: linear-gradient(145deg, #22c55e 0%, #15803d 100%);
+      box-shadow:
+        0 4px 0 #166534,
+        0 6px 12px rgba(34, 197, 94, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+      &:hover:not(:disabled) {
+        box-shadow:
+          0 6px 0 #166534,
+          0 10px 20px rgba(34, 197, 94, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+}

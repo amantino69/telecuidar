@@ -1,0 +1,375 @@
+<div class="certificates">
+  <!-- Toast -->
+  @if (showToast) {
+    <div class="certificates__toast" [class.certificates__toast--success]="toastType === 'success'" [class.certificates__toast--error]="toastType === 'error'" (click)="hideToast()">
+      <app-icon [name]="toastType === 'success' ? 'check-circle' : 'alert-circle'" [size]="18" />
+      <span>{{ toastMessage }}</span>
+      <button class="certificates__toast-close" (click)="hideToast()">
+        <app-icon name="close" [size]="14" />
+      </button>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="certificates__header">
+    <div class="certificates__header-content">
+      <app-icon name="shield" [size]="32" />
+      <div>
+        <h1 class="certificates__title">Certificados Digitais</h1>
+        <p class="certificates__subtitle">Gerencie seus certificados A1 para assinatura digital de documentos</p>
+      </div>
+    </div>
+    @if (viewState === 'list' && certificates.length > 0) {
+      <button type="button" class="certificates__action-btn" (click)="startAddCertificate()">
+        <app-icon name="plus" [size]="20" />
+        Adicionar Certificado
+      </button>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="certificates__loading">
+      <div class="certificates__spinner"></div>
+      <p>Carregando certificados...</p>
+    </div>
+  } @else {
+    <!-- List View -->
+    @if (viewState === 'list') {
+      <div class="certificates__list">
+        @if (certificates.length === 0) {
+          <div class="certificates__empty">
+            <app-icon name="shield" [size]="48" />
+            <h3>Nenhum certificado cadastrado</h3>
+            <p>Adicione um certificado digital A1 (.pfx) para assinar receitas e atestados.</p>
+            <button type="button" class="certificates__action-btn" (click)="startAddCertificate()">
+              <app-icon name="plus" [size]="20" />
+              Adicionar Certificado
+            </button>
+          </div>
+        } @else {
+          <div class="certificates__grid">
+            @for (cert of certificates; track cert.id) {
+              <div class="certificate-card" [class.certificate-card--expired]="cert.isExpired">
+                <div class="certificate-card__header">
+                  <div class="certificate-card__icon">
+                    <app-icon name="file" [size]="24" />
+                  </div>
+                  <div class="certificate-card__title">
+                    <h3>{{ cert.displayName }}</h3>
+                    <app-badge 
+                      [variant]="getExpirationBadgeVariant(cert)" 
+                      [label]="getExpirationLabel(cert)" 
+                      size="sm" 
+                    />
+                  </div>
+                </div>
+
+                <div class="certificate-card__body">
+                  <div class="certificate-card__info">
+                    <span class="certificate-card__label">Titular:</span>
+                    <span class="certificate-card__value">{{ cert.nameFromCertificate || cert.subject }}</span>
+                  </div>
+                  @if (cert.cpfFromCertificate) {
+                    <div class="certificate-card__info">
+                      <span class="certificate-card__label">CPF:</span>
+                      <span class="certificate-card__value">{{ cert.cpfFromCertificate }}</span>
+                    </div>
+                  }
+                  <div class="certificate-card__info">
+                    <span class="certificate-card__label">Emissor:</span>
+                    <span class="certificate-card__value">{{ cert.issuer | slice:0:40 }}{{ cert.issuer.length > 40 ? '...' : '' }}</span>
+                  </div>
+                  <div class="certificate-card__info">
+                    <span class="certificate-card__label">Válido até:</span>
+                    <span class="certificate-card__value">{{ formatDate(cert.expirationDate) }}</span>
+                  </div>
+                  <div class="certificate-card__info">
+                    <span class="certificate-card__label">Uso rápido:</span>
+                    <span class="certificate-card__value">
+                      @if (cert.quickUseEnabled) {
+                        <app-icon name="check" [size]="14" class="certificate-card__icon-success" /> Ativado
+                      } @else {
+                        <app-icon name="shield" [size]="14" class="certificate-card__icon-neutral" /> Solicita senha
+                      }
+                    </span>
+                  </div>
+                  @if (cert.lastUsedAt) {
+                    <div class="certificate-card__info">
+                      <span class="certificate-card__label">Último uso:</span>
+                      <span class="certificate-card__value">{{ formatDate(cert.lastUsedAt) }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="certificate-card__actions">
+                  <button type="button" class="certificate-card__btn certificate-card__btn--edit" (click)="startEditCertificate(cert)">
+                    <app-icon name="edit" [size]="16" />
+                    Editar
+                  </button>
+                  <button type="button" class="certificate-card__btn certificate-card__btn--delete" (click)="deleteCertificate(cert)" [disabled]="isDeleting">
+                    <app-icon name="trash" [size]="16" />
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Add Certificate View -->
+    @if (viewState === 'add') {
+      <div class="certificate-form">
+        <div class="certificate-form__header">
+          <h2>Adicionar Certificado Digital</h2>
+          <p>Carregue seu certificado A1 (.pfx) para habilitar assinaturas digitais</p>
+        </div>
+
+        <div class="certificate-form__body">
+          <!-- Step 1: Select File -->
+          <div class="certificate-form__section">
+            <h3>1. Selecione o arquivo do certificado</h3>
+            <div class="certificate-form__file-wrapper">
+              <input 
+                type="file" 
+                id="pfxFile" 
+                accept=".pfx,.p12" 
+                (change)="onFileSelected($event)"
+                hidden
+              />
+              <label for="pfxFile" class="certificate-form__file-label">
+                <app-icon name="upload-cloud" [size]="32" />
+                @if (formData.file) {
+                  <span class="certificate-form__file-name">{{ formData.file.name }}</span>
+                } @else {
+                  <span>Clique para selecionar arquivo .pfx</span>
+                }
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 2: Password -->
+          <div class="certificate-form__section">
+            <h3>2. Informe a senha do certificado</h3>
+            <div class="certificate-form__group">
+              <label for="password">Senha</label>
+              <div class="certificate-form__password-wrapper">
+                <input 
+                  [type]="showFormPassword ? 'text' : 'password'" 
+                  id="password" 
+                  [(ngModel)]="formData.password"
+                  placeholder="Digite a senha do certificado"
+                  [disabled]="!formData.file"
+                />
+                <button type="button" class="certificate-form__password-toggle" (click)="showFormPassword = !showFormPassword" [disabled]="!formData.file">
+                  <app-icon [name]="showFormPassword ? 'eye-off' : 'eye'" [size]="18" />
+                </button>
+              </div>
+            </div>
+            <button 
+              type="button"
+              class="certificate-form__validate-btn"
+              (click)="validateCertificate()"
+              [disabled]="!formData.file || !formData.password || isValidating">
+              @if (isValidating) {
+                <span>Validando...</span>
+              } @else {
+                <app-icon name="check-circle" [size]="18" />
+                Validar Certificado
+              }
+            </button>
+          </div>
+
+          <!-- Validation Result -->
+          @if (formData.validation) {
+            <div class="certificate-form__validation" [class.certificate-form__validation--error]="!formData.validation.isValid">
+              @if (formData.validation.isValid) {
+                <div class="certificate-form__validation-header">
+                  <app-icon name="check-circle" [size]="24" />
+                  <h4>Certificado válido!</h4>
+                </div>
+                <div class="certificate-form__validation-details">
+                  <div class="certificate-form__validation-row">
+                    <span class="certificate-form__validation-label">Titular:</span>
+                    <span class="certificate-form__validation-value">{{ formData.validation.nameFromCertificate || formData.validation.subject }}</span>
+                  </div>
+                  @if (formData.validation.cpfFromCertificate) {
+                    <div class="certificate-form__validation-row">
+                      <span class="certificate-form__validation-label">CPF:</span>
+                      <span class="certificate-form__validation-value">{{ formData.validation.cpfFromCertificate }}</span>
+                    </div>
+                  }
+                  <div class="certificate-form__validation-row">
+                    <span class="certificate-form__validation-label">Emissor:</span>
+                    <span class="certificate-form__validation-value">{{ formData.validation.issuer | slice:0:50 }}...</span>
+                  </div>
+                  <div class="certificate-form__validation-row">
+                    <span class="certificate-form__validation-label">Válido de:</span>
+                    <span class="certificate-form__validation-value">{{ formatDate(formData.validation.issuedDate) }} até {{ formatDate(formData.validation.expirationDate) }}</span>
+                  </div>
+                  @if (formData.validation.isExpired) {
+                    <div class="certificate-form__warning">
+                      <app-icon name="alert-circle" [size]="16" />
+                      Este certificado está expirado e não poderá ser usado.
+                    </div>
+                  } @else if (formData.validation.daysUntilExpiration <= 30) {
+                    <div class="certificate-form__warning">
+                      <app-icon name="alert-circle" [size]="16" />
+                      Este certificado expira em {{ formData.validation.daysUntilExpiration }} dias.
+                    </div>
+                  }
+                </div>
+
+                <!-- Step 3: Name and options -->
+                @if (!formData.validation.isExpired) {
+                  <div class="certificate-form__section certificate-form__section--bordered">
+                    <h3>3. Configure o certificado</h3>
+                    <div class="certificate-form__group">
+                      <label for="displayName">Nome de exibição *</label>
+                      <input 
+                        type="text" 
+                        id="displayName" 
+                        [(ngModel)]="formData.displayName"
+                        placeholder="Ex: Meu certificado principal"
+                      />
+                      <small>Este nome será usado para identificar o certificado na plataforma</small>
+                    </div>
+                    <div class="certificate-form__group certificate-form__group--switch">
+                      <div class="certificate-form__switch-wrapper">
+                        <label class="certificate-form__switch">
+                          <input 
+                            type="checkbox" 
+                            [(ngModel)]="formData.quickUseEnabled"
+                          />
+                          <span class="certificate-form__switch-slider"></span>
+                        </label>
+                        <span class="certificate-form__switch-label">Uso rápido (não solicitar senha)</span>
+                      </div>
+                      <small class="certificate-form__switch-hint">
+                        @if (formData.quickUseEnabled) {
+                          A senha será armazenada de forma segura para assinaturas rápidas.
+                        } @else {
+                          A senha será solicitada sempre que for assinar um documento.
+                        }
+                      </small>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="certificate-form__validation-error">
+                  <app-icon name="alert-circle" [size]="24" />
+                  <h4>Erro na validação</h4>
+                  <p>{{ formData.validation.errorMessage }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="certificate-form__footer">
+          <button type="button" class="certificate-form__btn certificate-form__btn--secondary" (click)="cancelForm()">
+            Cancelar
+          </button>
+          @if (formData.validation?.isValid && !formData.validation?.isExpired) {
+            <button 
+              type="button"
+              class="certificate-form__btn certificate-form__btn--primary"
+              (click)="saveCertificate()"
+              [disabled]="isSaving || !formData.displayName.trim()">
+              @if (isSaving) {
+                Salvando...
+              } @else {
+                <app-icon name="check" [size]="18" />
+                Salvar Certificado
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Edit Certificate View -->
+    @if (viewState === 'edit' && editingCertificate) {
+      <div class="certificate-form">
+        <div class="certificate-form__header">
+          <h2>Editar Certificado</h2>
+          <p>Altere as configurações do certificado</p>
+        </div>
+
+        <div class="certificate-form__body">
+          <div class="certificate-form__info-card">
+            <app-icon name="file" [size]="24" />
+            <div>
+              <strong>{{ editingCertificate.nameFromCertificate || editingCertificate.subject }}</strong>
+              <span>Válido até {{ formatDate(editingCertificate.expirationDate) }}</span>
+            </div>
+          </div>
+
+          <div class="certificate-form__section">
+            <div class="certificate-form__group">
+              <label for="editDisplayName">Nome de exibição *</label>
+              <input 
+                type="text" 
+                id="editDisplayName" 
+                [(ngModel)]="editForm.displayName"
+                placeholder="Ex: Meu certificado principal"
+              />
+            </div>
+
+            <div class="certificate-form__group certificate-form__group--switch">
+              <div class="certificate-form__switch-wrapper">
+                <label class="certificate-form__switch">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="editForm.quickUseEnabled"
+                  />
+                  <span class="certificate-form__switch-slider"></span>
+                </label>
+                <span class="certificate-form__switch-label">Uso rápido (não solicitar senha)</span>
+              </div>
+            </div>
+
+            <!-- Senha necessária se ativando QuickUse -->
+            @if (editForm.quickUseEnabled && !editingCertificate.quickUseEnabled) {
+              <div class="certificate-form__group">
+                <label for="editPassword">Senha do certificado *</label>
+                <div class="certificate-form__password-wrapper">
+                  <input 
+                    [type]="showEditPassword ? 'text' : 'password'" 
+                    id="editPassword" 
+                    [(ngModel)]="editForm.password"
+                    placeholder="Digite a senha para ativar uso rápido"
+                  />
+                  <button type="button" class="certificate-form__password-toggle" (click)="showEditPassword = !showEditPassword">
+                    <app-icon [name]="showEditPassword ? 'eye-off' : 'eye'" [size]="18" />
+                  </button>
+                </div>
+                <small>Necessária para armazenar a senha de forma segura</small>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="certificate-form__footer">
+          <button type="button" class="certificate-form__btn certificate-form__btn--secondary" (click)="cancelForm()">
+            Cancelar
+          </button>
+          <button 
+            type="button"
+            class="certificate-form__btn certificate-form__btn--primary"
+            (click)="updateCertificate()"
+            [disabled]="isSaving || !editForm.displayName.trim()">
+            @if (isSaving) {
+              Salvando...
+            } @else {
+              <app-icon name="check" [size]="18" />
+              Salvar Alterações
+            }
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

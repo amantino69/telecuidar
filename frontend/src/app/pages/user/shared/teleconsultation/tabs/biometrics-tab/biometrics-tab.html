@@ -1,0 +1,223 @@
+<div class="biometrics-container">
+  <div class="header">
+    <h3>
+      <app-icon name="activity" [size]="22"></app-icon>
+      Sinais Vitais
+    </h3>
+    <div class="header-actions">
+      @if (lastUpdated) {
+        <span class="updated-at">
+          <app-icon name="clock" [size]="14"></app-icon>
+          {{ lastUpdated | date:'HH:mm:ss' }}
+        </span>
+      }
+      @if (isSaving) {
+        <span class="saving-indicator">
+          <app-icon name="loader" [size]="14" class="spin"></app-icon>
+          Salvando...
+        </span>
+      }
+    </div>
+  </div>
+
+  @if (!isProfessional) {
+    <p class="description">
+      Digite os valores manualmente ou conecte os dispositivos Bluetooth para captura automática.
+    </p>
+  } @else {
+    <p class="description">
+      Dados biométricos do paciente em tempo real.
+    </p>
+  }
+
+  <form [formGroup]="biometricsForm" class="biometrics-grid">
+    
+    <!-- Oxímetro: SpO2 -->
+    <div class="metric-card">
+      <div class="metric-icon spo2">
+        <app-icon name="heart" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Saturação O₂ (SpO₂)</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="oxygenSaturation" placeholder="--" [readonly]="isProfessional">
+            <span class="unit">%</span>
+          </div>
+          @if (!isProfessional && bluetoothAvailable) {
+            <button type="button" class="btn-connect" 
+                    [class.connected]="oxConnected"
+                    [disabled]="isConnecting"
+                    (click)="connectOximeter()">
+              <app-icon [name]="oxConnected ? 'check' : 'bluetooth'" [size]="16"></app-icon>
+              {{ oxConnected ? 'Conectado' : 'Conectar' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Frequência Cardíaca -->
+    <div class="metric-card">
+      <div class="metric-icon heart">
+        <app-icon name="heart" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Frequência Cardíaca</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="heartRate" placeholder="--" [readonly]="isProfessional">
+            <span class="unit">bpm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pressão Arterial -->
+    <div class="metric-card double">
+      <div class="metric-icon pressure">
+        <app-icon name="activity" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Pressão Arterial</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="bloodPressureSystolic" placeholder="Sist." [readonly]="isProfessional">
+            <span class="unit">mmHg</span>
+          </div>
+          <span class="separator">/</span>
+          <div class="input-group">
+            <input type="number" formControlName="bloodPressureDiastolic" placeholder="Diast." [readonly]="isProfessional">
+            <span class="unit">mmHg</span>
+          </div>
+          @if (!isProfessional && bluetoothAvailable) {
+            <button type="button" class="btn-connect" 
+                    [class.connected]="bpConnected"
+                    [disabled]="isConnecting"
+                    (click)="connectBloodPressure()">
+              <app-icon [name]="bpConnected ? 'check' : 'bluetooth'" [size]="16"></app-icon>
+              {{ bpConnected ? 'Conectado' : 'Conectar' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Temperatura -->
+    <div class="metric-card">
+      <div class="metric-icon temp">
+        <app-icon name="thermometer" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Temperatura</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="temperature" placeholder="--" step="0.1" [readonly]="isProfessional">
+            <span class="unit">°C</span>
+          </div>
+          @if (!isProfessional && bluetoothAvailable) {
+            <button type="button" class="btn-connect" 
+                    [class.connected]="thermConnected"
+                    [disabled]="isConnecting"
+                    (click)="connectThermometer()">
+              <app-icon [name]="thermConnected ? 'check' : 'bluetooth'" [size]="16"></app-icon>
+              {{ thermConnected ? 'Conectado' : 'Conectar' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Peso (Balança) -->
+    <div class="metric-card">
+      <div class="metric-icon weight">
+        <app-icon name="box" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Peso</label>
+        <div class="input-row">
+          <div class="input-group">
+            <input type="number" formControlName="weight" placeholder="--" step="0.1" [readonly]="isProfessional">
+            <span class="unit">kg</span>
+          </div>
+          @if (!isProfessional && bluetoothAvailable) {
+            <button type="button" class="btn-connect" 
+                    [class.connected]="scaleConnected"
+                    [disabled]="isConnecting"
+                    (click)="connectScale()">
+              <app-icon [name]="scaleConnected ? 'check' : 'bluetooth'" [size]="16"></app-icon>
+              {{ scaleConnected ? 'Conectado' : 'Conectar' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Altura -->
+    <div class="metric-card">
+      <div class="metric-icon height">
+        <app-icon name="user" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Altura</label>
+        <div class="input-group">
+          <input type="number" formControlName="height" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Frequência Respiratória -->
+    <div class="metric-card">
+      <div class="metric-icon lungs">
+        <app-icon name="wind" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Freq. Respiratória</label>
+        <div class="input-group">
+          <input type="number" formControlName="respiratoryRate" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">rpm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Glicemia -->
+    <div class="metric-card">
+      <div class="metric-icon glucose">
+        <app-icon name="droplet" [size]="24"></app-icon>
+      </div>
+      <div class="metric-content">
+        <label>Glicemia</label>
+        <div class="input-group">
+          <input type="number" formControlName="glucose" placeholder="--" [readonly]="isProfessional">
+          <span class="unit">mg/dL</span>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Botão Salvar (apenas para paciente/assistente) -->
+  @if (!isProfessional && !readonly) {
+    <div class="actions">
+      <button type="button" class="btn-save" 
+              [disabled]="isSaving || !biometricsForm.valid"
+              (click)="onSave()">
+        @if (isSaving) {
+          <app-icon name="loader" [size]="18" class="spin"></app-icon>
+          Salvando...
+        } @else {
+          <app-icon name="check" [size]="18"></app-icon>
+          Salvar Sinais Vitais
+        }
+      </button>
+    </div>
+  }
+
+  <!-- Mensagem Bluetooth não disponível -->
+  @if (!isProfessional && !bluetoothAvailable) {
+    <div class="bluetooth-warning">
+      <app-icon name="alert-triangle" [size]="16"></app-icon>
+      <span>Bluetooth não disponível. Use Chrome/Edge em HTTPS para captura automática.</span>
+    </div>
+  }
+</div>

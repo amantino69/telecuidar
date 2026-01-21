@@ -1,0 +1,197 @@
+<div class="chat-container">
+  <!-- Messages Area -->
+  <div class="messages-area" #chatContainer>
+    <div class="empty-state" *ngIf="messages.length === 0 && !isAddingAttachment">
+      <app-icon name="upload-cloud" [size]="48" />
+      <p>Nenhum anexo compartilhado ainda.</p>
+      <span>Envie exames, laudos ou imagens.</span>
+    </div>
+
+    <div 
+      class="message" 
+      *ngFor="let msg of messages"
+      [class.sent]="(userrole === 'PROFESSIONAL' && msg.senderRole === 'PROFESSIONAL') || (userrole === 'PATIENT' && msg.senderRole === 'PATIENT')"
+      [class.received]="(userrole === 'PROFESSIONAL' && msg.senderRole === 'PATIENT') || (userrole === 'PATIENT' && msg.senderRole === 'PROFESSIONAL')">
+      
+      <div class="message-content">
+        <div class="message-header">
+          <span class="sender">{{ msg.senderRole === 'PROFESSIONAL' ? 'Profissional' : 'Paciente' }}</span>
+          <span class="time">{{ msg.timestamp | date:'HH:mm' }}</span>
+        </div>
+        
+        <div class="attachment-card" (click)="openPreview(msg)">
+          <div class="attachment-preview" *ngIf="isImage(msg.fileType)">
+            <img [src]="msg.fileUrl" [alt]="msg.title">
+          </div>
+          <div class="attachment-icon" *ngIf="!isImage(msg.fileType)">
+            <app-icon name="file" [size]="32" />
+          </div>
+          
+          <div class="attachment-info">
+            <!-- Editing title -->
+            <ng-container *ngIf="editingMessageId === msg.id && !readonly; else showTitle">
+              <input 
+                type="text" 
+                [(ngModel)]="msg.title" 
+                class="edit-title-input" 
+                (keyup.enter)="saveMessageEdit(msg)"
+                (keyup.escape)="cancelMessageEdit()">
+              <div class="edit-actions">
+                <button type="button" class="save-btn" (click)="$event.stopPropagation(); saveMessageEdit(msg)">
+                  <app-icon name="check" [size]="14" />
+                </button>
+                <button type="button" class="cancel-btn" (click)="$event.stopPropagation(); cancelMessageEdit()">
+                  <app-icon name="close" [size]="14" />
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #showTitle>
+              <h4>{{ msg.title }}</h4>
+              <span>{{ msg.fileName }} <span *ngIf="msg.fileSize">({{ formatBytes(msg.fileSize) }})</span></span>
+            </ng-template>
+          </div>
+          
+          <div class="message-actions" *ngIf="editingMessageId !== msg.id && !readonly">
+            <button class="edit-btn" (click)="$event.stopPropagation(); editMessage(msg)" title="Editar">
+              <app-icon name="edit" [size]="16" />
+            </button>
+            <button class="download-btn" (click)="$event.stopPropagation(); downloadFile(msg)" title="Baixar">
+              <app-icon name="download" [size]="16" />
+            </button>
+          </div>
+          <div class="message-actions" *ngIf="editingMessageId !== msg.id && readonly">
+            <button class="download-btn" (click)="$event.stopPropagation(); downloadFile(msg)" title="Baixar">
+              <app-icon name="download" [size]="16" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-media-preview-modal
+    [isOpen]="previewModalOpen"
+    [url]="previewUrl"
+    [title]="previewTitle"
+    [type]="previewType"
+    (close)="closePreview()"
+    (download)="downloadPreview()">
+  </app-media-preview-modal>
+
+  <!-- Upload Area -->
+  @if (!readonly) {
+    <!-- Hidden file input - always available -->
+    <input 
+      type="file" 
+      #fileInput 
+      (change)="onFileSelected($event)" 
+      accept="image/*,application/pdf,.doc,.docx"
+      hidden 
+      multiple>
+    
+    <div class="upload-area" [class.drag-over]="isDragOver" [class.adding]="isAddingAttachment" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+    
+    <!-- Adding Multiple Files -->
+    <div class="add-attachment-container" *ngIf="isAddingAttachment">
+      <!-- Multiple files list -->
+      <div class="pending-files-list" *ngIf="pendingFiles.length > 0">
+        <div class="pending-file-item" *ngFor="let pending of pendingFiles; let i = index">
+          <div class="pending-file-preview" [class.loading]="pending.loading">
+            <ng-container *ngIf="pending.loading; else showPreview">
+              <div class="loading-spinner"></div>
+            </ng-container>
+            <ng-template #showPreview>
+              <img *ngIf="pending.previewUrl" [src]="pending.previewUrl" [alt]="pending.title">
+              <app-icon *ngIf="!pending.previewUrl" name="file" [size]="24" />
+            </ng-template>
+          </div>
+          <div class="pending-file-info">
+            <input 
+              type="text" 
+              [(ngModel)]="pending.title" 
+              class="form-input pending-title-input" 
+              placeholder="Título do anexo">
+            <span class="file-name">{{ pending.file.name }}</span>
+          </div>
+          <button type="button" class="remove-pending-btn" (click)="removePendingFile(i)">
+            <app-icon name="close" [size]="18" />
+          </button>
+        </div>
+      </div>
+      
+      <div class="add-more-files" *ngIf="pendingFiles.length > 0">
+        <button type="button" class="add-more-btn" (click)="addMoreFileInput.click()">
+          <app-icon name="plus" [size]="16" />
+          Adicionar mais arquivos
+        </button>
+        <input #addMoreFileInput type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf,.doc,.docx" hidden multiple>
+      </div>
+
+      <!-- Empty state - initial upload area -->
+      <div class="upload-dropzone" *ngIf="pendingFiles.length === 0" (click)="triggerFileInput()">
+        <input #dropzoneFileInput type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf,.doc,.docx" hidden multiple>
+        <app-icon name="upload-cloud" [size]="48" />
+        <div>
+          <p><strong>Clique para fazer upload</strong> ou arraste e solte</p>
+          <p class="text-sm text-secondary">Imagens, PDF, DOC (múltiplos arquivos)</p>
+        </div>
+      </div>
+
+      <div class="attachment-actions">
+        <app-button variant="outline" size="sm" (click)="cancelAddingAttachment()">Cancelar</app-button>
+        <app-button variant="primary" size="sm" (click)="sendAttachments()" [disabled]="pendingFiles.length === 0 || isUploading">
+          <span *ngIf="isUploading">Enviando...</span>
+          <span *ngIf="!isUploading">{{ pendingFiles.length > 1 ? 'Enviar ' + pendingFiles.length + ' arquivos' : 'Enviar Anexo' }}</span>
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Initial Actions (No file selected) -->
+    <div class="upload-actions" *ngIf="!isAddingAttachment">
+      
+      <!-- Mobile View -->
+      <div class="mobile-actions" *ngIf="isMobile">
+        <div class="mobile-buttons-grid">
+          <button class="action-btn" (click)="fileInputMobile.click()">
+            <app-icon name="file" [size]="24" />
+            <span>Arquivo</span>
+          </button>
+          <button class="action-btn" (click)="photoInput.click()">
+            <app-icon name="image" [size]="24" />
+            <span>Galeria</span>
+          </button>
+          <button class="action-btn" (click)="cameraInput.click()">
+            <app-icon name="camera" [size]="24" />
+            <span>Câmera</span>
+          </button>
+        </div>
+        
+        <!-- Hidden Inputs for Mobile -->
+        <input #cameraInput type="file" (change)="onFileSelectedDirectly($event)" accept="image/*" capture="environment" hidden>
+        <input #photoInput type="file" (change)="onFileSelectedDirectly($event)" accept="image/*" hidden multiple>
+        <input #fileInputMobile type="file" (change)="onFileSelectedDirectly($event)" accept="*/*" hidden multiple>
+      </div>
+
+      <!-- Desktop View -->
+      <div class="desktop-actions" *ngIf="!isMobile">
+        <p class="drag-hint">Arraste arquivos aqui ou</p>
+        <div class="desktop-buttons">
+          <app-button variant="outline" [fullWidth]="true" (click)="triggerFileInput()">
+            <app-icon name="upload-cloud" [size]="20" />
+            Adicionar Anexo
+          </app-button>
+          
+          <app-mobile-upload-button
+            variant="button"
+            buttonText="Usar Celular"
+            activeText="Link Ativo - Ver QR Code"
+            (uploadReceived)="onMobileUploadReceived($event)">
+          </app-mobile-upload-button>
+        </div>
+      </div>
+    </div>
+    </div>
+  }
+</div>
+
+<!-- QR Code Modal is now inside MobileUploadButtonComponent -->

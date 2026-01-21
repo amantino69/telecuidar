@@ -1,0 +1,198 @@
+<div class="scheduling-container">
+  <div class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <app-icon name="calendar" [size]="32" />
+        <div>
+          <h1>Agendar Consulta</h1>
+          <p class="subtitle">Siga os passos para marcar seu atendimento</p>
+        </div>
+      </div>
+      <app-button *ngIf="currentStep !== 'specialty'" variant="ghost" size="sm" (click)="goBack()">
+        <app-icon name="arrow-left" [size]="16"></app-icon>
+        Voltar
+      </app-button>
+    </div>
+  </div>
+
+  <div class="stepper">
+    <ng-container *ngFor="let step of steps; let i = index; let last = last">
+      <div 
+        class="step-item" 
+        [class.active]="step.id === currentStep"
+        [class.completed]="i < getStepIndex(currentStep)"
+        [class.disabled]="i > getStepIndex(currentStep)"
+        (click)="goToStep(step.id)">
+        <div class="step-circle">
+          <app-icon *ngIf="i < getStepIndex(currentStep)" name="check" [size]="14"></app-icon>
+          <span *ngIf="i >= getStepIndex(currentStep)">{{ i + 1 }}</span>
+        </div>
+        <span class="step-label">{{ step.label }}</span>
+      </div>
+      <div *ngIf="!last" class="step-line" [class.completed]="i < getStepIndex(currentStep)"></div>
+    </ng-container>
+  </div>
+
+  <!-- Step 1: Specialty Selection -->
+  <div class="step-content" *ngIf="currentStep === 'specialty'">
+    <div class="search-bar">
+      <app-search-input 
+        placeholder="Buscar especialidade..." 
+        [(ngModel)]="searchQuery"
+        (search)="onSearch($event)">
+      </app-search-input>
+    </div>
+
+    <div class="specialties-grid">
+      <div class="specialty-card" 
+           *ngFor="let specialty of filteredSpecialties"
+           (click)="selectSpecialty(specialty)">
+        <div class="icon-wrapper">
+          <app-icon name="activity" [size]="32"></app-icon>
+        </div>
+        <h3>{{ specialty.name }}</h3>
+        <p>{{ specialty.description }}</p>
+        <div class="card-footer">
+          <span class="availability-badge">Disponível</span>
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredSpecialties.length === 0">
+      <p>Nenhuma especialidade encontrada.</p>
+    </div>
+  </div>
+
+  <!-- Step 2: Date Selection -->
+  <div class="step-content" *ngIf="currentStep === 'date'">
+    <div class="step-header">
+      <h2>{{ selectedSpecialty?.name }}</h2>
+      <p>Selecione uma data para o atendimento</p>
+    </div>
+
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <app-button variant="ghost" size="sm" (click)="changeMonth(-1)">
+          <app-icon name="arrow-left" [size]="16"></app-icon>
+        </app-button>
+        <h3>{{ currentMonth | date:'MMMM yyyy':'':'pt-BR' }}</h3>
+        <app-button variant="ghost" size="sm" (click)="changeMonth(1)">
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        </app-button>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
+        
+        <div class="day" 
+             *ngFor="let day of calendarDays"
+             [class.disabled]="!day.available"
+             [class.padding]="day.isPadding"
+             [class.selected]="selectedDate === day.date && !day.isPadding"
+             (click)="selectDate(day)">
+          <span class="day-number" *ngIf="!day.isPadding">{{ day.date | date:'d' }}</span>
+          <div class="day-info" *ngIf="day.available && !day.isPadding">
+            <span class="slots">{{ day.slots }} vagas</span>
+            <span class="pros">{{ day.professionalsCount }} prof.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Time Slots -->
+  <div class="step-content" *ngIf="currentStep === 'time'">
+    <div class="step-header">
+      <h2>Horários Disponíveis</h2>
+      <p>{{ selectedDate | date:'fullDate':'':'pt-BR' }}</p>
+    </div>
+
+    <div class="slots-list">
+      <div class="slot-item" *ngFor="let slot of availableSlots" (click)="selectSlot(slot)">
+        <div class="time">{{ slot.time }}</div>
+        <div class="slot-details">
+          <span>{{ slot.professionals.length }} profissionais disponíveis</span>
+        </div>
+        <app-icon name="arrow-right" [size]="16"></app-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3.5: Professional Selection (Optional) -->
+  <div class="step-content" *ngIf="currentStep === 'professional-selection'">
+    <div class="step-header">
+      <h2>Escolha o Profissional</h2>
+      <p>{{ selectedDate | date:'shortDate':'':'pt-BR' }} às {{ selectedSlot?.time }}</p>
+    </div>
+
+    <div class="professionals-list">
+      <div class="professional-card" 
+           *ngFor="let pro of selectedSlot?.professionals"
+           (click)="selectProfessional(pro)">
+        <div class="pro-avatar">
+          <app-avatar 
+            [name]="pro.name + ' ' + pro.lastName" 
+            [imageUrl]="pro.avatar"
+            size="md">
+          </app-avatar>
+        </div>
+        <div class="pro-info">
+          <h3>{{ pro.name }} {{ pro.lastName }}</h3>
+          <p>CRM: {{ pro.cpf }}</p> <!-- Using CPF as CRM placeholder -->
+        </div>
+        <app-icon name="arrow-right" [size]="16"></app-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Confirmation -->
+  <div class="step-content" *ngIf="currentStep === 'confirmation'">
+    <div class="step-header">
+      <h2>Confirmar Agendamento</h2>
+      <p>Verifique os dados abaixo antes de confirmar</p>
+    </div>
+
+    <!-- Timer de Reserva -->
+    <div class="reservation-timer" *ngIf="timeRemainingSeconds > 0">
+      <div class="timer-content">
+        <app-icon name="clock" [size]="20"></app-icon>
+        <span class="timer-text">Sua reserva expira em {{ timeRemainingSeconds }}s</span>
+      </div>
+      <div class="timer-bar">
+        <div class="timer-progress" [style.width.%]="(timeRemainingSeconds / 300) * 100"></div>
+      </div>
+    </div>
+
+    <div class="confirmation-card">
+      <div class="info-row">
+        <label>Especialidade</label>
+        <p>{{ selectedSpecialty?.name }}</p>
+      </div>
+      <div class="info-row">
+        <label>Profissional</label>
+        <p>{{ selectedProfessional?.name }}</p>
+      </div>
+      <div class="info-row">
+        <label>Data</label>
+        <p>{{ selectedDate | date:'fullDate':'':'pt-BR' }}</p>
+      </div>
+      <div class="info-row">
+        <label>Horário</label>
+        <p>{{ selectedSlot?.time }}</p>
+      </div>
+
+      <div class="observation-input">
+        <label>Observação (Opcional)</label>
+        <textarea [(ngModel)]="observation" placeholder="Alguma informação importante para o médico?"></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <app-button variant="outline" (click)="goBack()">Cancelar</app-button>
+      <app-button variant="primary" (click)="confirmScheduling()" [loading]="loading">
+        Confirmar Agendamento
+      </app-button>
+    </div>
+  </div>
+</div>

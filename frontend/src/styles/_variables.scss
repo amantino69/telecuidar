@@ -1,0 +1,270 @@
+// ========================================
+// DESIGN TOKENS - TeleCuidar
+// ========================================
+
+// Breakpoints
+$breakpoint-mobile: 320px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop-hd: 1366px;
+$breakpoint-desktop-full-hd: 1920px;
+
+// Spacing Scale
+$spacing-xs: 0.25rem;    // 4px
+$spacing-sm: 0.5rem;     // 8px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+$spacing-3xl: 4rem;      // 64px
+$spacing-4xl: 6rem;      // 96px
+
+// Font Families
+$font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-heading: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-mono: 'Roboto Mono', 'Courier New', monospace;
+
+// Font Sizes
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+$font-size-4xl: 2.25rem;   // 36px
+$font-size-5xl: 3rem;      // 48px
+$font-size-6xl: 3.75rem;   // 60px
+
+// Font Weights (aumentados para melhor legibilidade)
+$font-weight-light: 300;
+$font-weight-regular: 450;  // Antes era 400 - mais firme
+$font-weight-medium: 550;   // Antes era 500
+$font-weight-semibold: 650; // Antes era 600
+$font-weight-bold: 750;     // Antes era 700
+$font-weight-extrabold: 800;
+
+// Line Heights
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// Border Radius
+$radius-xs: 0.125rem;   // 2px
+$radius-sm: 0.25rem;    // 4px
+$radius-md: 0.5rem;     // 8px
+$radius-lg: 0.75rem;    // 12px
+$radius-xl: 1rem;       // 16px
+$radius-2xl: 1.5rem;    // 24px
+$radius-full: 9999px;
+
+// Border Radius Aliases
+$border-radius-sm: $radius-sm;
+$border-radius-md: $radius-md;
+$border-radius-lg: $radius-lg;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+// Z-Index Scale
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 2000;
+$z-index-modal: 2010;
+$z-index-popover: 2020;
+$z-index-tooltip: 2030;
+
+// Transitions
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ========================================
+// THEME COLORS - Profissional (Light Mode - Default)
+// Cores VIBRANTES - azul institucional intenso
+// ========================================
+$light-primary-50: #eef4ff;
+$light-primary-100: #d9e6ff;
+$light-primary-200: #b3cdff;
+$light-primary-300: #7aabff;
+$light-primary-400: #4a8eff;
+$light-primary-500: #2970ff;  // Mais vibrante!
+$light-primary-600: #1a5ce8;  // Principal - mais saturado
+$light-primary-700: #1548c2;
+$light-primary-800: #153a99;
+$light-primary-900: #142d70;
+
+// Secondary Colors - Red (mais vibrante e impactante)
+$light-red-50: #fff1f1;
+$light-red-100: #ffe0e0;
+$light-red-200: #ffc7c7;
+$light-red-300: #ff9e9e;
+$light-red-400: #ff6b6b;
+$light-red-500: #f53d3d;  // Mais vibrante!
+$light-red-600: #e02020;  // Principal - mais saturado
+$light-red-700: #bc1919;
+$light-red-800: #9a1616;
+$light-red-900: #7d1515;
+
+// Secondary Colors - Green (esmeralda vibrante)
+$light-green-50: #e8fcf1;
+$light-green-100: #c5f7dc;
+$light-green-200: #8eefc0;
+$light-green-300: #4de69f;
+$light-green-400: #1fd87e;
+$light-green-500: #00c566;  // Mais vibrante!
+$light-green-600: #00a854;  // Principal - mais saturado
+$light-green-700: #008744;
+$light-green-800: #006b37;
+$light-green-900: #00522a;
+
+// Secondary Colors - Blue (vibrante e institucional)
+$light-blue-50: #eef4ff;
+$light-blue-100: #d9e6ff;
+$light-blue-200: #b3cdff;
+$light-blue-300: #7aabff;
+$light-blue-400: #4a8eff;
+$light-blue-500: #2970ff;
+$light-blue-600: #1a5ce8;
+$light-blue-700: #1548c2;
+$light-blue-800: #153a99;
+$light-blue-900: #142d70;
+
+// Secondary Colors - Amber (mais quente e vibrante)
+$light-amber-50: #fffaeb;
+$light-amber-100: #fff0c2;
+$light-amber-200: #ffe08a;
+$light-amber-300: #ffc94d;
+$light-amber-400: #ffb11a;
+$light-amber-500: #f59800;  // Mais vibrante!
+$light-amber-600: #db7a00;  // Laranja mais quente
+$light-amber-700: #b55d00;
+$light-amber-800: #8f4600;
+$light-amber-900: #703500;
+
+// Neutral Colors - Light (levemente azulado para mais vida)
+$light-neutral-50: #f8fafc;
+$light-neutral-100: #f1f5f9;
+$light-neutral-200: #e2e8f0;
+$light-neutral-300: #cbd5e1;
+$light-neutral-400: #94a3b8;
+$light-neutral-500: #64748b;
+$light-neutral-600: #475569;
+$light-neutral-700: #334155;
+$light-neutral-800: #1e293b;
+$light-neutral-900: #0f172a;
+
+$light-background: #f8fafc;
+$light-surface: #ffffff;
+$light-text-primary: #1e293b;
+$light-text-secondary: #475569;
+$light-border: #e2e8f0;
+
+// ========================================
+// THEME COLORS - Noturno Suave (Dark Mode)
+// Azul noturno elegante - não preto!
+// ========================================
+$dark-primary-50: #1e3a8a;
+$dark-primary-100: #1e40af;
+$dark-primary-200: #1d4ed8;
+$dark-primary-300: #2563eb;
+$dark-primary-400: #3b82f6;
+$dark-primary-500: #60a5fa;
+$dark-primary-600: #93c5fd;
+$dark-primary-700: #bfdbfe;
+$dark-primary-800: #dbeafe;
+$dark-primary-900: #eff6ff;
+
+// Secondary Colors - Red (Dark)
+$dark-red-50: #7f1d1d;
+$dark-red-100: #991b1b;
+$dark-red-200: #b91c1c;
+$dark-red-300: #dc2626;
+$dark-red-400: #ef4444;
+$dark-red-500: #f87171;
+$dark-red-600: #fca5a5;
+$dark-red-700: #fecaca;
+$dark-red-800: #fee2e2;
+$dark-red-900: #fef2f2;
+
+// Secondary Colors - Green (Dark - esmeralda)
+$dark-green-50: #064e3b;
+$dark-green-100: #065f46;
+$dark-green-200: #047857;
+$dark-green-300: #059669;
+$dark-green-400: #10b981;
+$dark-green-500: #34d399;
+$dark-green-600: #6ee7b7;
+$dark-green-700: #a7f3d0;
+$dark-green-800: #d1fae5;
+$dark-green-900: #ecfdf5;
+
+// Secondary Colors - Blue (Dark)
+$dark-blue-50: #1e3a8a;
+$dark-blue-100: #1e40af;
+$dark-blue-200: #1d4ed8;
+$dark-blue-300: #2563eb;
+$dark-blue-400: #3b82f6;
+$dark-blue-500: #60a5fa;
+$dark-blue-600: #93c5fd;
+$dark-blue-700: #bfdbfe;
+$dark-blue-800: #dbeafe;
+$dark-blue-900: #eff6ff;
+
+// Secondary Colors - Amber (Dark)
+$dark-amber-50: #78350f;
+$dark-amber-100: #92400e;
+$dark-amber-200: #b45309;
+$dark-amber-300: #d97706;
+$dark-amber-400: #f59e0b;
+$dark-amber-500: #fbbf24;
+$dark-amber-600: #fcd34d;
+$dark-amber-700: #fde68a;
+$dark-amber-800: #fef3c7;
+$dark-amber-900: #fffbeb;
+
+// Neutral Colors - Dark (azul noturno, não cinza!)
+$dark-neutral-50: #0f172a;
+$dark-neutral-100: #1e293b;
+$dark-neutral-200: #334155;
+$dark-neutral-300: #475569;
+$dark-neutral-400: #64748b;
+$dark-neutral-500: #94a3b8;
+$dark-neutral-600: #cbd5e1;
+$dark-neutral-700: #e2e8f0;
+$dark-neutral-800: #f1f5f9;
+$dark-neutral-900: #f8fafc;
+
+$dark-background: #0f172a;
+$dark-surface: #1e293b;
+$dark-text-primary: #f1f5f9;
+$dark-text-secondary: #94a3b8;
+$dark-border: #334155;
+
+// ========================================
+// THEME COLORS - Alto Contraste
+// Para acessibilidade - cores mais saturadas
+// ========================================
+$contrast-primary-500: #1d4ed8;
+$contrast-primary-600: #1e40af;
+$contrast-green-500: #047857;
+$contrast-green-600: #065f46;
+$contrast-red-500: #b91c1c;
+$contrast-red-600: #991b1b;
+$contrast-amber-500: #d97706;
+$contrast-amber-600: #b45309;
+$contrast-background: #ffffff;
+$contrast-surface: #ffffff;
+$contrast-text-primary: #000000;
+$contrast-text-secondary: #1e293b;
+$contrast-border: #1e293b;
+
+// Amber RGBA
+$light-amber-400-rgba-10: rgba(251, 191, 36, 0.1);
+$light-amber-400-rgba-20: rgba(251, 191, 36, 0.2);
+$light-amber-400-rgba-30: rgba(251, 191, 36, 0.3);
+$light-amber-400-rgba-50: rgba(251, 191, 36, 0.5);

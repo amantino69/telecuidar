@@ -1,0 +1,162 @@
+<div class="anamnesis-container">
+  <!-- Header com abas SOAP e botão salvar -->
+  <div class="anamnesis-header">
+    <div class="soap-tabs">
+      @for (tab of soapTabs; track tab.id) {
+        <button 
+          type="button"
+          class="soap-tab-btn"
+          [class.active]="activeSection === tab.id"
+          [attr.data-color]="tab.color"
+          (click)="setActiveSection(tab.id)">
+          <span class="tab-letter">{{ tab.letter }}</span>
+          <span class="tab-label">{{ tab.label }}</span>
+        </button>
+      }
+    </div>
+    
+    @if (userrole !== 'PATIENT' && !readonly) {
+      <button 
+        type="button"
+        class="save-btn"
+        [class.saving]="isSaving"
+        [disabled]="isSaving || anamnesisForm.pristine"
+        (click)="onManualSave()">
+        @if (isSaving) {
+          <span class="spinner"></span>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        }
+        <span>{{ isSaving ? 'Salvando...' : 'Salvar' }}</span>
+      </button>
+    }
+    
+    @if (lastSaved) {
+      <span class="last-saved">{{ lastSaved | date:'HH:mm' }}</span>
+    }
+  </div>
+
+  <!-- Conteúdo das abas -->
+  <form [formGroup]="anamnesisForm" class="anamnesis-form">
+    <div class="soap-content" [attr.data-color]="getActiveTab().color">
+      
+      <!-- S - SUBJETIVO -->
+      @if (activeSection === 'subjective') {
+        <div class="section-scroll">
+          <div class="form-section">
+            <h3><app-icon name="alert-circle" [size]="18" /> Queixa Principal (QP)</h3>
+            <div class="form-field">
+              <textarea formControlName="chiefComplaint" rows="3" placeholder="Ex: Dor de cabeça há 3 dias..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3><app-icon name="file" [size]="18" /> História da Doença Atual (HDA)</h3>
+            <div class="form-field">
+              <textarea formControlName="presentIllnessHistory" rows="4" placeholder="Início, evolução, fatores de melhora/piora..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3><app-icon name="clock" [size]="18" /> História Patológica Pregressa (HPP)</h3>
+            <div class="form-field">
+              <textarea formControlName="pastMedicalHistory" rows="3" placeholder="Doenças crônicas, internações, cirurgias..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section" formGroupName="personalHistory">
+            <h3><app-icon name="user" [size]="18" /> Antecedentes Pessoais</h3>
+            <div class="form-grid">
+              <div class="form-field"><label>Doenças Anteriores</label><textarea formControlName="previousDiseases" rows="2" placeholder="Diabetes, Hipertensão..."></textarea></div>
+              <div class="form-field"><label>Cirurgias</label><textarea formControlName="surgeries" rows="2" placeholder="Cirurgias realizadas..."></textarea></div>
+              <div class="form-field"><label>Internações</label><textarea formControlName="hospitalizations" rows="2" placeholder="Internações..."></textarea></div>
+              <div class="form-field"><label>Alergias</label><textarea formControlName="allergies" rows="2" placeholder="Medicamentos, alimentos..."></textarea></div>
+              <div class="form-field"><label>Medicações em Uso</label><textarea formControlName="currentMedications" rows="2" placeholder="Medicações atuais..."></textarea></div>
+              <div class="form-field"><label>Vacinação</label><textarea formControlName="vaccinations" rows="2" placeholder="Estado vacinal..."></textarea></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3><app-icon name="users" [size]="18" /> Antecedentes Familiares</h3>
+            <div class="form-field">
+              <textarea formControlName="familyHistory" rows="3" placeholder="Doenças na família..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section" formGroupName="lifestyle">
+            <h3><app-icon name="activity" [size]="18" /> Hábitos de Vida</h3>
+            <div class="form-grid">
+              <div class="form-field"><label>Alimentação</label><textarea formControlName="diet" rows="2" placeholder="Padrão alimentar..."></textarea></div>
+              <div class="form-field"><label>Atividade Física</label><textarea formControlName="physicalActivity" rows="2" placeholder="Frequência..."></textarea></div>
+              <div class="form-field"><label>Tabagismo</label><textarea formControlName="smoking" rows="2" placeholder="Sim/Não..."></textarea></div>
+              <div class="form-field"><label>Etilismo</label><textarea formControlName="alcohol" rows="2" placeholder="Frequência..."></textarea></div>
+              <div class="form-field"><label>Uso de Drogas</label><textarea formControlName="drugs" rows="2" placeholder="Sim/Não..."></textarea></div>
+              <div class="form-field"><label>Sono</label><textarea formControlName="sleep" rows="2" placeholder="Qualidade..."></textarea></div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- O - OBJETIVO -->
+      @if (activeSection === 'objective') {
+        <div class="section-scroll">
+          <div class="form-section" formGroupName="systemsReview">
+            <h3><app-icon name="stethoscope" [size]="18" /> Revisão de Sistemas</h3>
+            <div class="form-grid">
+              <div class="form-field"><label>Cardiovascular</label><textarea formControlName="cardiovascular" rows="2" placeholder="Dor torácica, palpitações..."></textarea></div>
+              <div class="form-field"><label>Respiratório</label><textarea formControlName="respiratory" rows="2" placeholder="Tosse, dispneia..."></textarea></div>
+              <div class="form-field"><label>Gastrointestinal</label><textarea formControlName="gastrointestinal" rows="2" placeholder="Náuseas, diarreia..."></textarea></div>
+              <div class="form-field"><label>Geniturinário</label><textarea formControlName="genitourinary" rows="2" placeholder="Disúria..."></textarea></div>
+              <div class="form-field"><label>Musculoesquelético</label><textarea formControlName="musculoskeletal" rows="2" placeholder="Dores articulares..."></textarea></div>
+              <div class="form-field"><label>Neurológico</label><textarea formControlName="neurological" rows="2" placeholder="Cefaleia, tontura..."></textarea></div>
+              <div class="form-field"><label>Psiquiátrico</label><textarea formControlName="psychiatric" rows="2" placeholder="Humor, ansiedade..."></textarea></div>
+              <div class="form-field"><label>Endócrino</label><textarea formControlName="endocrine" rows="2" placeholder="Sede, poliúria..."></textarea></div>
+              <div class="form-field"><label>Hematológico</label><textarea formControlName="hematologic" rows="2" placeholder="Sangramentos..."></textarea></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3><app-icon name="eye" [size]="18" /> Exame Físico / Dados Objetivos</h3>
+            <div class="form-field">
+              <textarea formControlName="objectiveExam" rows="6" placeholder="PA, FC, FR, Temp, SpO2, inspeção, palpação, ausculta..."></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- A - AVALIAÇÃO -->
+      @if (activeSection === 'assessment') {
+        <div class="section-scroll section-full">
+          <div class="form-section full-height">
+            <h3><app-icon name="file" [size]="18" /> Hipóteses Diagnósticas</h3>
+            <div class="form-field full-height">
+              <textarea formControlName="assessment" placeholder="CID-10, diagnósticos diferenciais, raciocínio clínico..."></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- P - PLANO -->
+      @if (activeSection === 'plan') {
+        <div class="section-scroll">
+          <div class="form-section">
+            <h3><app-icon name="file" [size]="18" /> Conduta e Plano Terapêutico</h3>
+            <div class="form-field">
+              <textarea formControlName="plan" rows="6" placeholder="Medicações, orientações, exames, encaminhamentos..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3><app-icon name="edit" [size]="18" /> Observações Adicionais</h3>
+            <div class="form-field">
+              <textarea formControlName="additionalNotes" rows="4" placeholder="Informações adicionais..."></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </form>
+</div>

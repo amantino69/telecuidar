@@ -1,0 +1,209 @@
+<div class="auth-page">
+  <div class="auth-theme-toggle">
+    <app-theme-toggle />
+  </div>
+  
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <app-logo size="lg" />
+        <h1 class="auth-card__title">Criar Conta</h1>
+        <p class="auth-card__subtitle">Preencha seus dados para começar</p>
+      </div>
+
+      @if (inviteToken && inviteRole) {
+        <div class="auth-alert auth-alert--info">
+          <app-icon name="mail" [size]="20" />
+          <span>Você está se cadastrando como: <strong>{{ inviteRole === 'PATIENT' ? 'Paciente' : inviteRole === 'PROFESSIONAL' ? 'Profissional' : inviteRole === 'ASSISTANT' ? 'Assistente' : 'Administrador' }}</strong></span>
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="auth-alert auth-alert--error">
+          <app-icon name="alert-circle" [size]="20" />
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      @if (successMessage) {
+        <div class="registration-success">
+          <div class="registration-success__icon">
+            <app-icon name="check-circle" [size]="64" />
+          </div>
+          <h2 class="registration-success__title">Registro realizado com sucesso!</h2>
+          <p class="registration-success__message">{{ successMessage }}</p>
+          <div class="registration-success__actions">
+            <app-button
+              type="button"
+              variant="primary"
+              size="lg"
+              [fullWidth]="true"
+              (click)="goToLogin()"
+            >
+              <app-icon name="arrow-right" [size]="20" />
+              Ir para Login
+            </app-button>
+          </div>
+        </div>
+      } @else {
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-row form-row--two-columns">
+          <div class="form-group">
+            <label for="name" class="form-label">Nome *</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-input"
+              [class.form-input--error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
+              placeholder="Digite seu nome"
+              autocomplete="given-name"
+            />
+            @if (getErrorMessage('name')) {
+              <span class="form-error">{{ getErrorMessage('name') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="lastName" class="form-label">Sobrenome *</label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="form-input"
+              [class.form-input--error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+              placeholder="Digite seu sobrenome"
+              autocomplete="family-name"
+            />
+            @if (getErrorMessage('lastName')) {
+              <span class="form-error">{{ getErrorMessage('lastName') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">E-mail *</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-input"
+            [class.form-input--error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+            placeholder="seu@email.com"
+            autocomplete="email"
+          />
+          @if (getErrorMessage('email')) {
+            <span class="form-error">{{ getErrorMessage('email') }}</span>
+          }
+        </div>
+
+        <div class="form-row form-row--two-columns">
+          <div class="form-group">
+            <label for="cpf" class="form-label">CPF *</label>
+            <input
+              type="text"
+              id="cpf"
+              formControlName="cpf"
+              appCpfMask
+              class="form-input"
+              [class.form-input--error]="registerForm.get('cpf')?.invalid && registerForm.get('cpf')?.touched"
+              placeholder="000.000.000-00"
+              autocomplete="off"
+            />
+            @if (getErrorMessage('cpf')) {
+              <span class="form-error">{{ getErrorMessage('cpf') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Telefone *</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              appPhoneMask
+              class="form-input"
+              [class.form-input--error]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched"
+              placeholder="(00) 00000-0000"
+              autocomplete="tel"
+            />
+            @if (getErrorMessage('phone')) {
+              <span class="form-error">{{ getErrorMessage('phone') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row form-row--two-columns">
+          <div class="form-group">
+            <label for="password" class="form-label">Senha *</label>
+            <app-input-password
+              id="password"
+              formControlName="password"
+              placeholder="Mínimo 8 caracteres"
+              [hasError]="!!(registerForm.get('password')?.invalid && registerForm.get('password')?.touched)"
+              autocomplete="new-password"
+            />
+            @if (getErrorMessage('password')) {
+              <span class="form-error">{{ getErrorMessage('password') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirmar Senha *</label>
+            <app-input-password
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              placeholder="Digite a senha novamente"
+              [hasError]="!!(registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched)"
+              autocomplete="new-password"
+            />
+            @if (getErrorMessage('confirmPassword')) {
+              <span class="form-error">{{ getErrorMessage('confirmPassword') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group form-group--full-width">
+          <app-password-strength [password]="registerForm.get('password')?.value || ''" />
+        </div>
+
+        @if (!inviteToken) {
+          <div class="form-group">
+            <app-checkbox
+              formControlName="acceptTerms"
+              label="Aceito os termos de uso e política de privacidade"
+              icon="shield"
+            />
+            @if (getErrorMessage('acceptTerms')) {
+              <span class="form-error">{{ getErrorMessage('acceptTerms') }}</span>
+            }
+          </div>
+        }
+
+        <app-button
+          type="submit"
+          variant="primary"
+          size="lg"
+          [fullWidth]="true"
+          [loading]="isLoading"
+          [disabled]="registerForm.invalid || isLoading"
+        >
+          Criar Conta
+        </app-button>
+
+        <div class="auth-footer">
+          <p class="auth-footer__text">
+            Já tem uma conta?
+            <a routerLink="/entrar" class="auth-footer__link">Fazer login</a>
+          </p>
+          <button type="button" class="auth-footer__back" (click)="goToHome()">
+            <app-icon name="arrow-left" [size]="16" />
+            <span>Voltar para o início</span>
+          </button>
+        </div>
+      </form>
+      }
+    </div>
+  </div>
+</div>

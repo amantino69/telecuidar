@@ -1,0 +1,523 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.digital-office {
+  width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+
+  &__header {
+    @include flex-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-2xl;
+    gap: $spacing-xl;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+
+    app-icon {
+      color: var(--primary-500);
+      flex-shrink: 0;
+    }
+  }
+
+  &__title {
+    @include heading-1;
+    margin: 0 0 $spacing-xs 0;
+  }
+
+  &__subtitle {
+    color: var(--text-secondary);
+    font-size: $font-size-lg;
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+  }
+
+  &__filter-tab {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--text-secondary);
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      border-color: var(--primary-300);
+      color: var(--primary-600);
+    }
+
+    &--active {
+      background: var(--primary-50);
+      border-color: var(--primary-500);
+      color: var(--primary-600);
+    }
+  }
+
+  &__filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    align-items: flex-end;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    app-filter-select {
+      min-width: 180px;
+    }
+  }
+
+  &__date-range {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__date-group,
+  &__cpf-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    label {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: var(--text-secondary);
+    }
+  }
+
+  &__date-input,
+  &__cpf-input {
+    padding: $spacing-md $spacing-lg;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    color: var(--text-primary);
+    font-size: $font-size-base;
+    @include transition(all);
+    min-width: 160px;
+
+    &:hover {
+      border-color: var(--neutral-300);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+  }
+
+  &__cpf-wrapper {
+    display: flex;
+
+    .digital-office__cpf-input {
+      border-radius: $radius-lg 0 0 $radius-lg;
+      border-right: none;
+    }
+  }
+
+  &__search-btn {
+    padding: $spacing-md $spacing-lg;
+    background: var(--primary-600);
+    color: white;
+    border: none;
+    border-radius: 0 $radius-lg $radius-lg 0;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      background: var(--primary-700);
+    }
+  }
+
+  &__loading,
+  &__empty {
+    @include flex-center;
+    @include flex-column;
+    gap: $spacing-lg;
+    padding: $spacing-4xl;
+    color: var(--text-secondary);
+  }
+
+  // =====================================================================
+  // DESKTOP VIEW - TABLE
+  // =====================================================================
+  &__desktop-view {
+    display: block;
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  &__mobile-view {
+    display: none;
+
+    @include mobile {
+      display: block;
+    }
+  }
+
+  &__table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-xl;
+    overflow: hidden;
+    margin-bottom: $spacing-xl;
+    max-width: 100%;
+
+    @include mobile {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+}
+
+// =====================================================================
+// TABLE STYLES (Desktop)
+// =====================================================================
+.digital-office-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  @include mobile {
+    min-width: 900px;
+  }
+
+  &__head {
+    background: var(--background);
+    border-bottom: 2px solid var(--border);
+  }
+
+  &__header {
+    padding: $spacing-lg $spacing-xl;
+    text-align: left;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @include mobile {
+      padding: $spacing-md;
+      font-size: 10px;
+    }
+
+    &--actions {
+      text-align: center;
+      width: 200px;
+    }
+  }
+
+  &__row {
+    border-bottom: 1px solid var(--border);
+    @include transition(background);
+
+    &:hover {
+      background: var(--neutral-50);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__cell {
+    padding: $spacing-lg $spacing-xl;
+    font-size: $font-size-sm;
+    color: var(--text-primary);
+
+    @include mobile {
+      padding: $spacing-md;
+      font-size: $font-size-xs;
+    }
+
+    &--actions {
+      text-align: center;
+    }
+  }
+
+  &__id {
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+  }
+
+  &__datetime {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__date {
+    font-weight: $font-weight-medium;
+  }
+
+  &__time {
+    font-size: $font-size-xs;
+    color: var(--text-secondary);
+  }
+
+  &__patient {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__patient-name {
+    font-weight: $font-weight-medium;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  // Botão secundário cinza (detalhes)
+  &__action-btn {
+    padding: $spacing-xs $spacing-sm;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    color: var(--text-secondary);
+    cursor: pointer;
+    @include transition(all);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: var(--neutral-100);
+      border-color: var(--neutral-300);
+      color: var(--text-primary);
+    }
+  }
+
+  // Botão primário "Entrar na consulta"
+  &__action-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-md;
+    background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(all);
+    box-shadow:
+      0 2px 0 #1d4ed8,
+      0 4px 8px rgba(59, 130, 246, 0.25);
+
+    &:hover {
+      background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 100%);
+      transform: translateY(-1px);
+      box-shadow:
+        0 3px 0 #1d4ed8,
+        0 6px 12px rgba(59, 130, 246, 0.35);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 1px 0 #1d4ed8,
+        0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    span {
+      white-space: nowrap;
+    }
+  }
+}
+
+// =====================================================================
+// CARD STYLES (Mobile/Tablet)
+// =====================================================================
+.appointment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  @include transition(all);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-200);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__datetime {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__date {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: var(--text-primary);
+  }
+
+  &__time {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+    font-weight: $font-weight-medium;
+  }
+
+  &__content {
+    margin-bottom: $spacing-lg;
+  }
+
+  &__info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__info-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: var(--text-primary);
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding-top: $spacing-lg;
+    border-top: 1px solid var(--border);
+  }
+
+  // Botão primário grande - "Entrar na Consulta"
+  &__btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: $radius-lg;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(all);
+    box-shadow:
+      0 4px 0 #1d4ed8,
+      0 6px 16px rgba(59, 130, 246, 0.35);
+
+    &:hover {
+      background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 100%);
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 0 #1d4ed8,
+        0 10px 24px rgba(59, 130, 246, 0.45);
+    }
+
+    &:active {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #1d4ed8,
+        0 3px 8px rgba(59, 130, 246, 0.25);
+    }
+
+    app-icon {
+      flex-shrink: 0;
+    }
+  }
+
+  // Botão secundário - "Detalhes"
+  &__btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    background: var(--surface-secondary, #f8fafc);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      background: var(--neutral-100);
+      border-color: var(--neutral-300);
+    }
+
+    &:active {
+      background: var(--neutral-50);
+    }
+
+    app-icon {
+      flex-shrink: 0;
+    }
+  }
+}

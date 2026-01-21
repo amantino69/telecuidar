@@ -1,0 +1,116 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xl;
+  padding: $spacing-lg 0;
+
+  @include mobile {
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__info {
+    @include mobile {
+      order: 3;
+    }
+  }
+
+  &__text {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+
+    @include mobile {
+      order: 1;
+    }
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: $spacing-xs $spacing-sm;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    color: var(--text-secondary);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover:not(:disabled) {
+      background: var(--neutral-100);
+      border-color: var(--neutral-300);
+      color: var(--text-primary);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--page {
+      min-width: 40px;
+    }
+
+    &--active {
+      background: var(--primary-600);
+      border-color: var(--primary-600);
+      color: white;
+
+      &:hover {
+        background: var(--primary-700);
+        border-color: var(--primary-700);
+      }
+    }
+  }
+
+  &__size {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    @include mobile {
+      order: 2;
+    }
+  }
+
+  &__size-label {
+    font-size: $font-size-sm;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  &__size-select {
+    padding: $spacing-xs $spacing-md;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    color: var(--text-primary);
+    font-size: $font-size-sm;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      border-color: var(--neutral-300);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+  }
+}

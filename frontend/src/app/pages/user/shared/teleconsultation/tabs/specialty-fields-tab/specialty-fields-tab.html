@@ -1,0 +1,120 @@
+<div class="specialty-fields-tab">
+  <div class="tab-header">
+    <div class="header-info">
+      <h2>Campos Específicos da Especialidade</h2>
+      @if (appointment) {
+        <span class="specialty-name">{{ appointment.specialtyName }}</span>
+      }
+      @if (lastSaved) {
+        <span class="save-status">
+          <app-icon name="check-circle" [size]="16" />
+          Salvo automaticamente às {{ lastSaved | date:'HH:mm':'':'pt-BR' }}
+        </span>
+      }
+    </div>
+    @if (userrole !== 'PATIENT' && !readonly) {
+      <app-button
+        [disabled]="specialtyFieldsForm.pristine || isSaving"
+        (click)="onManualSave()"
+      >
+        @if (isSaving) {
+          Salvando...
+        } @else {
+          <app-icon name="check" [size]="18" />
+          Salvar
+        }
+      </app-button>
+    }
+  </div>
+
+  <form [formGroup]="specialtyFieldsForm" class="specialty-form">
+    <div class="form-section">
+      <div class="form-grid">
+        @for (field of specialtyFields; track field.name) {
+          <div class="form-field" [class.full-width]="field.type === 'textarea'">
+            <label [for]="sanitizeFieldName(field.name)">
+              {{ field.name }}
+              @if (field.required) {
+                <span class="required">*</span>
+              }
+            </label>
+            @if (field.description) {
+              <p class="field-description">{{ field.description }}</p>
+            }
+            
+            @if (field.type === 'text') {
+              <input
+                [id]="sanitizeFieldName(field.name)"
+                type="text"
+                [formControlName]="sanitizeFieldName(field.name)"
+                [placeholder]="field.description || ''"
+              />
+            }
+            
+            @if (field.type === 'number') {
+              <input
+                [id]="sanitizeFieldName(field.name)"
+                type="number"
+                [formControlName]="sanitizeFieldName(field.name)"
+                [placeholder]="field.description || ''"
+              />
+            }
+            
+            @if (field.type === 'date') {
+              <input
+                [id]="sanitizeFieldName(field.name)"
+                type="date"
+                [formControlName]="sanitizeFieldName(field.name)"
+              />
+            }
+            
+            @if (field.type === 'textarea') {
+              <textarea
+                [id]="sanitizeFieldName(field.name)"
+                [formControlName]="sanitizeFieldName(field.name)"
+                [placeholder]="field.description || ''"
+                rows="4"
+              ></textarea>
+            }
+            
+            @if (field.type === 'select' && field.options) {
+              <select [id]="sanitizeFieldName(field.name)" [formControlName]="sanitizeFieldName(field.name)">
+                <option value="">Selecione...</option>
+                @for (option of field.options; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            }
+            
+            @if (field.type === 'radio' && field.options) {
+              <div class="radio-group">
+                @for (option of field.options; track option) {
+                  <label class="radio-label">
+                    <input
+                      type="radio"
+                      [name]="sanitizeFieldName(field.name)"
+                      [formControlName]="sanitizeFieldName(field.name)"
+                      [value]="option"
+                    />
+                    <span>{{ option }}</span>
+                  </label>
+                }
+              </div>
+            }
+            
+            @if (field.type === 'checkbox') {
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [id]="sanitizeFieldName(field.name)"
+                  [formControlName]="sanitizeFieldName(field.name)"
+                />
+                <span>{{ field.description || 'Marque se aplicável' }}</span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </form>
+</div>
