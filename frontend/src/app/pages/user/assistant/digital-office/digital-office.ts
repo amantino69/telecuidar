@@ -7,11 +7,13 @@ import { BadgeComponent, BadgeVariant } from '@shared/components/atoms/badge/bad
 import { FilterSelectComponent, FilterOption } from '@shared/components/atoms/filter-select/filter-select';
 import { PaginationComponent } from '@shared/components/atoms/pagination/pagination';
 import { AppointmentsService, Appointment, AppointmentsFilter, AppointmentStatus, AppointmentType } from '@core/services/appointments.service';
+import { SpecialtiesService, Specialty } from '@core/services/specialties.service';
 import { AppointmentDetailsModalComponent } from '@pages/user/shared/appointments/appointment-details-modal/appointment-details-modal';
 import { ModalService } from '@core/services/modal.service';
 import { AuthService } from '@core/services/auth.service';
 import { RealTimeService, AppointmentStatusUpdate, EntityNotification } from '@core/services/real-time.service';
 import { CpfMaskDirective } from '@app/core/directives/cpf-mask.directive';
+import { SearchInputComponent } from '@shared/components/atoms/search-input/search-input';
 import { filter, take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -29,7 +31,8 @@ type FilterMode = 'today' | 'all' | 'period' | 'cpf';
     FilterSelectComponent,
     PaginationComponent,
     AppointmentDetailsModalComponent,
-    CpfMaskDirective
+    CpfMaskDirective,
+    SearchInputComponent
   ],
   providers: [DatePipe],
   templateUrl: './digital-office.html',
@@ -46,6 +49,12 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
   startDate = '';
   endDate = '';
   statusFilter: AppointmentStatus | 'all' = 'all';
+  specialtyFilter = '';
+  searchProfessional = '';
+  
+  // Especialidades
+  specialties: Specialty[] = [];
+  specialtyOptions: FilterOption[] = [{ value: '', label: 'Todas as especialidades' }];
   
   statusOptions: FilterOption[] = [
     { value: 'all', label: 'Todos os status' },
@@ -71,6 +80,7 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
   private isBrowser: boolean;
 
   private appointmentsService = inject(AppointmentsService);
+  private specialtiesService = inject(SpecialtiesService);
   private authService = inject(AuthService);
   private realTimeService = inject(RealTimeService);
   private router = inject(Router);
@@ -89,6 +99,8 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadSpecialties();
+    
     this.authService.authState$
       .pipe(
         filter(state => state.isAuthenticated && state.user !== null),
@@ -101,6 +113,21 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         }, 0);
       });
+  }
+  
+  private loadSpecialties(): void {
+    this.specialtiesService.getSpecialties({ status: 'Active' }).subscribe({
+      next: (response) => {
+        this.specialties = response.data;
+        this.specialtyOptions = [
+          { value: '', label: 'Todas as especialidades' },
+          ...this.specialties.map(s => ({ value: s.id, label: s.name }))
+        ];
+      },
+      error: (error) => {
+        console.error('Erro ao carregar especialidades:', error);
+      }
+    });
   }
   
   private initializeRealTime(): void {
@@ -201,6 +228,16 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
         break;
     }
     
+    // Aplicar filtro de especialidade
+    if (this.specialtyFilter) {
+      filter.specialtyId = this.specialtyFilter;
+    }
+    
+    // Aplicar busca por profissional (adiciona ao search se não for busca por CPF)
+    if (this.searchProfessional && this.filterMode !== 'cpf') {
+      filter.search = this.searchProfessional;
+    }
+    
     return filter;
   }
 
@@ -252,6 +289,17 @@ export class DigitalOfficeComponent implements OnInit, OnDestroy {
   }
 
   onStatusFilterChange(): void {
+    this.currentPage = 1;
+    this.loadAppointments();
+  }
+
+  onSpecialtyFilterChange(): void {
+    this.currentPage = 1;
+    this.loadAppointments();
+  }
+
+  onSearchProfessional(query: string): void {
+    this.searchProfessional = query;
     this.currentPage = 1;
     this.loadAppointments();
   }

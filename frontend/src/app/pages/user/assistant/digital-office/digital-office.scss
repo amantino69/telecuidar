@@ -95,6 +95,31 @@
     }
   }
 
+  &__advanced-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    align-items: flex-end;
+    margin-top: $spacing-md;
+
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    app-filter-select {
+      min-width: 180px;
+    }
+  }
+
+  &__search-professional {
+    min-width: 250px;
+    
+    @include mobile {
+      min-width: 100%;
+    }
+  }
+
   &__date-range {
     display: flex;
     gap: $spacing-md;

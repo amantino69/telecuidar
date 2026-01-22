@@ -97,12 +97,31 @@
         </div>
       }
       
-      <app-filter-select
-        [options]="statusOptions"
-        [(ngModel)]="statusFilter"
-        (change)="onStatusFilterChange()"
-        placeholder="Filtrar por status"
-      />
+      <div class="digital-office__advanced-filters">
+        <app-filter-select
+          [options]="specialtyOptions"
+          [(ngModel)]="specialtyFilter"
+          (change)="onSpecialtyFilterChange()"
+          placeholder="Filtrar por especialidade"
+        />
+        
+        <app-filter-select
+          [options]="statusOptions"
+          [(ngModel)]="statusFilter"
+          (change)="onStatusFilterChange()"
+          placeholder="Filtrar por status"
+        />
+        
+        @if (filterMode !== 'cpf') {
+          <div class="digital-office__search-professional">
+            <app-search-input 
+              placeholder="Buscar por profissional..."
+              [(ngModel)]="searchProfessional"
+              (search)="onSearchProfessional($event)">
+            </app-search-input>
+          </div>
+        }
+      </div>
     </div>
   </div>
 

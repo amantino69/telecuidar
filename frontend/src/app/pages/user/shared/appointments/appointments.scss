@@ -136,10 +136,20 @@
       display: flex;
       gap: 1rem;
       align-items: center;
+      flex-wrap: wrap;
 
       @include max-width(900px) {
         flex-direction: column;
         width: 100%;
+      }
+
+      app-filter-select {
+        min-width: 200px;
+
+        @include max-width(900px) {
+          width: 100%;
+          min-width: unset;
+        }
       }
 
       .search-wrapper {

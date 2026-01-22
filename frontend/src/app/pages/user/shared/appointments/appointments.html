@@ -209,6 +209,12 @@
       </div>
 
       <div class="search-sort">
+        <app-filter-select
+          [options]="specialtyOptions"
+          [(ngModel)]="specialtyFilter"
+          (change)="onSpecialtyFilterChange()"
+          placeholder="Filtrar por especialidade">
+        </app-filter-select>
         <div class="search-wrapper">
           <app-search-input 
               placeholder="Buscar por nome..." 

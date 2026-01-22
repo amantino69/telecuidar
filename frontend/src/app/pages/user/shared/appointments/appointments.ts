@@ -8,11 +8,13 @@ import { SearchInputComponent } from '@shared/components/atoms/search-input/sear
 import { BadgeComponent, BadgeVariant } from '@shared/components/atoms/badge/badge';
 import { AppointmentsService, Appointment, AppointmentsFilter, AppointmentStatus, AppointmentType } from '@core/services/appointments.service';
 import { SchedulesService, Schedule } from '@core/services/schedules.service';
+import { SpecialtiesService, Specialty } from '@core/services/specialties.service';
 import { AppointmentDetailsModalComponent } from './appointment-details-modal/appointment-details-modal';
 import { PreConsultationDetailsModalComponent } from './pre-consultation-details-modal/pre-consultation-details-modal';
 import { ModalService } from '@core/services/modal.service';
 import { AuthService } from '@core/services/auth.service';
 import { RealTimeService, AppointmentStatusUpdate, EntityNotification } from '@core/services/real-time.service';
+import { FilterSelectComponent, FilterOption } from '@shared/components/atoms/filter-select/filter-select';
 import { filter, take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import localePt from '@angular/common/locales/pt';
@@ -53,7 +55,8 @@ interface MonthDay {
     SearchInputComponent,
     BadgeComponent,
     AppointmentDetailsModalComponent,
-    PreConsultationDetailsModalComponent
+    PreConsultationDetailsModalComponent,
+    FilterSelectComponent
   ],
   providers: [
     DatePipe,
@@ -80,6 +83,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   activeTab: 'all' | 'upcoming' | 'past' | 'cancelled' = 'all';
   searchQuery = '';
   sortOrder: 'asc' | 'desc' = 'desc';
+  specialtyFilter = '';
+  
+  // Especialidades
+  specialties: Specialty[] = [];
+  specialtyOptions: FilterOption[] = [{ value: '', label: 'Todas as especialidades' }];
 
   // View Mode
   viewMode: ViewMode = 'list';
@@ -105,6 +113,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   private appointmentsService = inject(AppointmentsService);
   private schedulesService = inject(SchedulesService);
+  private specialtiesService = inject(SpecialtiesService);
   private authService = inject(AuthService);
   private realTimeService = inject(RealTimeService);
   private router = inject(Router);
@@ -118,6 +127,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Carregar especialidades para filtro
+    this.loadSpecialties();
+    
     // Aguardar até que o usuário esteja autenticado
     this.authService.authState$
       .pipe(
@@ -146,6 +158,21 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         }, 0);
       });
+  }
+  
+  private loadSpecialties(): void {
+    this.specialtiesService.getSpecialties({ status: 'Active' }).subscribe({
+      next: (response) => {
+        this.specialties = response.data;
+        this.specialtyOptions = [
+          { value: '', label: 'Todas as especialidades' },
+          ...this.specialties.map(s => ({ value: s.id, label: s.name }))
+        ];
+      },
+      error: (error) => {
+        console.error('[Appointments] Erro ao carregar especialidades:', error);
+      }
+    });
   }
   
   private initializeRealTime(): void {
@@ -289,6 +316,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         );
     }
 
+    // Filter by Specialty
+    if (this.specialtyFilter) {
+        filtered = filtered.filter(a => a.specialtyId === this.specialtyFilter);
+    }
+
     this.appointments = filtered;
     this.sortAppointments();
   }
@@ -300,6 +332,10 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   onSearch(query: string) {
     this.searchQuery = query;
+    this.filterAndSortAppointments();
+  }
+
+  onSpecialtyFilterChange() {
     this.filterAndSortAppointments();
   }
 
