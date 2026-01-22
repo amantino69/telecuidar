@@ -82,7 +82,7 @@ CERTBOT_EMAIL=""
 # ========================================
 log_step "CLONANDO REPOSITÓRIO DO GITHUB"
 
-REPO_URL="https://github.com/guilhermevieirao/telecuidar.git"
+REPO_URL="https://github.com/amantino69/telecuidar.git"
 
 # Criar diretório de instalação se não existir
 mkdir -p "$INSTALL_DIR"
