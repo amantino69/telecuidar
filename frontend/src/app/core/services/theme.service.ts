@@ -24,7 +24,7 @@ export class ThemeService implements OnDestroy {
   public readonly themes: ThemeOption[] = [
     { id: 'light', name: 'Profissional', icon: 'sun', description: 'Tema claro com cores institucionais' },
     { id: 'dark', name: 'Noturno', icon: 'moon', description: 'Tema escuro suave para uso noturno' },
-    { id: 'contrast', name: 'Alto Contraste', icon: 'eye', description: 'Maior contraste para acessibilidade' }
+    { id: 'contrast', name: 'Vibrante', icon: 'heart', description: 'Tema alegre com cores vibrantes' }
   ];
   
   // Observable para mudanças de tema

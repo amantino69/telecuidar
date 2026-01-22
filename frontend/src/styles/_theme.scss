@@ -131,132 +131,140 @@
 }
 
 // ========================================
-// TEMA ALTO CONTRASTE - Acessibilidade
+// 🌈 TEMA VIBRANTE - Alegre e Moderno
+// Paleta: Violeta, Coral, Turquesa, Âmbar
+// Fonte: Poppins
 // ========================================
 [data-theme='contrast'] {
-  // Primary Colors - mais saturadas
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #3b82f6;
-  --primary-500: #{$contrast-primary-500};
-  --primary-600: #{$contrast-primary-600};
-  --primary-700: #1e3a8a;
-  --primary-800: #172554;
-  --primary-900: #0f172a;
+  // Cores principais - Violeta vibrante
+  --contrast-bg: #faf5ff;            // Lavanda claro
+  --contrast-surface: #ffffff;        // Branco
+  --contrast-text: #1e1b4b;           // Índigo escuro
+  --contrast-text-secondary: #4c1d95; // Violeta escuro
+
+  // Primary Colors - tons de azul
+  --primary-50: #e8f0ff;
+  --primary-100: #c5d9ff;
+  --primary-200: #9ec0ff;
+  --primary-300: #6ba3ff;
+  --primary-400: #4a8bff;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
 
   // Red Colors
   --red-50: #fef2f2;
   --red-100: #fee2e2;
   --red-200: #fecaca;
   --red-300: #fca5a5;
-  --red-400: #dc2626;
-  --red-500: #{$contrast-red-500};
-  --red-600: #{$contrast-red-600};
-  --red-700: #7f1d1d;
-  --red-800: #450a0a;
-  --red-900: #2c0505;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
 
   // Green Colors
   --green-50: #ecfdf5;
   --green-100: #d1fae5;
   --green-200: #a7f3d0;
   --green-300: #6ee7b7;
-  --green-400: #10b981;
-  --green-500: #{$contrast-green-500};
-  --green-600: #{$contrast-green-600};
-  --green-700: #064e3b;
-  --green-800: #022c22;
-  --green-900: #011812;
+  --green-400: #34d399;
+  --green-500: #10b981;
+  --green-600: #059669;
+  --green-700: #047857;
+  --green-800: #065f46;
+  --green-900: #064e3b;
 
   // Blue Colors
   --blue-50: #eff6ff;
   --blue-100: #dbeafe;
   --blue-200: #bfdbfe;
   --blue-300: #93c5fd;
-  --blue-400: #3b82f6;
-  --blue-500: #{$contrast-primary-500};
-  --blue-600: #{$contrast-primary-600};
-  --blue-700: #1e3a8a;
-  --blue-800: #172554;
-  --blue-900: #0f172a;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
 
-  // Amber Colors
+  // Amber/Gold Colors - para destaque
   --amber-50: #fffbeb;
   --amber-100: #fef3c7;
   --amber-200: #fde68a;
   --amber-300: #fcd34d;
-  --amber-400: #f59e0b;
-  --amber-500: #{$contrast-amber-500};
-  --amber-600: #{$contrast-amber-600};
-  --amber-700: #78350f;
-  --amber-800: #451a03;
-  --amber-900: #271001;
+  --amber-400: #f5c842;
+  --amber-500: #eab308;
+  --amber-600: #ca8a04;
+  --amber-700: #a16207;
+  --amber-800: #854d0e;
+  --amber-900: #713f12;
 
   // Amber RGBA
-  --amber-400-rgba-10: #{$light-amber-400-rgba-10};
-  --amber-400-rgba-20: #{$light-amber-400-rgba-20};
-  --amber-400-rgba-30: #{$light-amber-400-rgba-30};
-  --amber-400-rgba-50: #{$light-amber-400-rgba-50};
+  --amber-400-rgba-10: rgba(245, 200, 66, 0.1);
+  --amber-400-rgba-20: rgba(245, 200, 66, 0.2);
+  --amber-400-rgba-30: rgba(245, 200, 66, 0.3);
+  --amber-400-rgba-50: rgba(245, 200, 66, 0.5);
 
-  // Neutral Colors - alto contraste
+  // Neutral Colors - para o tema escuro azulado
   --neutral-50: #ffffff;
-  --neutral-100: #f8fafc;
+  --neutral-100: #f1f5f9;
   --neutral-200: #e2e8f0;
-  --neutral-300: #94a3b8;
-  --neutral-400: #475569;
-  --neutral-500: #334155;
-  --neutral-600: #1e293b;
-  --neutral-700: #0f172a;
-  --neutral-800: #020617;
-  --neutral-900: #000000;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1f4080;
+  --neutral-900: #1a3a6e;
 
-  // Semantic Colors - bordas mais fortes
-  --background: #{$contrast-background};
-  --surface: #{$contrast-surface};
-  --surface-primary: #{$contrast-surface};
-  --surface-card: #f8fafc;
-  --bg-primary: #{$contrast-surface};
-  --text-primary: #{$contrast-text-primary};
-  --text-secondary: #{$contrast-text-secondary};
-  --text-tertiary: #334155;
-  --border: #{$contrast-border};
-  --border-color: #{$contrast-border};
+  // Semantic Colors - Tema Azul Institucional
+  --background: var(--contrast-bg);
+  --surface: var(--contrast-surface);
+  --surface-primary: var(--contrast-surface);
+  --surface-card: #234b91;
+  --bg-primary: var(--contrast-bg);
+  --text-primary: var(--contrast-text);
+  --text-secondary: var(--contrast-text-secondary);
+  --text-tertiary: #a0b4d4;
+  --border: #3d6cb8;
+  --border-color: #3d6cb8;
 
   // Section Backgrounds
-  --section-bg-primary: #ffffff;
-  --section-bg-secondary: #f1f5f9;
+  --section-bg-primary: var(--contrast-bg);
+  --section-bg-secondary: #153060;
 
   // Text on Gradient Cards
   --text-on-gradient-light: #ffffff;
-  --text-on-gradient-dark: #000000;
+  --text-on-gradient-dark: #f5c842;
 
   // RGB Values for transparency
-  --primary-rgb: 29, 78, 216;
-  --blue-rgb: 29, 78, 216;
+  --primary-rgb: 26, 58, 110;
+  --blue-rgb: 26, 58, 110;
 
   // Success, Warning, Error, Info
-  --success: var(--green-600);
-  --warning: var(--amber-600);
-  --error: var(--red-600);
-  --info: var(--blue-600);
+  --success: #34d399;
+  --warning: #f5c842;
+  --error: #f87171;
+  --info: #60a5fa;
 
   // Background colors for semantic elements
-  --success-bg: #d1fae5;
-  --warning-bg: #fef3c7;
-  --error-bg: #fee2e2;
-  --info-bg: #dbeafe;
-  --primary-bg: #dbeafe;
+  --success-bg: rgba(52, 211, 153, 0.2);
+  --warning-bg: rgba(245, 200, 66, 0.2);
+  --error-bg: rgba(248, 113, 113, 0.2);
+  --info-bg: rgba(96, 165, 250, 0.2);
+  --primary-bg: rgba(59, 130, 246, 0.2);
 
-  // Shadows - mais pronunciadas
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.15), 0 2px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 12px 20px -3px rgba(0, 0, 0, 0.15), 0 6px 8px -2px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 24px 30px -5px rgba(0, 0, 0, 0.18), 0 12px 14px -5px rgba(0, 0, 0, 0.08);
-  --shadow-2xl: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+  // Shadows - para fundo escuro
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 20px -3px rgba(0, 0, 0, 0.4), 0 6px 8px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 24px 30px -5px rgba(0, 0, 0, 0.45), 0 12px 14px -5px rgba(0, 0, 0, 0.2);
+  --shadow-2xl: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 [data-theme='dark'] {

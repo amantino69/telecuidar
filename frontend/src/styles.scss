@@ -272,25 +272,285 @@ select {
 }
 
 // ========================================
-// TEMA ALTO CONTRASTE - Design refinado
-// Foco: maior legibilidade sem quebrar a estética
+// 🌈 TEMA VIBRANTE - Alegre e Moderno
+// Paleta: Violeta, Coral, Turquesa
+// Fonte: Poppins (amigável e moderna)
 // ========================================
 [data-theme='contrast'] {
-  // Fundo levemente mais escuro para contraste
-  --background: #f0f4f8;
+  // 🎨 Paleta de cores vibrantes
+  --background: linear-gradient(135deg, #faf5ff 0%, #f0fdfa 100%);
   --surface: #ffffff;
-  --text-primary: #0a0a0a;
-  --text-secondary: #1e293b;
+  --text-primary: #1e1b4b;
+  --text-secondary: #4c1d95;
+  --primary: #8b5cf6;
+  --primary-light: #a78bfa;
+  --primary-dark: #7c3aed;
+  --accent: #ec4899;
+  --accent-light: #f472b6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --border-color: #c4b5fd;
   
-  // Aumentar peso de fonte globalmente
-  body {
-    font-weight: 500;
+  // Fundo gradiente suave lavanda → menta
+  background: linear-gradient(135deg, #faf5ff 0%, #f0fdfa 50%, #fdf4ff 100%) !important;
+  background-attachment: fixed !important;
+  color: #1e1b4b !important;
+  
+  // Fonte Poppins - alegre e moderna
+  font-family: 'Poppins', sans-serif !important;
+  
+  // Container principal
+  body, 
+  .app-container,
+  .main-content,
+  main {
+    background: transparent !important;
+    color: #1e1b4b !important;
+    font-family: 'Poppins', sans-serif !important;
   }
 
-  // Títulos mais fortes
-  h1, h2, h3, h4, h5, h6 {
-    font-weight: 800;
-    letter-spacing: -0.03em;
+  // 🟣 Sidebar com gradiente violeta vibrante
+  .sidebar {
+    background: linear-gradient(180deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 4px 0 20px rgba(124, 58, 237, 0.3) !important;
+    
+    a, span, .nav-link, .nav-item {
+      color: #ffffff !important;
+      font-family: 'Poppins', sans-serif !important;
+      transition: all 0.3s ease !important;
+    }
+    
+    a:hover, .nav-link:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      transform: translateX(5px);
+    }
+    
+    .active, .selected {
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-left: 4px solid #fbbf24 !important;
+    }
+
+    // Ícones da sidebar
+    mat-icon, .material-icons, i {
+      color: #fde68a !important;
+    }
+  }
+
+  // Títulos com gradiente de texto
+  h1, h2, h3 {
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    font-weight: 700 !important;
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  h4, h5, h6 {
+    color: #4c1d95 !important;
+    font-weight: 600 !important;
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  // Links em violeta
+  a:not(.sidebar a) {
+    color: #7c3aed !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      color: #ec4899 !important;
+      text-decoration: underline !important;
+    }
+  }
+
+  // 🌟 Inputs estilizados
+  input, textarea, select {
+    background-color: #ffffff !important;
+    color: #1e1b4b !important;
+    border: 2px solid #c4b5fd !important;
+    border-radius: 12px !important;
+    font-family: 'Poppins', sans-serif !important;
+    transition: all 0.3s ease !important;
+    
+    &:focus {
+      border-color: #8b5cf6 !important;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2) !important;
+      outline: none !important;
+    }
+    
+    &::placeholder {
+      color: #a78bfa !important;
+    }
+  }
+
+  // 🎯 Botões vibrantes
+  button, .btn {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    
+    &:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+    }
+  }
+
+  // Botão primário
+  .btn-primary, button[color="primary"] {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+
+  // Botão de ação/sucesso
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+    color: #ffffff !important;
+  }
+
+  // Botão de perigo/cancelar
+  .btn-danger {
+    background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%) !important;
+    color: #ffffff !important;
+  }
+
+  // 📦 Cards com sombra colorida
+  .card, .panel, .mat-card, .mat-mdc-card {
+    background: #ffffff !important;
+    color: #1e1b4b !important;
+    border: 1px solid #e9d5ff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1) !important;
+    transition: all 0.3s ease !important;
+    
+    &:hover {
+      box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2) !important;
+      transform: translateY(-2px);
+    }
+  }
+
+  // Labels coloridas
+  label, .label, .form-label {
+    color: #4c1d95 !important;
+    font-weight: 600 !important;
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  // Parágrafos e texto
+  p {
+    color: #374151 !important;
+    line-height: 1.7 !important;
+  }
+
+  span:not(.sidebar span) {
+    color: #1e1b4b !important;
+  }
+
+  // Tabelas estilizadas
+  table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  th {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+  }
+
+  td {
+    color: #1e1b4b !important;
+    border-color: #e9d5ff !important;
+  }
+
+  tr:hover td {
+    background: #faf5ff !important;
+  }
+
+  // 🔝 Header com gradiente
+  .header, header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3) !important;
+    
+    h1, h2, h3, span, a {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+
+  // Badges e tags coloridas
+  .badge, .tag, .chip {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+    color: #1e1b4b !important;
+    font-weight: 600 !important;
+    border-radius: 20px !important;
+  }
+
+  // Status coloridos
+  .status-success, .confirmada {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+  }
+
+  .status-warning, .pendente {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+  }
+
+  .status-danger, .cancelada {
+    background: #fce7f3 !important;
+    color: #9d174d !important;
+  }
+
+  // Scrollbar personalizada
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f3e8ff;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a855f7, #ec4899);
+    border-radius: 10px;
+  }
+
+  // Seleção de texto colorida
+  ::selection {
+    background: #c4b5fd !important;
+    color: #1e1b4b !important;
+  }
+
+  // Tooltips
+  .tooltip {
+    background: #4c1d95 !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+  }
+
+  // Modal/Dialog
+  .modal, .dialog, .mat-dialog-container {
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(124, 58, 237, 0.3) !important;
+  }
+
+  // Tabs
+  .mat-tab-label, .nav-tabs .nav-link {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 500 !important;
+    
+    &.active, &.mat-tab-label-active {
+      color: #7c3aed !important;
+      border-bottom-color: #7c3aed !important;
+    }
   }
 }
 
