@@ -20,7 +20,7 @@
         type="button"
         class="save-btn"
         [class.saving]="isSaving"
-        [disabled]="isSaving || soapForm.pristine"
+        [disabled]="isSaving"
         (click)="saveSoap()">
         @if (isSaving) {
           <span class="spinner"></span>

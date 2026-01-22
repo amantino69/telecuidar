@@ -20,7 +20,7 @@
         type="button"
         class="save-btn"
         [class.saving]="isSaving"
-        [disabled]="isSaving || anamnesisForm.pristine"
+        [disabled]="isSaving"
         (click)="onManualSave()">
         @if (isSaving) {
           <span class="spinner"></span>
