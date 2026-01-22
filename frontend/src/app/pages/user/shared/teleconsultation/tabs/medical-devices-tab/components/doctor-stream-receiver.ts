@@ -618,6 +618,12 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private animationFrameId: number | null = null;
+  
+  // Histórico de waveform para traçado contínuo estilo fonocardiograma
+  private waveformHistory: number[] = [];
+  private readonly WAVEFORM_HISTORY_LENGTH = 800; // Mais pontos = traçado mais lento
+  private lastDrawTime = 0;
+  private readonly DRAW_INTERVAL = 50; // ms entre desenhos (20 fps para movimento lento)
 
   constructor(private syncService: MedicalDevicesSyncService) {}
 
@@ -914,6 +920,10 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
     }
 
     try {
+      // Limpa histórico anterior
+      this.waveformHistory = [];
+      this.lastDrawTime = 0;
+      
       // Cria AudioContext
       this.audioContext = new AudioContext();
       
@@ -926,13 +936,15 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
       const source = this.audioContext.createMediaStreamSource(stream);
       this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 256;
-      this.analyser.smoothingTimeConstant = 0.8;
+      // FFT maior para melhor resolução da forma de onda
+      this.analyser.fftSize = 2048;
+      // Suavização para traçado mais limpo (0.8 = bastante suave)
+      this.analyser.smoothingTimeConstant = 0.85;
 
       source.connect(this.analyser);
       // Não conectar ao destination para evitar feedback
       
-      console.log('[DoctorStreamReceiver] Visualização de áudio configurada');
+      console.log('[DoctorStreamReceiver] Visualização de fonocardiograma configurada');
       this.drawAudioVisualization();
     } catch (error) {
       console.error('[DoctorStreamReceiver] Erro ao iniciar visualização:', error);
@@ -946,57 +958,194 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Garante dimensões do canvas
-    if (canvas.width === 0 || canvas.height === 0) {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio || 300;
-      canvas.height = rect.height * window.devicePixelRatio || 150;
+    // Ajusta dimensões do canvas para alta resolução
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
     }
 
-    const bufferLength = this.analyser.frequencyBinCount;
+    const width = rect.width;
+    const height = rect.height;
+    const centerY = height / 2;
+
+    // Usa time domain data para obter a forma de onda real do áudio
+    const bufferLength = this.analyser.fftSize;
     const dataArray = new Uint8Array(bufferLength);
 
-    const draw = () => {
+    const draw = (timestamp: number) => {
       if (!this.analyser) return;
 
       this.animationFrameId = requestAnimationFrame(draw);
-      this.analyser.getByteFrequencyData(dataArray);
 
-      // Limpa com fundo semi-transparente para efeito de trail
-      ctx.fillStyle = 'rgba(26, 26, 46, 0.3)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Controla a velocidade do desenho (mais lento = mais parecido com monitor médico)
+      if (timestamp - this.lastDrawTime < this.DRAW_INTERVAL) {
+        return;
+      }
+      this.lastDrawTime = timestamp;
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let x = 0;
+      // Obtém dados de forma de onda (time domain) - representa a amplitude real do som
+      this.analyser.getByteTimeDomainData(dataArray);
 
+      // Calcula a média da amplitude atual para suavizar
+      let sum = 0;
       for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height;
+        // Normaliza de 0-255 para -1 a 1
+        const normalized = (dataArray[i] - 128) / 128;
+        sum += normalized;
+      }
+      const avgSample = sum / bufferLength;
+      
+      // Adiciona ao histórico com suavização (média móvel)
+      this.waveformHistory.push(avgSample);
+      
+      // Mantém o histórico no tamanho máximo
+      while (this.waveformHistory.length > this.WAVEFORM_HISTORY_LENGTH) {
+        this.waveformHistory.shift();
+      }
 
-        // Gradiente verde para visualização
-        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        gradient.addColorStop(0, '#10b981');
-        gradient.addColorStop(1, '#059669');
+      // === FUNDO ESCURO (estilo monitor médico) ===
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+      bgGradient.addColorStop(0, '#0d1117');
+      bgGradient.addColorStop(0.5, '#0a0a0a');
+      bgGradient.addColorStop(1, '#0d1117');
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, width, height);
 
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+      // === GRADE DE FUNDO (estilo ECG/Fonocardiograma) ===
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.08)';
+      ctx.lineWidth = 0.5;
 
-        x += barWidth + 1;
+      // Linhas horizontais
+      const horizontalLines = 6;
+      for (let i = 1; i < horizontalLines; i++) {
+        const y = (height / horizontalLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Linhas verticais (marcadores de tempo)
+      const verticalSpacing = 50;
+      const numVerticalLines = Math.ceil(width / verticalSpacing);
+      for (let i = 1; i <= numVerticalLines; i++) {
+        const x = i * verticalSpacing;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      // === LINHA CENTRAL (eixo 0) ===
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(width, centerY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // === DESENHO DO WAVEFORM ESTILO FONOCARDIOGRAMA ===
+      if (this.waveformHistory.length < 2) return;
+
+      const pointsToShow = this.waveformHistory.length;
+      const pixelsPerPoint = width / this.WAVEFORM_HISTORY_LENGTH;
+
+      // Cor verde típica de monitores médicos
+      const mainColor = '#10b981';
+      const glowColor = 'rgba(16, 185, 129, 0.3)';
+
+      // === GLOW EFFECT (brilho suave atrás da linha) ===
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = glowColor;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      
+      for (let i = 0; i < pointsToShow; i++) {
+        const sample = this.waveformHistory[i];
+        // Posição X: traçado rola da esquerda para a direita
+        const x = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i) * pixelsPerPoint;
+        // Amplifica o sinal para melhor visualização
+        const y = centerY - (sample * height * 0.8);
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // === LINHA PRINCIPAL DO WAVEFORM ===
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = mainColor;
+      ctx.beginPath();
+
+      for (let i = 0; i < pointsToShow; i++) {
+        const sample = this.waveformHistory[i];
+        const x = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i) * pixelsPerPoint;
+        const y = centerY - (sample * height * 0.8);
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // === PLAYHEAD (indicador de posição atual) ===
+      if (pointsToShow > 0) {
+        const playheadX = width - 2;
+        
+        // Linha vertical do playhead
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(playheadX, 0);
+        ctx.lineTo(playheadX, height);
+        ctx.stroke();
+
+        // Ponto brilhante na posição atual
+        const lastSample = this.waveformHistory[this.waveformHistory.length - 1];
+        const lastY = centerY - (lastSample * height * 0.8);
+        
+        ctx.beginPath();
+        ctx.arc(playheadX, lastY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#10b981';
+        ctx.fill();
+        
+        // Brilho ao redor do ponto
+        ctx.beginPath();
+        ctx.arc(playheadX, lastY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        ctx.fill();
       }
     };
 
-    console.log('[DoctorStreamReceiver] Iniciando loop de desenho');
-    draw();
+    console.log('[DoctorStreamReceiver] Iniciando loop de desenho do fonocardiograma');
+    draw(0);
   }
 
   private stopAudioVisualization(): void {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
     if (this.audioContext) {
       this.audioContext.close();
       this.audioContext = null;
       this.analyser = null;
     }
+    // Limpa histórico do waveform
+    this.waveformHistory = [];
+    this.lastDrawTime = 0;
   }
 
   getStreamTitle(): string {
