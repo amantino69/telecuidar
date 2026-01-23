@@ -65,7 +65,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'patient-data',
-    label: 'Dados do Paciente',
+    label: 'Paciente',
     icon: 'user',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
@@ -86,7 +86,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   {
     id: 'anamnesis',
     label: 'Anamnese',
-    icon: 'book',
+    icon: 'file-text',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -95,8 +95,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'specialty',
-    label: 'Campos da Especialidade',
-    icon: 'stethoscope',
+    label: 'Específico',
+    icon: 'box',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -105,7 +105,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'medical-devices',
-    label: 'Sinais Vitais',
+    label: 'Sinais',
     icon: 'activity',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
@@ -136,7 +136,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   {
     id: 'phonocardiogram',
     label: 'Fonocardio',
-    icon: 'heart',
+    icon: 'headphones',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true, // HABILITADO - Fonocardiograma em tempo real
     showInDetails: true,
@@ -155,8 +155,8 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'attachments',
-    label: 'Chat Anexos',
-    icon: 'image',
+    label: 'Anexos',
+    icon: 'upload-cloud',
     roles: ['PATIENT', 'PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -166,7 +166,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   {
     id: 'receita',
     label: 'Receituário',
-    icon: 'file',
+    icon: 'edit',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -176,7 +176,7 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   {
     id: 'atestado',
     label: 'Atestado',
-    icon: 'file',
+    icon: 'bookmark',
     roles: ['PROFESSIONAL', 'ADMIN', 'ASSISTANT'],
     showInTeleconsultation: true,
     showInDetails: true,
@@ -205,33 +205,34 @@ export const TELECONSULTATION_TABS: TabConfig[] = [
   },
   {
     id: 'ai',
-    label: 'Análise Diagnóstica',
-    icon: 'activity',
+    label: 'Hipótese IA',
+    icon: 'star',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true,
-    order: 90,
-    group: 'standalone'
+    order: 6,
+    group: 'exame-fisico'
   },
-  {
-    id: 'cns',
-    label: 'Consulta CADSUS',
-    icon: 'user',
-    roles: ['PROFESSIONAL', 'ADMIN'],
-    showInTeleconsultation: true,
-    showInDetails: false,
-    order: 91,
-    group: 'standalone'
-  },
+  // CNS/CADSUS removido conforme solicitação
+  // {
+  //   id: 'cns',
+  //   label: 'Consulta CADSUS',
+  //   icon: 'user',
+  //   roles: ['PROFESSIONAL', 'ADMIN'],
+  //   showInTeleconsultation: false,
+  //   showInDetails: false,
+  //   order: 91,
+  //   group: 'standalone'
+  // },
   {
     id: 'patient-history',
-    label: 'Histórico Clínico',
-    icon: 'book',
+    label: 'Histórico',
+    icon: 'clock',
     roles: ['PROFESSIONAL', 'ADMIN'],
     showInTeleconsultation: true,
     showInDetails: true,
-    order: 92,
-    group: 'standalone'
+    order: 7,
+    group: 'exame-fisico'
   },
   {
     id: 'conclusion',
@@ -309,20 +310,20 @@ export function getAllDetailsTabs(): TabConfig[] {
  * Mapeamento de id da tab para o nome usado na teleconsulta
  */
 export const TAB_ID_TO_LEGACY_NAME: Record<string, string> = {
-  'medical-devices': 'Sinais Vitais',
+  'medical-devices': 'Sinais',
   'auscultation': 'Ausculta',
   'exam-camera': 'Câmera de Exame',
-  'patient-data': 'Dados do Paciente',
+  'patient-data': 'Paciente',
   'pre-consultation': 'Dados da Pré Consulta',
   'anamnesis': 'Anamnese',
-  'specialty': 'Campos da Especialidade',
+  'specialty': 'Específico',
   'biometrics': 'Biométricos',
-  'attachments': 'Chat Anexos',
+  'attachments': 'Anexos',
   'receita': 'Receituário',
   'atestado': 'Atestado',
-  'ai': 'Análise Diagnóstica',
-  'cns': 'Consulta CADSUS',
-  'patient-history': 'Histórico Clínico',
+  'ai': 'Hipótese IA',
+  // 'cns': 'Consulta CADSUS', // Removido
+  'patient-history': 'Histórico',
   'return': 'Agendar Retorno',
   'referral': 'Encaminhamento',
   'conclusion': 'Finalizar Consulta'

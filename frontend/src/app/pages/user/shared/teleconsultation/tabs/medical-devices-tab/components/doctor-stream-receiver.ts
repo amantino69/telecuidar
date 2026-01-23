@@ -621,9 +621,18 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
   
   // Histórico de waveform para traçado contínuo estilo fonocardiograma
   private waveformHistory: number[] = [];
-  private readonly WAVEFORM_HISTORY_LENGTH = 800; // Mais pontos = traçado mais lento
+  private readonly WAVEFORM_HISTORY_LENGTH = 300; // Pontos visíveis na tela (menos = mais espaço entre picos)
   private lastDrawTime = 0;
-  private readonly DRAW_INTERVAL = 50; // ms entre desenhos (20 fps para movimento lento)
+  private readonly DRAW_INTERVAL = 100; // 10 fps - mais lento
+  
+  // Para cálculo de envelope (suavização do sinal)
+  private envelopeValue = 0;
+  private readonly ENVELOPE_ATTACK = 0.5;  // Velocidade de subida
+  private readonly ENVELOPE_RELEASE = 0.02; // Velocidade de descida bem lenta
+  
+  // Contador para adicionar pontos lentamente
+  private sampleCounter = 0;
+  private readonly SAMPLES_PER_POINT = 25; // 1 ponto a cada 25 frames = ~0.4 pontos/seg com 10fps
 
   constructor(private syncService: MedicalDevicesSyncService) {}
 
@@ -923,6 +932,8 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
       // Limpa histórico anterior
       this.waveformHistory = [];
       this.lastDrawTime = 0;
+      this.envelopeValue = 0;
+      this.sampleCounter = 0;
       
       // Cria AudioContext
       this.audioContext = new AudioContext();
@@ -935,16 +946,31 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
       }
 
       const source = this.audioContext.createMediaStreamSource(stream);
-      this.analyser = this.audioContext.createAnalyser();
-      // FFT maior para melhor resolução da forma de onda
-      this.analyser.fftSize = 2048;
-      // Suavização para traçado mais limpo (0.8 = bastante suave)
-      this.analyser.smoothingTimeConstant = 0.85;
-
-      source.connect(this.analyser);
-      // Não conectar ao destination para evitar feedback
       
-      console.log('[DoctorStreamReceiver] Visualização de fonocardiograma configurada');
+      // Filtro passa-baixa para capturar frequências cardíacas (20-200Hz)
+      const lowpassFilter = this.audioContext.createBiquadFilter();
+      lowpassFilter.type = 'lowpass';
+      lowpassFilter.frequency.value = 200; // Corta acima de 200Hz
+      lowpassFilter.Q.value = 1;
+      
+      // Filtro passa-alta para remover ruído DC
+      const highpassFilter = this.audioContext.createBiquadFilter();
+      highpassFilter.type = 'highpass';
+      highpassFilter.frequency.value = 20; // Corta abaixo de 20Hz
+      highpassFilter.Q.value = 1;
+      
+      this.analyser = this.audioContext.createAnalyser();
+      // FFT maior para melhor resolução
+      this.analyser.fftSize = 2048;
+      // Menos suavização para capturar transientes (batimentos)
+      this.analyser.smoothingTimeConstant = 0.3;
+
+      // Cadeia: source -> highpass -> lowpass -> analyser
+      source.connect(highpassFilter);
+      highpassFilter.connect(lowpassFilter);
+      lowpassFilter.connect(this.analyser);
+      
+      console.log('[DoctorStreamReceiver] Fonocardiograma com filtro 20-200Hz configurado');
       this.drawAudioVisualization();
     } catch (error) {
       console.error('[DoctorStreamReceiver] Erro ao iniciar visualização:', error);
@@ -970,9 +996,10 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
     const width = rect.width;
     const height = rect.height;
-    const centerY = height / 2;
+    // Linha base mais embaixo (como em fonocardiograma real - os picos vão para cima)
+    const baselineY = height * 0.75;
 
-    // Usa time domain data para obter a forma de onda real do áudio
+    // Buffer para dados de áudio
     const bufferLength = this.analyser.fftSize;
     const dataArray = new Uint8Array(bufferLength);
 
@@ -981,76 +1008,103 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
       this.animationFrameId = requestAnimationFrame(draw);
 
-      // Controla a velocidade do desenho (mais lento = mais parecido com monitor médico)
+      // Controla a taxa de atualização visual (suave)
       if (timestamp - this.lastDrawTime < this.DRAW_INTERVAL) {
         return;
       }
       this.lastDrawTime = timestamp;
 
-      // Obtém dados de forma de onda (time domain) - representa a amplitude real do som
+      // Obtém dados de forma de onda
       this.analyser.getByteTimeDomainData(dataArray);
 
-      // Calcula a média da amplitude atual para suavizar
-      let sum = 0;
+      // === CALCULA ENVELOPE DE AMPLITUDE ===
+      // Isso simula o que um fonocardiograma real faz:
+      // extrai a envolvente (envelope) do sinal acústico
+      
+      let maxAmplitude = 0;
       for (let i = 0; i < bufferLength; i++) {
-        // Normaliza de 0-255 para -1 a 1
-        const normalized = (dataArray[i] - 128) / 128;
-        sum += normalized;
+        // Converte para amplitude absoluta (0 a 1)
+        const amplitude = Math.abs((dataArray[i] - 128) / 128);
+        if (amplitude > maxAmplitude) {
+          maxAmplitude = amplitude;
+        }
       }
-      const avgSample = sum / bufferLength;
       
-      // Adiciona ao histórico com suavização (média móvel)
-      this.waveformHistory.push(avgSample);
+      // Envelope follower com attack rápido e release lento
+      // Isso faz os picos subirem rápido e descerem devagar (como S1, S2)
+      if (maxAmplitude > this.envelopeValue) {
+        // Attack: sobe rápido quando detecta som
+        this.envelopeValue += (maxAmplitude - this.envelopeValue) * this.ENVELOPE_ATTACK;
+      } else {
+        // Release: desce lentamente
+        this.envelopeValue += (maxAmplitude - this.envelopeValue) * this.ENVELOPE_RELEASE;
+      }
       
-      // Mantém o histórico no tamanho máximo
-      while (this.waveformHistory.length > this.WAVEFORM_HISTORY_LENGTH) {
-        this.waveformHistory.shift();
+      // Incrementa contador e adiciona ponto apenas periodicamente
+      // Isso controla a velocidade do traçado
+      this.sampleCounter++;
+      if (this.sampleCounter >= this.SAMPLES_PER_POINT) {
+        this.sampleCounter = 0;
+        this.waveformHistory.push(this.envelopeValue);
+        
+        // Mantém o histórico no tamanho máximo
+        while (this.waveformHistory.length > this.WAVEFORM_HISTORY_LENGTH) {
+          this.waveformHistory.shift();
+        }
       }
 
-      // === FUNDO ESCURO (estilo monitor médico) ===
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-      bgGradient.addColorStop(0, '#0d1117');
-      bgGradient.addColorStop(0.5, '#0a0a0a');
-      bgGradient.addColorStop(1, '#0d1117');
-      ctx.fillStyle = bgGradient;
+      // === DESENHO ===
+      
+      // Fundo escuro
+      ctx.fillStyle = '#0a0a0a';
       ctx.fillRect(0, 0, width, height);
 
-      // === GRADE DE FUNDO (estilo ECG/Fonocardiograma) ===
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.08)';
+      // Grade de fundo estilo papel milimetrado médico
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.06)';
       ctx.lineWidth = 0.5;
 
-      // Linhas horizontais
-      const horizontalLines = 6;
-      for (let i = 1; i < horizontalLines; i++) {
-        const y = (height / horizontalLines) * i;
+      // Linhas horizontais (grade menor)
+      const gridSpacing = 20;
+      for (let y = 0; y < height; y += gridSpacing) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
         ctx.stroke();
       }
 
-      // Linhas verticais (marcadores de tempo)
-      const verticalSpacing = 50;
-      const numVerticalLines = Math.ceil(width / verticalSpacing);
-      for (let i = 1; i <= numVerticalLines; i++) {
-        const x = i * verticalSpacing;
+      // Linhas verticais
+      for (let x = 0; x < width; x += gridSpacing) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
 
-      // === LINHA CENTRAL (eixo 0) ===
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+      // Grade maior (a cada 5 linhas)
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
       ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(width, centerY);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      for (let y = 0; y < height; y += gridSpacing * 5) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      for (let x = 0; x < width; x += gridSpacing * 5) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
 
-      // === DESENHO DO WAVEFORM ESTILO FONOCARDIOGRAMA ===
+      // Linha de base
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, baselineY);
+      ctx.lineTo(width, baselineY);
+      ctx.stroke();
+
+      // === DESENHO DO FONOCARDIOGRAMA ===
       if (this.waveformHistory.length < 2) return;
 
       const pointsToShow = this.waveformHistory.length;
@@ -1058,21 +1112,55 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
 
       // Cor verde típica de monitores médicos
       const mainColor = '#10b981';
-      const glowColor = 'rgba(16, 185, 129, 0.3)';
 
-      // === GLOW EFFECT (brilho suave atrás da linha) ===
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = glowColor;
+      // Desenha a forma de onda preenchida (estilo fonocardiograma)
+      ctx.beginPath();
+      ctx.moveTo(0, baselineY);
+      
+      for (let i = 0; i < pointsToShow; i++) {
+        const envelope = this.waveformHistory[i];
+        const x = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i) * pixelsPerPoint;
+        // Amplitude vai para CIMA a partir da baseline (como fonocardiograma real)
+        // Amplifica bastante para visualização clara dos picos S1/S2
+        const y = baselineY - (envelope * height * 0.65);
+        
+        if (i === 0) {
+          ctx.lineTo(x, y);
+        } else {
+          // Usa curva suave entre pontos
+          const prevX = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i - 1) * pixelsPerPoint;
+          const prevEnvelope = this.waveformHistory[i - 1];
+          const prevY = baselineY - (prevEnvelope * height * 0.65);
+          const cpX = (prevX + x) / 2;
+          ctx.quadraticCurveTo(prevX, prevY, cpX, (prevY + y) / 2);
+          ctx.quadraticCurveTo(x, y, x, y);
+        }
+      }
+      
+      // Fecha o caminho na baseline
+      const lastX = width;
+      ctx.lineTo(lastX, baselineY);
+      ctx.closePath();
+      
+      // Preenchimento com gradiente (estilo fonocardiograma)
+      const fillGradient = ctx.createLinearGradient(0, 0, 0, height);
+      fillGradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      fillGradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.2)');
+      fillGradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+      ctx.fillStyle = fillGradient;
+      ctx.fill();
+
+      // Linha de contorno
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = mainColor;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       ctx.beginPath();
       
       for (let i = 0; i < pointsToShow; i++) {
-        const sample = this.waveformHistory[i];
-        // Posição X: traçado rola da esquerda para a direita
+        const envelope = this.waveformHistory[i];
         const x = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i) * pixelsPerPoint;
-        // Amplifica o sinal para melhor visualização
-        const y = centerY - (sample * height * 0.8);
+        const y = baselineY - (envelope * height * 0.65);
 
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -1082,49 +1170,15 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
       }
       ctx.stroke();
 
-      // === LINHA PRINCIPAL DO WAVEFORM ===
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = mainColor;
-      ctx.beginPath();
-
-      for (let i = 0; i < pointsToShow; i++) {
-        const sample = this.waveformHistory[i];
-        const x = (this.WAVEFORM_HISTORY_LENGTH - pointsToShow + i) * pixelsPerPoint;
-        const y = centerY - (sample * height * 0.8);
-
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.stroke();
-
-      // === PLAYHEAD (indicador de posição atual) ===
+      // Indicador de posição atual (pequeno ponto)
       if (pointsToShow > 0) {
-        const playheadX = width - 2;
-        
-        // Linha vertical do playhead
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(playheadX, 0);
-        ctx.lineTo(playheadX, height);
-        ctx.stroke();
-
-        // Ponto brilhante na posição atual
-        const lastSample = this.waveformHistory[this.waveformHistory.length - 1];
-        const lastY = centerY - (lastSample * height * 0.8);
+        const lastEnvelope = this.waveformHistory[this.waveformHistory.length - 1];
+        const lastY = baselineY - (lastEnvelope * height * 0.65);
+        const currentX = width - ((this.WAVEFORM_HISTORY_LENGTH - pointsToShow) * pixelsPerPoint);
         
         ctx.beginPath();
-        ctx.arc(playheadX, lastY, 4, 0, Math.PI * 2);
+        ctx.arc(Math.min(currentX, width - 5), lastY, 3, 0, Math.PI * 2);
         ctx.fillStyle = '#10b981';
-        ctx.fill();
-        
-        // Brilho ao redor do ponto
-        ctx.beginPath();
-        ctx.arc(playheadX, lastY, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
         ctx.fill();
       }
     };
@@ -1146,6 +1200,8 @@ export class DoctorStreamReceiverComponent implements OnInit, OnDestroy, AfterVi
     // Limpa histórico do waveform
     this.waveformHistory = [];
     this.lastDrawTime = 0;
+    this.envelopeValue = 0;
+    this.sampleCounter = 0;
   }
 
   getStreamTitle(): string {

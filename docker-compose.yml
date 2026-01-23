@@ -271,6 +271,8 @@ services:
       - backend-avatars:/app/wwwroot/avatars
       # Certificado digital CNS (A1) - coloque o .pfx na pasta ./certs/
       - ./certs:/app/certs:ro
+    ports:
+      - "5239:5000"
     expose:
       - "${BACKEND_INTERNAL_PORT:-5000}"
     networks:

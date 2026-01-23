@@ -264,18 +264,19 @@
     }
 
     // Ícones das opções - ESTILO 3D/NEUMORFISMO
+    // Layout: 4 ícones por linha, 2 linhas = 8 ícones
     .nav-icons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 12px $spacing-md;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 10px 12px;
       background: var(--background);
-      justify-content: center;
       
       &.tools {
         padding-top: 8px;
         padding-bottom: 12px;
         border-top: 1px solid var(--border);
+        grid-template-columns: repeat(4, 1fr);
         
         .icon-nav-btn.tool {
           background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
@@ -308,17 +309,32 @@
 
       .icon-nav-btn {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        width: 48px;
-        height: 48px;
+        width: 100%;
+        min-height: 54px;
         border: 2px solid var(--primary-200);
-        border-radius: 12px;
+        border-radius: 10px;
         background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
         color: var(--primary-600);
         cursor: pointer;
         transition: all 0.2s ease;
         position: relative;
+        gap: 3px;
+        padding: 6px 4px;
+        
+        .icon-label {
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 1.1;
+          text-align: center;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
         
         // Efeito 3D/Neumorfismo
         box-shadow: 
@@ -400,8 +416,11 @@
         }
         
         @include mobile {
-          width: 44px;
-          height: 44px;
+          min-height: 48px;
+          
+          .icon-label {
+            font-size: 9px;
+          }
         }
       }
     }

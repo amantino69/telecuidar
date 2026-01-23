@@ -9,10 +9,10 @@ const getApiUrl = () => {
     const host = window.location.hostname;
     // Se acessando via IP ou não-localhost, usar o mesmo host para API
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      return `http://${host}:5239/api`;
+      return `http://${host}:80/api`;
     }
   }
-  return 'http://localhost:5239/api';
+  return 'http://localhost:80/api';
 };
 
 // Determina dinamicamente o domínio do Jitsi Self-Hosted

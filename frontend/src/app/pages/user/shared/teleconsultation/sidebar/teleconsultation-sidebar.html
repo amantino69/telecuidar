@@ -67,38 +67,23 @@
         <div class="nav-icons">
           @for (tab of group.tabs; track tab.id) {
             <button 
-              class="icon-nav-btn has-tooltip" 
+              class="icon-nav-btn" 
               [class.active]="isTabActive(tab.label)"
-              [attr.data-tooltip]="tab.label"
               (click)="onTabChange(tab.label)">
               <app-icon [name]="tab.icon" [size]="20" />
+              <span class="icon-label">{{ tab.label }}</span>
             </button>
           }
         </div>
       }
     }
 
-    <!-- Ferramentas (Análise IA, CADSUS, Histórico) - APENAS para Avaliação Clínica -->
-    @if (activeGroup === 'exame-fisico' && getStandaloneGroup(); as standaloneGroup) {
-      <div class="nav-icons tools">
-        @for (tab of standaloneGroup.tabs; track tab.id) {
-          @if (tab.id !== 'conclusion') {
-            <button 
-              class="icon-nav-btn tool has-tooltip" 
-              [class.active]="isTabActive(tab.label)"
-              [attr.data-tooltip]="tab.label"
-              (click)="onTabChange(tab.label)">
-              <app-icon [name]="tab.icon" [size]="20" />
-            </button>
-          }
-        }
-      </div>
-    }
+    <!-- Ferramentas removidas - agora fazem parte do grupo exame-fisico -->
   </div>
 
   <div class="sidebar-content">
-    <!-- Sinais Vitais (antigo Dispositivos Médicos) -->
-    <div class="tab-content" *ngIf="activeTab === 'Sinais Vitais'" style="height: 100%">
+    <!-- Sinais (antigo Sinais Vitais / Dispositivos Médicos) -->
+    <div class="tab-content" *ngIf="activeTab === 'Sinais' || activeTab === 'Sinais Vitais'" style="height: 100%">
       <app-medical-devices-tab
         [appointmentId]="appointmentId"
         [userrole]="userrole">
@@ -109,8 +94,8 @@
 
     <!-- Câmera de Exame - REMOVIDA DO SISTEMA -->
 
-    <!-- Dados do Paciente -->
-    <div class="tab-content" *ngIf="activeTab === 'Dados do Paciente'">
+    <!-- Paciente (antigo Dados do Paciente) -->
+    <div class="tab-content" *ngIf="activeTab === 'Paciente' || activeTab === 'Dados do Paciente'">
       <app-patient-data-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment">
@@ -126,8 +111,8 @@
       </app-anamnesis-tab>
     </div>
 
-    <!-- Campos da Especialidade -->
-    <div class="tab-content" *ngIf="activeTab === 'Campos da Especialidade'">
+    <!-- Específico (antigo Campos da Especialidade) -->
+    <div class="tab-content" *ngIf="activeTab === 'Específico' || activeTab === 'Campos da Especialidade'">
       <app-specialty-fields-tab
         [appointment]="appointment"
         [appointmentId]="appointmentId"
@@ -167,8 +152,8 @@
       </app-biometrics-tab>
     </div>
 
-    <!-- Chat Anexos -->
-    <div class="tab-content" *ngIf="activeTab === 'Chat Anexos'" style="height: 100%">
+    <!-- Anexos (antigo Chat Anexos) -->
+    <div class="tab-content" *ngIf="activeTab === 'Anexos' || activeTab === 'Chat Anexos'" style="height: 100%">
       <app-attachments-chat-tab
         [appointmentId]="appointmentId"
         [userrole]="userrole">
@@ -184,8 +169,8 @@
       </app-soap-tab>
     </div>
 
-    <!-- Análise Diagnóstica (antigo IA) -->
-    <div class="tab-content" *ngIf="activeTab === 'Análise Diagnóstica' || activeTab === 'IA'" style="height: 100%">
+    <!-- Hipótese IA (antigo Análise Diagnóstica / Análise IA) -->
+    <div class="tab-content" *ngIf="activeTab === 'Hipótese IA' || activeTab === 'Análise IA' || activeTab === 'Análise Diagnóstica' || activeTab === 'IA'" style="height: 100%">
       <app-ai-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment"
@@ -207,8 +192,8 @@
       </app-cns-tab>
     </div>
 
-    <!-- Histórico Clínico do Paciente -->
-    <div class="tab-content" *ngIf="activeTab === 'Histórico Clínico'" style="height: 100%">
+    <!-- Histórico (antigo Histórico Clínico do Paciente) -->
+    <div class="tab-content" *ngIf="activeTab === 'Histórico' || activeTab === 'Histórico Clínico'" style="height: 100%">
       <app-patient-history-tab
         [appointmentId]="appointmentId"
         [appointment]="appointment">
