@@ -533,7 +533,37 @@ export class BluetoothDevicesService {
   }
 
   /**
+   * Decodifica valor SFLOAT (Short Float) do padrão IEEE 11073
+   * SFLOAT: 16 bits = 4 bits expoente + 12 bits mantissa (com sinal)
+   */
+  private decodeSFLOAT(raw: number): number {
+    // Valores especiais
+    if (raw === 0x07FF) return NaN;  // NaN
+    if (raw === 0x0800) return NaN;  // NRes
+    if (raw === 0x07FE) return Infinity;  // +INFINITY
+    if (raw === 0x0802) return -Infinity; // -INFINITY
+    if (raw === 0x0801) return NaN;  // Reserved
+    
+    // Extrai mantissa (12 bits com sinal) e expoente (4 bits com sinal)
+    let mantissa = raw & 0x0FFF;
+    let exponent = (raw >> 12) & 0x0F;
+    
+    // Converte mantissa para signed (complemento de 2)
+    if (mantissa >= 0x0800) {
+      mantissa = mantissa - 0x1000;
+    }
+    
+    // Converte expoente para signed (complemento de 2, 4 bits)
+    if (exponent >= 0x08) {
+      exponent = exponent - 0x10;
+    }
+    
+    return mantissa * Math.pow(10, exponent);
+  }
+
+  /**
    * Handler para parsear dados de Blood Pressure Measurement
+   * Compatível com Omron HEM-7156T e outros monitores Bluetooth padrão
    */
   private parseBloodPressureData(value: DataView, deviceId: string): void {
     // Log raw data para debug
@@ -550,10 +580,14 @@ export class BluetoothDevicesService {
     
     console.log(`[BluetoothDevices] BP Flags: kPa=${isKpa}, timestamp=${hasTimestamp}, pulse=${hasPulseRate}, userId=${hasUserId}, status=${hasMeasurementStatus}`);
     
-    // Lê valores de pressão (sempre nos mesmos offsets: bytes 1-6)
-    let systolic = value.getUint16(1, true);
-    let diastolic = value.getUint16(3, true);
-    let map = value.getUint16(5, true); // Mean Arterial Pressure
+    // Lê valores de pressão como SFLOAT (IEEE 11073)
+    const rawSystolic = value.getUint16(1, true);
+    const rawDiastolic = value.getUint16(3, true);
+    const rawMap = value.getUint16(5, true);
+    
+    let systolic = this.decodeSFLOAT(rawSystolic);
+    let diastolic = this.decodeSFLOAT(rawDiastolic);
+    let map = this.decodeSFLOAT(rawMap);
     
     // Converte de kPa para mmHg se necessário
     if (isKpa) {
@@ -561,6 +595,8 @@ export class BluetoothDevicesService {
       diastolic = Math.round(diastolic * 7.5006);
       map = Math.round(map * 7.5006);
     }
+    
+    console.log(`[BluetoothDevices] BP SFLOAT decoded: Sys=${systolic}, Dia=${diastolic}, MAP=${map}`);
     
     // Calcula offset para campos opcionais
     let offset = 7; // Após os 3 campos de pressão (cada um 2 bytes)
@@ -570,15 +606,16 @@ export class BluetoothDevicesService {
       offset += 7;
     }
     
-    // Pulse rate (2 bytes)
+    // Pulse rate (2 bytes SFLOAT)
     let heartRate: number | undefined;
     if (hasPulseRate && value.byteLength > offset + 1) {
-      heartRate = value.getUint16(offset, true);
+      const rawPulse = value.getUint16(offset, true);
+      heartRate = Math.round(this.decodeSFLOAT(rawPulse));
       offset += 2;
     }
     
     // Valida valores (sistólica deve ser > 50 e < 300 para ser válida)
-    if (systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200) {
+    if (isNaN(systolic) || isNaN(diastolic) || systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200) {
       console.warn(`[BluetoothDevices] BP valores inválidos ignorados: ${systolic}/${diastolic}`);
       return;
     }

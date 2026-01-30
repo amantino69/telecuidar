@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using Infrastructure.Data;
+using WebAPI.Hubs;
 using System.Text.Json;
 
 namespace WebAPI.Controllers;
@@ -13,10 +15,12 @@ namespace WebAPI.Controllers;
 public class BiometricsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHubContext<TeleconsultationHub> _hubContext;
 
-    public BiometricsController(ApplicationDbContext context)
+    public BiometricsController(ApplicationDbContext context, IHubContext<TeleconsultationHub> hubContext)
     {
         _context = context;
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -87,6 +91,104 @@ public class BiometricsController : ControllerBase
 
         return Ok();
     }
+}
+
+/// <summary>
+/// Controller para receber leituras BLE de dispositivos externos (Python bridge)
+/// </summary>
+[ApiController]
+[Route("api/biometrics")]
+public class BleBridgeController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IHubContext<TeleconsultationHub> _hubContext;
+    private readonly ILogger<BleBridgeController> _logger;
+
+    public BleBridgeController(
+        ApplicationDbContext context, 
+        IHubContext<TeleconsultationHub> hubContext,
+        ILogger<BleBridgeController> logger)
+    {
+        _context = context;
+        _hubContext = hubContext;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Recebe leitura de dispositivo BLE e envia via SignalR para o médico
+    /// </summary>
+    [HttpPost("ble-reading")]
+    public async Task<ActionResult> ReceiveBleReading([FromBody] BleReadingDto dto)
+    {
+        _logger.LogInformation("[BLE Bridge] Leitura recebida: {Type} = {@Values}", dto.DeviceType, dto.Values);
+
+        // Busca a consulta
+        if (!Guid.TryParse(dto.AppointmentId, out var appointmentId))
+            return BadRequest(new { message = "appointmentId inválido" });
+
+        var appointment = await _context.Appointments.FindAsync(appointmentId);
+        if (appointment == null)
+            return NotFound(new { message = "Consulta não encontrada" });
+
+        // Atualiza biometrics
+        var biometrics = string.IsNullOrEmpty(appointment.BiometricsJson)
+            ? new BiometricsDto()
+            : JsonSerializer.Deserialize<BiometricsDto>(appointment.BiometricsJson) ?? new BiometricsDto();
+
+        // Aplica valores baseado no tipo
+        switch (dto.DeviceType?.ToLower())
+        {
+            case "scale":
+                if (dto.Values.TryGetValue("weight", out var weight))
+                    biometrics.Weight = Convert.ToDecimal(weight);
+                break;
+            case "blood_pressure":
+                if (dto.Values.TryGetValue("systolic", out var sys))
+                    biometrics.BloodPressureSystolic = Convert.ToInt32(sys);
+                if (dto.Values.TryGetValue("diastolic", out var dia))
+                    biometrics.BloodPressureDiastolic = Convert.ToInt32(dia);
+                if (dto.Values.TryGetValue("heartRate", out var hr))
+                    biometrics.HeartRate = Convert.ToInt32(hr);
+                break;
+            case "oximeter":
+                if (dto.Values.TryGetValue("spo2", out var spo2))
+                    biometrics.OxygenSaturation = Convert.ToInt32(spo2);
+                if (dto.Values.TryGetValue("pulseRate", out var pulse))
+                    biometrics.HeartRate = Convert.ToInt32(pulse);
+                break;
+            case "thermometer":
+                if (dto.Values.TryGetValue("temperature", out var temp))
+                    biometrics.Temperature = Convert.ToDecimal(temp);
+                break;
+        }
+
+        biometrics.LastUpdated = DateTime.UtcNow.ToString("o");
+        appointment.BiometricsJson = JsonSerializer.Serialize(biometrics);
+        await _context.SaveChangesAsync();
+
+        // Envia via SignalR para todos na sala da consulta
+        await _hubContext.Clients.Group($"appointment_{appointmentId}")
+            .SendAsync("BiometricsUpdated", new
+            {
+                appointmentId = dto.AppointmentId,
+                deviceType = dto.DeviceType,
+                values = dto.Values,
+                biometrics,
+                timestamp = biometrics.LastUpdated
+            });
+
+        _logger.LogInformation("[BLE Bridge] Dados enviados via SignalR para appointment_{Id}", appointmentId);
+
+        return Ok(new { message = "Leitura processada", biometrics });
+    }
+}
+
+public class BleReadingDto
+{
+    public string? AppointmentId { get; set; }
+    public string? DeviceType { get; set; }
+    public string? Timestamp { get; set; }
+    public Dictionary<string, object> Values { get; set; } = new();
 }
 
 public class BiometricsDto
